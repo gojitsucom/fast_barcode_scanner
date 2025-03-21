@@ -1,8 +1,11 @@
 import 'package:fast_barcode_scanner/fast_barcode_scanner.dart';
-import 'package:fast_barcode_scanner_platform_interface/fast_barcode_scanner_platform_interface.dart';
+import 'package:fast_barcode_scanner/src/types/barcode.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+
+import 'generated/scanner_platform_interface.g.dart';
+import 'types/api_mode.dart';
 
 typedef ErrorCallback = Widget Function(BuildContext context, Object? error);
 
@@ -65,21 +68,21 @@ class BarcodeCameraState extends State<BarcodeCamera> {
 
     final configurationFuture = cameraController.state.isInitialized
         ? cameraController.configure(
-            types: widget.types,
-            resolution: widget.resolution,
-            framerate: widget.framerate,
-            position: widget.position,
-            onScan: onScan,
-          )
+      types: widget.types,
+      resolution: widget.resolution,
+      framerate: widget.framerate,
+      position: widget.position,
+      onScan: onScan,
+    )
         : cameraController.initialize(
-            types: widget.types,
-            resolution: widget.resolution,
-            framerate: widget.framerate,
-            position: widget.position,
-            detectionMode: widget.mode,
-            onScan: onScan,
-            apiMode: widget.apiMode,
-          );
+      types: widget.types,
+      resolution: widget.resolution,
+      framerate: widget.framerate,
+      position: widget.position,
+      detectionMode: widget.mode,
+      onScan: onScan,
+      apiMode: widget.apiMode,
+    );
 
     configurationFuture
         .whenComplete(() => _safeSetState(() => _opacity = 1.0))
@@ -125,17 +128,17 @@ class BarcodeCameraState extends State<BarcodeCamera> {
         duration: const Duration(milliseconds: 260),
         child: cameraController.events.value == ScannerEvent.error
             ? widget.onError(
-                context,
-                cameraState.error ?? "Unknown error occurred",
-              )
+          context,
+          cameraState.error ?? "Unknown error occurred",
+        )
             : Stack(
-                fit: StackFit.expand,
-                children: [
-                  if (cameraState.isInitialized)
-                    _buildPreview(cameraState.previewConfig!),
-                  ...widget.children
-                ],
-              ),
+          fit: StackFit.expand,
+          children: [
+            if (cameraState.isInitialized)
+              _buildPreview(cameraState.previewConfig!),
+            ...widget.children
+          ],
+        ),
       ),
     );
   }

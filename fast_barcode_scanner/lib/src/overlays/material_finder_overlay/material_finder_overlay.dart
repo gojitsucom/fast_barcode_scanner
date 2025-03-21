@@ -1,7 +1,7 @@
-import 'package:fast_barcode_scanner_platform_interface/fast_barcode_scanner_platform_interface.dart';
 import 'package:flutter/material.dart';
 
 import '../../camera_controller.dart';
+import '../../types/barcode.dart';
 import '../rect_of_interest/rect_of_interest.dart';
 import 'material_finder_painter.dart';
 

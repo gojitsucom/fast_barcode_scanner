@@ -1,4 +1,5 @@
-import 'package:fast_barcode_scanner_platform_interface/fast_barcode_scanner_platform_interface.dart';
+
+import 'barcode.dart';
 
 class ScannedBarcodes {
   final List<Barcode> barcodes;

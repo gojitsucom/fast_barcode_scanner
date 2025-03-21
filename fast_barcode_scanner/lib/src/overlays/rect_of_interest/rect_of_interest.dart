@@ -1,8 +1,8 @@
 import 'dart:ui';
 
-import 'package:fast_barcode_scanner_platform_interface/fast_barcode_scanner_platform_interface.dart';
 
 import '../../corner_point_utils.dart';
+import '../../types/barcode.dart';
 
 typedef CodeFilter = bool Function(Barcode code);
 

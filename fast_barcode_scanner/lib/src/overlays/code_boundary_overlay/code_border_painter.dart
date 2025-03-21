@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../../fast_barcode_scanner.dart';
 import '../../corner_point_utils.dart';
+import '../../types/barcode.dart';
 
 class CodeBorderPainter extends CustomPainter {
   final CodeBorderPaintBuilder? barcodePaintSelector;

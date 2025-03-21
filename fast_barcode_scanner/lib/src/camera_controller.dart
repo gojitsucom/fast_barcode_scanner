@@ -1,10 +1,14 @@
 import 'dart:async';
 
-import 'package:fast_barcode_scanner_platform_interface/fast_barcode_scanner_platform_interface.dart';
+import 'package:fast_barcode_scanner/src/types/api_mode.dart';
+import 'package:fast_barcode_scanner/src/types/barcode.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 
 import '../fast_barcode_scanner.dart';
+import 'generated/scanner_platform_interface.g.dart';
+
+typedef OnDetectionHandler = void Function(List<Barcode>);
 
 class ScannerState {
   PreviewConfiguration? _previewConfig;
@@ -28,7 +32,7 @@ class ScannerState {
 /// Middleman, handling the communication with native platforms.
 ///
 /// Allows for custom backends.
-abstract class CameraController {
+abstract class CameraController implements BarcodeDetectionHandler {
   static final _instance = _CameraController._internal();
 
   factory CameraController() => _instance;
@@ -50,7 +54,7 @@ abstract class CameraController {
   ///
   ///
   final ValueNotifier<ScannerEvent> events =
-      ValueNotifier(ScannerEvent.uninitialized);
+  ValueNotifier(ScannerEvent.uninitialized);
 
   /// Informs the platform to initialize the camera.
   ///
@@ -107,11 +111,6 @@ abstract class CameraController {
     OnDetectionHandler? onScan,
   });
 
-  /// Analyze a still image, which can be chosen from an image picker.
-  ///
-  /// It is recommended to pause the live scanner before calling this.
-  Future<List<Barcode>?> scanImage(ImageSource source);
-
   Future<String?> retrieveCachedImage(String code);
 
   Future<void> clearCachedImage();
@@ -122,8 +121,7 @@ class _CameraController implements CameraController {
 
   StreamSubscription? _scanSilencerSubscription;
 
-  final FastBarcodeScannerPlatform _platform =
-      FastBarcodeScannerPlatform.instance;
+  final ScannerPlatformInterface _platform = ScannerPlatformInterface();
 
   @override
   final state = ScannerState();
@@ -180,27 +178,25 @@ class _CameraController implements CameraController {
     OnDetectionHandler? onScan,
   }) async {
     try {
-      state._previewConfig = await _platform.init(
-        types,
-        resolution,
-        framerate,
-        detectionMode,
-        position,
-        apiMode: apiMode,
+      state._previewConfig = await _platform.initialize(
+        types: types,
+        resolution: resolution,
+        framerate: framerate,
+        detectionMode: detectionMode,
+        position: position,
+        apiMode: apiMode?.configMap ?? {},
       );
 
       _onScan = _buildScanHandler(onScan);
       _scanSilencerSubscription =
           Stream.periodic(scannedCodeTimeout).listen((event) {
-        final scanTime = _lastScanTime;
-        if (scanTime != null &&
-            DateTime.now().difference(scanTime) > scannedCodeTimeout) {
-          // it's been too long since we've seen a scanned code, clear the list
-          scannedBarcodes.value = const <Barcode>[];
-        }
-      });
-
-      _platform.setOnDetectHandler(_onDetectHandler);
+            final scanTime = _lastScanTime;
+            if (scanTime != null &&
+                DateTime.now().difference(scanTime) > scannedCodeTimeout) {
+              // it's been too long since we've seen a scanned code, clear the list
+              scannedBarcodes.value = const <Barcode>[];
+            }
+          });
 
       state._scannerConfig = ScannerConfiguration(
           types, resolution, framerate, position, detectionMode);
@@ -312,7 +308,7 @@ class _CameraController implements CameraController {
       _configuring = true;
 
       try {
-        state._previewConfig = await _platform.changeConfiguration(
+        state._previewConfig = await _platform.updateConfiguration(
           types: types,
           resolution: resolution,
           framerate: framerate,
@@ -340,20 +336,9 @@ class _CameraController implements CameraController {
   }
 
   @override
-  Future<List<Barcode>?> scanImage(ImageSource source) async {
-    try {
-      return _platform.scanImage(source);
-    } catch (error) {
-      state._error = error;
-      events.value = ScannerEvent.error;
-      rethrow;
-    }
-  }
-
-  @override
   Future<String?> retrieveCachedImage(String code) async {
     try {
-      return (await _platform.retrieveCachedImage(code: code))
+      return (await _platform.retrieveCachedImage(code))
           ?.replaceAll("file:///", "");
     } catch (error) {
       state._error = error;
@@ -371,6 +356,17 @@ class _CameraController implements CameraController {
     events.value = ScannerEvent.detected;
     _onScan?.call(codes);
   }
+
+  @override
+  void onBarcodeDetected(List<dynamic> data) {
+// This might fail if the code type is not present in the list of available code types.
+    // Barcode init will throw in this case. Ignore this cases and continue as if nothing happened.
+    try {
+      final barcodes = data.map((e) => Barcode(e)).toList();
+      _onDetectHandler.call(barcodes);
+      // ignore: empty_catches
+    } catch (e) {}
+  }
 }
 
 class ScannedBarcodes {
@@ -384,10 +380,10 @@ class ScannedBarcodes {
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-      other is ScannedBarcodes &&
-          runtimeType == other.runtimeType &&
-          barcodes == other.barcodes &&
-          scannedAt == other.scannedAt;
+          other is ScannedBarcodes &&
+              runtimeType == other.runtimeType &&
+              barcodes == other.barcodes &&
+              scannedAt == other.scannedAt;
 
   @override
   int get hashCode => barcodes.hashCode ^ scannedAt.hashCode;

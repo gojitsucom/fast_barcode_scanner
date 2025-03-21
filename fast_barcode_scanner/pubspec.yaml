@@ -12,16 +12,17 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  fast_barcode_scanner_platform_interface:
-    hosted:
-      name: fast_barcode_scanner_platform_interface
-      url: http://nexus.gojitsu.com:7777
-    version: ^2.2.0
+#  fast_barcode_scanner_platform_interface:
+#    hosted:
+#      name: fast_barcode_scanner_platform_interface
+#      url: http://nexus.gojitsu.com:7777
+#    version: ^2.2.0
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^2.0.1
+  pigeon:
 
 flutter:
   plugin:
