@@ -1,14 +1,8 @@
 import 'dart:async';
-
-import 'package:fast_barcode_scanner/src/types/api_mode.dart';
-import 'package:fast_barcode_scanner/src/types/barcode.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
-
 import '../fast_barcode_scanner.dart';
-import 'generated/scanner_platform_interface.g.dart';
 
-typedef OnDetectionHandler = void Function(List<Barcode>);
+typedef OnDetectionHandler = void Function(List<BarcodeData>);
 
 class ScannerState {
   PreviewConfiguration? _previewConfig;
@@ -44,7 +38,7 @@ abstract class CameraController implements BarcodeDetectionHandler {
   final state = ScannerState();
 
   /// reports most recently scanned codes
-  ValueNotifier<List<Barcode>> get scannedBarcodes;
+  ValueNotifier<List<BarcodeData>> get scannedBarcodes;
 
   /// the size of the image used by the native analysis system to scan the code
   /// scanned codes have coordinate information that is based on this image size
@@ -54,7 +48,7 @@ abstract class CameraController implements BarcodeDetectionHandler {
   ///
   ///
   final ValueNotifier<ScannerEvent> events =
-  ValueNotifier(ScannerEvent.uninitialized);
+      ValueNotifier(ScannerEvent.uninitialized);
 
   /// Informs the platform to initialize the camera.
   ///
@@ -132,7 +126,7 @@ class _CameraController implements CameraController {
   static const scannedCodeTimeout = Duration(milliseconds: 250);
   DateTime? _lastScanTime;
   @override
-  ValueNotifier<List<Barcode>> scannedBarcodes = ValueNotifier([]);
+  ValueNotifier<List<BarcodeData>> scannedBarcodes = ValueNotifier([]);
 
   @override
   Size? get analysisSize {
@@ -184,19 +178,23 @@ class _CameraController implements CameraController {
         framerate: framerate,
         detectionMode: detectionMode,
         position: position,
-        apiMode: apiMode?.configMap ?? {},
+        apiMode: apiMode != null
+            ? ApiModeConfig(
+                apiMode: apiMode.name,
+                confidence: apiMode.configMap["confidence"])
+            : null,
       );
 
       _onScan = _buildScanHandler(onScan);
       _scanSilencerSubscription =
           Stream.periodic(scannedCodeTimeout).listen((event) {
-            final scanTime = _lastScanTime;
-            if (scanTime != null &&
-                DateTime.now().difference(scanTime) > scannedCodeTimeout) {
-              // it's been too long since we've seen a scanned code, clear the list
-              scannedBarcodes.value = const <Barcode>[];
-            }
-          });
+        final scanTime = _lastScanTime;
+        if (scanTime != null &&
+            DateTime.now().difference(scanTime) > scannedCodeTimeout) {
+          // it's been too long since we've seen a scanned code, clear the list
+          scannedBarcodes.value = const <BarcodeData>[];
+        }
+      });
 
       state._scannerConfig = ScannerConfiguration(
           types, resolution, framerate, position, detectionMode);
@@ -352,25 +350,19 @@ class _CameraController implements CameraController {
     await _platform.clearCachedImage();
   }
 
-  void _onDetectHandler(List<Barcode> codes) {
+  void _onDetectHandler(List<BarcodeData> codes) {
     events.value = ScannerEvent.detected;
     _onScan?.call(codes);
   }
 
   @override
-  void onBarcodeDetected(List<dynamic> data) {
-// This might fail if the code type is not present in the list of available code types.
-    // Barcode init will throw in this case. Ignore this cases and continue as if nothing happened.
-    try {
-      final barcodes = data.map((e) => Barcode(e)).toList();
-      _onDetectHandler.call(barcodes);
-      // ignore: empty_catches
-    } catch (e) {}
+  void onBarcodeDetected(List<BarcodeData> barcodes) {
+    _onDetectHandler.call(barcodes);
   }
 }
 
 class ScannedBarcodes {
-  final List<Barcode> barcodes;
+  final List<BarcodeData> barcodes;
   final DateTime scannedAt;
 
   ScannedBarcodes(this.barcodes) : scannedAt = DateTime.now();
@@ -380,10 +372,10 @@ class ScannedBarcodes {
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-          other is ScannedBarcodes &&
-              runtimeType == other.runtimeType &&
-              barcodes == other.barcodes &&
-              scannedAt == other.scannedAt;
+      other is ScannedBarcodes &&
+          runtimeType == other.runtimeType &&
+          barcodes == other.barcodes &&
+          scannedAt == other.scannedAt;
 
   @override
   int get hashCode => barcodes.hashCode ^ scannedAt.hashCode;

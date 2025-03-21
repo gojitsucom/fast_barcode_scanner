@@ -1,10 +1,13 @@
 package com.jhoogstraat.fast_barcode_scanner
 
+import ApiModeConfig
+import BarcodeData
 import BarcodeDetectionHandler
 import BarcodeType
 import CameraPosition
 import DetectionMode
 import Framerate
+import Point
 import PreviewConfiguration
 import Resolution
 import ScannerPlatformInterface
@@ -12,7 +15,6 @@ import android.app.Activity
 import androidx.annotation.NonNull
 import androidx.core.content.ContextCompat
 import com.google.mlkit.vision.barcode.common.Barcode
-import com.jhoogstraat.fast_barcode_scanner.Generated.*
 import com.jhoogstraat.fast_barcode_scanner.types.ScannerException
 import com.jhoogstraat.fast_barcode_scanner.types.barcodeStringMap
 import io.flutter.embedding.engine.plugins.FlutterPlugin
@@ -40,12 +42,12 @@ class FastBarcodeScannerPlugin : FlutterPlugin, ActivityAware, ScannerPlatformIn
 
     override fun onAttachedToActivity(binding: ActivityPluginBinding) {
         activityBinding = binding
-        binding.addActivityResultListener(this)
     }
 
     override fun onDetachedFromActivity() {
-        dispose()
-        activityBinding?.removeActivityResultListener(this)
+        dispose(
+            callback = {}
+        )
         activityBinding = null
     }
 
@@ -64,7 +66,7 @@ class FastBarcodeScannerPlugin : FlutterPlugin, ActivityAware, ScannerPlatformIn
         framerate: Framerate,
         detectionMode: DetectionMode,
         position: CameraPosition,
-        apiMode: Map<String, Any>?,
+        apiMode: ApiModeConfig?,
         callback: (Result<PreviewConfiguration>) -> Unit
     ) {
         try {
@@ -77,7 +79,8 @@ class FastBarcodeScannerPlugin : FlutterPlugin, ActivityAware, ScannerPlatformIn
             }
 
             this.pluginBinding ?: throw ScannerException.ActivityNotConnected()
-            val activityBinding = this.activityBinding ?: throw ScannerException.ActivityNotConnected()
+            val activityBinding =
+                this.activityBinding ?: throw ScannerException.ActivityNotConnected()
 
             val config = hashMapOf<String, Any>(
                 "types" to types,
@@ -86,13 +89,10 @@ class FastBarcodeScannerPlugin : FlutterPlugin, ActivityAware, ScannerPlatformIn
                 "detectionMode" to detectionMode,
                 "position" to position
             )
-            if (apiMode != null) {
-                config["apiMode"] = apiMode
-            }
 
             val camera = Camera(
                 activityBinding.activity,
-                pluginBinding.textureRegistry.createSurfaceTexture(),
+                pluginBinding!!.textureRegistry.createSurfaceTexture(),
                 config
             ) { barcodes ->
                 barcodeHandler?.onBarcodeDetected(encodeBarcodes(barcodes)) { }
@@ -196,6 +196,7 @@ class FastBarcodeScannerPlugin : FlutterPlugin, ActivityAware, ScannerPlatformIn
                 it.flutterTextureEntry.release()
                 activityBinding?.removeRequestPermissionsResultListener(it)
             }
+
             camera = null
             callback(Result.success(Unit))
         } catch (e: Exception) {
@@ -225,14 +226,15 @@ class FastBarcodeScannerPlugin : FlutterPlugin, ActivityAware, ScannerPlatformIn
         }
     }
 
-    private fun encodeBarcodes(barcodes: List<Barcode>): List<List<*>> {
+    private fun encodeBarcodes(barcodes: List<Barcode>): List<BarcodeData> {
         return barcodes.map {
-            listOf(
-                barcodeStringMap[it.format],
-                it.rawValue,
-                it.valueType,
-                it.cornerPoints?.map { point -> listOf(point.x, point.y) }
+            BarcodeData(
+                barcodeStringMap[it.format] ?: "",
+                it.rawValue ?: "",
+                BarcodeValueType.ofRaw(it.valueType),
+                it.cornerPoints?.map { point -> Point(point.x.toDouble(), point.y.toDouble()) }
             )
         }
+
     }
 }

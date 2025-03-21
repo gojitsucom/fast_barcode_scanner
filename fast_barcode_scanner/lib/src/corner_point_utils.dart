@@ -1,5 +1,6 @@
-import 'dart:math';
 import 'dart:ui';
+
+import '../fast_barcode_scanner.dart';
 
 /// We use BoxFit.cover to display our preview
 ///

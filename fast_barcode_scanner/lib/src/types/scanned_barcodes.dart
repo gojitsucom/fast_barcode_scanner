@@ -1,8 +1,8 @@
 
-import 'barcode.dart';
+import '../../fast_barcode_scanner.dart';
 
 class ScannedBarcodes {
-  final List<Barcode> barcodes;
+  final List<BarcodeData> barcodes;
   final DateTime scannedAt;
 
   ScannedBarcodes(this.barcodes) : scannedAt = DateTime.now();

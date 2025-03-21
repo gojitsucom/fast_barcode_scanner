@@ -152,6 +152,86 @@ enum BarcodeValueType: Int {
   case license = 12
 }
 
+/// Generated class from Pigeon that represents data sent in messages.
+struct ApiModeConfig {
+  var apiMode: String
+  var confidence: Double? = nil
+
+
+  // swift-format-ignore: AlwaysUseLowerCamelCase
+  static func fromList(_ pigeonVar_list: [Any?]) -> ApiModeConfig? {
+    let apiMode = pigeonVar_list[0] as! String
+    let confidence: Double? = nilOrValue(pigeonVar_list[1])
+
+    return ApiModeConfig(
+      apiMode: apiMode,
+      confidence: confidence
+    )
+  }
+  func toList() -> [Any?] {
+    return [
+      apiMode,
+      confidence,
+    ]
+  }
+}
+
+/// Generated class from Pigeon that represents data sent in messages.
+struct BarcodeData {
+  var type: String
+  var value: String
+  var valueType: BarcodeValueType? = nil
+  var cornerPoints: [Point]? = nil
+
+
+  // swift-format-ignore: AlwaysUseLowerCamelCase
+  static func fromList(_ pigeonVar_list: [Any?]) -> BarcodeData? {
+    let type = pigeonVar_list[0] as! String
+    let value = pigeonVar_list[1] as! String
+    let valueType: BarcodeValueType? = nilOrValue(pigeonVar_list[2])
+    let cornerPoints: [Point]? = nilOrValue(pigeonVar_list[3])
+
+    return BarcodeData(
+      type: type,
+      value: value,
+      valueType: valueType,
+      cornerPoints: cornerPoints
+    )
+  }
+  func toList() -> [Any?] {
+    return [
+      type,
+      value,
+      valueType,
+      cornerPoints,
+    ]
+  }
+}
+
+/// Generated class from Pigeon that represents data sent in messages.
+struct Point {
+  var x: Double
+  var y: Double
+
+
+  // swift-format-ignore: AlwaysUseLowerCamelCase
+  static func fromList(_ pigeonVar_list: [Any?]) -> Point? {
+    let x = pigeonVar_list[0] as! Double
+    let y = pigeonVar_list[1] as! Double
+
+    return Point(
+      x: x,
+      y: y
+    )
+  }
+  func toList() -> [Any?] {
+    return [
+      x,
+      y,
+    ]
+  }
+}
+
 /// The configuration by which the camera feed can be laid out in the UI.
 ///
 /// Generated class from Pigeon that represents data sent in messages.
@@ -248,6 +328,12 @@ private class ScannerPlatformInterfacePigeonCodecReader: FlutterStandardReader {
       }
       return nil
     case 135:
+      return ApiModeConfig.fromList(self.readValue() as! [Any?])
+    case 136:
+      return BarcodeData.fromList(self.readValue() as! [Any?])
+    case 137:
+      return Point.fromList(self.readValue() as! [Any?])
+    case 138:
       return PreviewConfiguration.fromList(self.readValue() as! [Any?])
     default:
       return super.readValue(ofType: type)
@@ -275,8 +361,17 @@ private class ScannerPlatformInterfacePigeonCodecWriter: FlutterStandardWriter {
     } else if let value = value as? BarcodeValueType {
       super.writeByte(134)
       super.writeValue(value.rawValue)
-    } else if let value = value as? PreviewConfiguration {
+    } else if let value = value as? ApiModeConfig {
       super.writeByte(135)
+      super.writeValue(value.toList())
+    } else if let value = value as? BarcodeData {
+      super.writeByte(136)
+      super.writeValue(value.toList())
+    } else if let value = value as? Point {
+      super.writeByte(137)
+      super.writeValue(value.toList())
+    } else if let value = value as? PreviewConfiguration {
+      super.writeByte(138)
       super.writeValue(value.toList())
     } else {
       super.writeValue(value)
@@ -301,7 +396,7 @@ class ScannerPlatformInterfacePigeonCodec: FlutterStandardMessageCodec, @uncheck
 
 /// Generated protocol from Pigeon that represents a handler of messages from Flutter.
 protocol ScannerPlatformInterface {
-  func initialize(types: [BarcodeType], resolution: Resolution, framerate: Framerate, detectionMode: DetectionMode, position: CameraPosition, apiMode: [String: dynamic]?, completion: @escaping (Result<PreviewConfiguration, Error>) -> Void)
+  func initialize(types: [BarcodeType], resolution: Resolution, framerate: Framerate, detectionMode: DetectionMode, position: CameraPosition, apiMode: ApiModeConfig?, completion: @escaping (Result<PreviewConfiguration, Error>) -> Void)
   func start(completion: @escaping (Result<Void, Error>) -> Void)
   func stop(completion: @escaping (Result<Void, Error>) -> Void)
   func startDetector(completion: @escaping (Result<Void, Error>) -> Void)
@@ -328,7 +423,7 @@ class ScannerPlatformInterfaceSetup {
         let framerateArg = args[2] as! Framerate
         let detectionModeArg = args[3] as! DetectionMode
         let positionArg = args[4] as! CameraPosition
-        let apiModeArg: [String: dynamic]? = nilOrValue(args[5])
+        let apiModeArg: ApiModeConfig? = nilOrValue(args[5])
         api.initialize(types: typesArg, resolution: resolutionArg, framerate: framerateArg, detectionMode: detectionModeArg, position: positionArg, apiMode: apiModeArg) { result in
           switch result {
           case .success(let res):
@@ -488,7 +583,7 @@ class ScannerPlatformInterfaceSetup {
 }
 /// Generated protocol from Pigeon that represents Flutter messages that can be called from Swift.
 protocol BarcodeDetectionHandlerProtocol {
-  func onBarcodeDetected(data dataArg: [dynamic], completion: @escaping (Result<Void, PigeonError>) -> Void)
+  func onBarcodeDetected(data dataArg: [BarcodeData], completion: @escaping (Result<Void, PigeonError>) -> Void)
 }
 class BarcodeDetectionHandler: BarcodeDetectionHandlerProtocol {
   private let binaryMessenger: FlutterBinaryMessenger
@@ -500,7 +595,7 @@ class BarcodeDetectionHandler: BarcodeDetectionHandlerProtocol {
   var codec: ScannerPlatformInterfacePigeonCodec {
     return ScannerPlatformInterfacePigeonCodec.shared
   }
-  func onBarcodeDetected(data dataArg: [dynamic], completion: @escaping (Result<Void, PigeonError>) -> Void) {
+  func onBarcodeDetected(data dataArg: [BarcodeData], completion: @escaping (Result<Void, PigeonError>) -> Void) {
     let channelName: String = "dev.flutter.pigeon.fast_barcode_scanner.BarcodeDetectionHandler.onBarcodeDetected\(messageChannelSuffix)"
     let channel = FlutterBasicMessageChannel(name: channelName, binaryMessenger: binaryMessenger, codec: codec)
     channel.sendMessage([dataArg] as [Any?]) { response in

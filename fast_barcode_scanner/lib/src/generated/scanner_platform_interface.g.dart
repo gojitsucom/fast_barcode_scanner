@@ -24,6 +24,21 @@ List<Object?> wrapResponse({Object? result, PlatformException? error, bool empty
   }
   return <Object?>[error.code, error.message, error.details];
 }
+bool _deepEquals(Object? a, Object? b) {
+  if (a is List && b is List) {
+    return a.length == b.length &&
+        a.indexed
+        .every(((int, dynamic) item) => _deepEquals(item.$2, b[item.$1]));
+  }
+  if (a is Map && b is Map) {
+    final Iterable<Object?> keys = (a as Map<Object?, Object?>).keys;
+    return a.length == b.length && keys.every((Object? key) =>
+        (b as Map<Object?, Object?>).containsKey(key) &&
+        _deepEquals(a[key], b[key]));
+  }
+  return a == b;
+}
+    
 
 /// Supported resolutions. Not all devices support all resolutions!
 enum Resolution {
@@ -107,6 +122,162 @@ enum BarcodeValueType {
   geo,
   calender,
   license,
+}
+
+class ApiModeConfig {
+  ApiModeConfig({
+    required this.apiMode,
+    this.confidence,
+  });
+
+  String apiMode;
+
+  double? confidence;
+
+  List<Object?> _toList() {
+    return <Object?>[
+      apiMode,
+      confidence,
+    ];
+  }
+
+  Object encode() {
+    return _toList();  }
+
+  static ApiModeConfig decode(Object result) {
+    result as List<Object?>;
+    return ApiModeConfig(
+      apiMode: result[0]! as String,
+      confidence: result[1] as double?,
+    );
+  }
+
+  @override
+  // ignore: avoid_equals_and_hash_code_on_mutable_classes
+  bool operator ==(Object other) {
+    if (other is! ApiModeConfig || other.runtimeType != runtimeType) {
+      return false;
+    }
+    if (identical(this, other)) {
+      return true;
+    }
+    return 
+      apiMode == other.apiMode
+      && confidence == other.confidence;
+  }
+
+  @override
+  // ignore: avoid_equals_and_hash_code_on_mutable_classes
+  int get hashCode => Object.hashAll(_toList())
+;
+}
+
+class BarcodeData {
+  BarcodeData({
+    required this.type,
+    required this.value,
+    this.valueType,
+    this.cornerPoints,
+  });
+
+  String type;
+
+  String value;
+
+  BarcodeValueType? valueType;
+
+  List<Point>? cornerPoints;
+
+  List<Object?> _toList() {
+    return <Object?>[
+      type,
+      value,
+      valueType,
+      cornerPoints,
+    ];
+  }
+
+  Object encode() {
+    return _toList();  }
+
+  static BarcodeData decode(Object result) {
+    result as List<Object?>;
+    return BarcodeData(
+      type: result[0]! as String,
+      value: result[1]! as String,
+      valueType: result[2] as BarcodeValueType?,
+      cornerPoints: (result[3] as List<Object?>?)?.cast<Point>(),
+    );
+  }
+
+  @override
+  // ignore: avoid_equals_and_hash_code_on_mutable_classes
+  bool operator ==(Object other) {
+    if (other is! BarcodeData || other.runtimeType != runtimeType) {
+      return false;
+    }
+    if (identical(this, other)) {
+      return true;
+    }
+    return 
+      type == other.type
+      && value == other.value
+      && valueType == other.valueType
+      && _deepEquals(cornerPoints, other.cornerPoints);
+  }
+
+  @override
+  // ignore: avoid_equals_and_hash_code_on_mutable_classes
+  int get hashCode => Object.hashAll(_toList())
+;
+}
+
+class Point {
+  Point({
+    required this.x,
+    required this.y,
+  });
+
+  double x;
+
+  double y;
+
+  List<Object?> _toList() {
+    return <Object?>[
+      x,
+      y,
+    ];
+  }
+
+  Object encode() {
+    return _toList();  }
+
+  static Point decode(Object result) {
+    result as List<Object?>;
+    return Point(
+      x: result[0]! as double,
+      y: result[1]! as double,
+    );
+  }
+
+  @override
+  // ignore: avoid_equals_and_hash_code_on_mutable_classes
+  bool operator ==(Object other) {
+    if (other is! Point || other.runtimeType != runtimeType) {
+      return false;
+    }
+    if (identical(this, other)) {
+      return true;
+    }
+    return 
+      x == other.x
+      && y == other.y;
+  }
+
+  @override
+  // ignore: avoid_equals_and_hash_code_on_mutable_classes
+  int get hashCode => Object.hashAll(_toList())
+;
 }
 
 /// The configuration by which the camera feed can be laid out in the UI.
@@ -224,8 +395,17 @@ class _PigeonCodec extends StandardMessageCodec {
     }    else if (value is BarcodeValueType) {
       buffer.putUint8(134);
       writeValue(buffer, value.index);
-    }    else if (value is PreviewConfiguration) {
+    }    else if (value is ApiModeConfig) {
       buffer.putUint8(135);
+      writeValue(buffer, value.encode());
+    }    else if (value is BarcodeData) {
+      buffer.putUint8(136);
+      writeValue(buffer, value.encode());
+    }    else if (value is Point) {
+      buffer.putUint8(137);
+      writeValue(buffer, value.encode());
+    }    else if (value is PreviewConfiguration) {
+      buffer.putUint8(138);
       writeValue(buffer, value.encode());
     } else {
       super.writeValue(buffer, value);
@@ -254,6 +434,12 @@ class _PigeonCodec extends StandardMessageCodec {
         final int? value = readValue(buffer) as int?;
         return value == null ? null : BarcodeValueType.values[value];
       case 135: 
+        return ApiModeConfig.decode(readValue(buffer)!);
+      case 136: 
+        return BarcodeData.decode(readValue(buffer)!);
+      case 137: 
+        return Point.decode(readValue(buffer)!);
+      case 138: 
         return PreviewConfiguration.decode(readValue(buffer)!);
       default:
         return super.readValueOfType(type, buffer);
@@ -274,7 +460,7 @@ class ScannerPlatformInterface {
 
   final String pigeonVar_messageChannelSuffix;
 
-  Future<PreviewConfiguration> initialize({required List<BarcodeType> types, required Resolution resolution, required Framerate framerate, required DetectionMode detectionMode, required CameraPosition position, Map<String, dynamic>? apiMode, }) async {
+  Future<PreviewConfiguration> initialize({required List<BarcodeType> types, required Resolution resolution, required Framerate framerate, required DetectionMode detectionMode, required CameraPosition position, ApiModeConfig? apiMode, }) async {
     final String pigeonVar_channelName = 'dev.flutter.pigeon.fast_barcode_scanner.ScannerPlatformInterface.initialize$pigeonVar_messageChannelSuffix';
     final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
       pigeonVar_channelName,
@@ -523,7 +709,7 @@ class ScannerPlatformInterface {
 abstract class BarcodeDetectionHandler {
   static const MessageCodec<Object?> pigeonChannelCodec = _PigeonCodec();
 
-  void onBarcodeDetected(List<dynamic> data);
+  void onBarcodeDetected(List<BarcodeData> data);
 
   static void setUp(BarcodeDetectionHandler? api, {BinaryMessenger? binaryMessenger, String messageChannelSuffix = '',}) {
     messageChannelSuffix = messageChannelSuffix.isNotEmpty ? '.$messageChannelSuffix' : '';
@@ -538,9 +724,9 @@ abstract class BarcodeDetectionHandler {
           assert(message != null,
           'Argument for dev.flutter.pigeon.fast_barcode_scanner.BarcodeDetectionHandler.onBarcodeDetected was null.');
           final List<Object?> args = (message as List<Object?>?)!;
-          final List<dynamic>? arg_data = (args[0] as List<Object?>?)?.cast<dynamic>();
+          final List<BarcodeData>? arg_data = (args[0] as List<Object?>?)?.cast<BarcodeData>();
           assert(arg_data != null,
-              'Argument for dev.flutter.pigeon.fast_barcode_scanner.BarcodeDetectionHandler.onBarcodeDetected was null, expected non-null List<dynamic>.');
+              'Argument for dev.flutter.pigeon.fast_barcode_scanner.BarcodeDetectionHandler.onBarcodeDetected was null, expected non-null List<BarcodeData>.');
           try {
             api.onBarcodeDetected(arg_data!);
             return wrapResponse(empty: true);

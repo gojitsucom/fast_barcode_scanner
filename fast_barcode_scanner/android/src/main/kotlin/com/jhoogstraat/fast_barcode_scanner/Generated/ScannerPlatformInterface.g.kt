@@ -172,6 +172,75 @@ enum class BarcodeValueType(val raw: Int) {
   }
 }
 
+/** Generated class from Pigeon that represents data sent in messages. */
+data class ApiModeConfig (
+  val apiMode: String,
+  val confidence: Double? = null
+)
+ {
+  companion object {
+    fun fromList(pigeonVar_list: List<Any?>): ApiModeConfig {
+      val apiMode = pigeonVar_list[0] as String
+      val confidence = pigeonVar_list[1] as Double?
+      return ApiModeConfig(apiMode, confidence)
+    }
+  }
+  fun toList(): List<Any?> {
+    return listOf(
+      apiMode,
+      confidence,
+    )
+  }
+}
+
+/** Generated class from Pigeon that represents data sent in messages. */
+data class BarcodeData (
+  val type: String,
+  val value: String,
+  val valueType: BarcodeValueType? = null,
+  val cornerPoints: List<Point>? = null
+)
+ {
+  companion object {
+    fun fromList(pigeonVar_list: List<Any?>): BarcodeData {
+      val type = pigeonVar_list[0] as String
+      val value = pigeonVar_list[1] as String
+      val valueType = pigeonVar_list[2] as BarcodeValueType?
+      val cornerPoints = pigeonVar_list[3] as List<Point>?
+      return BarcodeData(type, value, valueType, cornerPoints)
+    }
+  }
+  fun toList(): List<Any?> {
+    return listOf(
+      type,
+      value,
+      valueType,
+      cornerPoints,
+    )
+  }
+}
+
+/** Generated class from Pigeon that represents data sent in messages. */
+data class Point (
+  val x: Double,
+  val y: Double
+)
+ {
+  companion object {
+    fun fromList(pigeonVar_list: List<Any?>): Point {
+      val x = pigeonVar_list[0] as Double
+      val y = pigeonVar_list[1] as Double
+      return Point(x, y)
+    }
+  }
+  fun toList(): List<Any?> {
+    return listOf(
+      x,
+      y,
+    )
+  }
+}
+
 /**
  * The configuration by which the camera feed can be laid out in the UI.
  *
@@ -260,6 +329,21 @@ private open class ScannerPlatformInterfacePigeonCodec : StandardMessageCodec() 
       }
       135.toByte() -> {
         return (readValue(buffer) as? List<Any?>)?.let {
+          ApiModeConfig.fromList(it)
+        }
+      }
+      136.toByte() -> {
+        return (readValue(buffer) as? List<Any?>)?.let {
+          BarcodeData.fromList(it)
+        }
+      }
+      137.toByte() -> {
+        return (readValue(buffer) as? List<Any?>)?.let {
+          Point.fromList(it)
+        }
+      }
+      138.toByte() -> {
+        return (readValue(buffer) as? List<Any?>)?.let {
           PreviewConfiguration.fromList(it)
         }
       }
@@ -292,8 +376,20 @@ private open class ScannerPlatformInterfacePigeonCodec : StandardMessageCodec() 
         stream.write(134)
         writeValue(stream, value.raw)
       }
-      is PreviewConfiguration -> {
+      is ApiModeConfig -> {
         stream.write(135)
+        writeValue(stream, value.toList())
+      }
+      is BarcodeData -> {
+        stream.write(136)
+        writeValue(stream, value.toList())
+      }
+      is Point -> {
+        stream.write(137)
+        writeValue(stream, value.toList())
+      }
+      is PreviewConfiguration -> {
+        stream.write(138)
         writeValue(stream, value.toList())
       }
       else -> super.writeValue(stream, value)
@@ -304,7 +400,7 @@ private open class ScannerPlatformInterfacePigeonCodec : StandardMessageCodec() 
 
 /** Generated interface from Pigeon that represents a handler of messages from Flutter. */
 interface ScannerPlatformInterface {
-  fun initialize(types: List<BarcodeType>, resolution: Resolution, framerate: Framerate, detectionMode: DetectionMode, position: CameraPosition, apiMode: Map<String, dynamic>?, callback: (Result<PreviewConfiguration>) -> Unit)
+  fun initialize(types: List<BarcodeType>, resolution: Resolution, framerate: Framerate, detectionMode: DetectionMode, position: CameraPosition, apiMode: ApiModeConfig?, callback: (Result<PreviewConfiguration>) -> Unit)
   fun start(callback: (Result<Unit>) -> Unit)
   fun stop(callback: (Result<Unit>) -> Unit)
   fun startDetector(callback: (Result<Unit>) -> Unit)
@@ -334,7 +430,7 @@ interface ScannerPlatformInterface {
             val framerateArg = args[2] as Framerate
             val detectionModeArg = args[3] as DetectionMode
             val positionArg = args[4] as CameraPosition
-            val apiModeArg = args[5] as Map<String, dynamic>?
+            val apiModeArg = args[5] as ApiModeConfig?
             api.initialize(typesArg, resolutionArg, framerateArg, detectionModeArg, positionArg, apiModeArg) { result: Result<PreviewConfiguration> ->
               val error = result.exceptionOrNull()
               if (error != null) {
@@ -524,7 +620,7 @@ class BarcodeDetectionHandler(private val binaryMessenger: BinaryMessenger, priv
       ScannerPlatformInterfacePigeonCodec()
     }
   }
-  fun onBarcodeDetected(dataArg: List<dynamic>, callback: (Result<Unit>) -> Unit)
+  fun onBarcodeDetected(dataArg: List<BarcodeData>, callback: (Result<Unit>) -> Unit)
 {
     val separatedMessageChannelSuffix = if (messageChannelSuffix.isNotEmpty()) ".$messageChannelSuffix" else ""
     val channelName = "dev.flutter.pigeon.fast_barcode_scanner.BarcodeDetectionHandler.onBarcodeDetected$separatedMessageChannelSuffix"

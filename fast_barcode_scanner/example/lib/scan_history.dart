@@ -4,13 +4,13 @@ import 'package:flutter/cupertino.dart';
 final history = ScanHistory();
 
 class ScanHistory extends ChangeNotifier {
-  final scans = <Barcode>[];
+  final scans = <BarcodeData>[];
   final counter = <String, int>{};
 
-  Barcode? get recent => scans.isNotEmpty ? scans.last : null;
-  int count(Barcode of) => counter[of.value] ?? 0;
+  BarcodeData? get recent => scans.isNotEmpty ? scans.last : null;
+  int count(BarcodeData of) => counter[of.value] ?? 0;
 
-  void addAll(List<Barcode> barcodes) {
+  void addAll(List<BarcodeData> barcodes) {
     scans.addAll(barcodes);
     for (final barcode in barcodes) {
       counter.update(barcode.value, (value) => value + 1, ifAbsent: () => 1);

@@ -1,13 +1,11 @@
 import 'package:flutter/material.dart';
 
-import '../../camera_controller.dart';
-import '../../types/barcode.dart';
-import '../rect_of_interest/rect_of_interest.dart';
+import '../../../fast_barcode_scanner.dart';
 import 'material_finder_painter.dart';
 
 /// returns a color for the finder boundary when codes are found inside
 typedef OnScannedBoundaryColorSelector = Color? Function(
-    List<Barcode> scannedCodes);
+    List<BarcodeData> scannedCodes);
 
 /// Mimics the official Material Design Barcode Scanner
 /// (https://material.io/design/machine-learning/barcode-scanning.html)
@@ -106,7 +104,7 @@ class MaterialPreviewOverlayState extends State<MaterialPreviewOverlay>
     super.dispose();
   }
 
-  List<Barcode> _filteredCodes = [];
+  List<BarcodeData> _filteredCodes = [];
 
   /// Note: Not safe to call from build()
   void _filterCodes() {

@@ -20,8 +20,9 @@ abstract class ScannerPlatformInterface {
     required Framerate framerate,
     required DetectionMode detectionMode,
     required CameraPosition position,
-    Map<String, dynamic>? apiMode,
+    ApiModeConfig? apiMode,
   });
+
 
   @async
   void start();
@@ -59,7 +60,38 @@ abstract class ScannerPlatformInterface {
 
 @FlutterApi()
 abstract class BarcodeDetectionHandler {
-  void onBarcodeDetected(List<dynamic> data);
+  void onBarcodeDetected(List<BarcodeData> data);
+}
+
+class ApiModeConfig {
+  final String apiMode;
+  final double? confidence;
+
+  ApiModeConfig({
+    required this.apiMode,
+    this.confidence,
+  });
+}
+
+class BarcodeData {
+  final String type;
+  final String value;
+  final BarcodeValueType? valueType;
+  final List<Point>? cornerPoints;
+
+  BarcodeData({
+    required this.type,
+    required this.value,
+    this.valueType,
+    this.cornerPoints,
+  });
+}
+
+class Point {
+  final double x;
+  final double y;
+
+  Point({required this.x, required this.y});
 }
 
 /// Supported resolutions. Not all devices support all resolutions!
