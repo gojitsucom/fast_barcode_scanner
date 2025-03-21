@@ -1,10 +1,9 @@
 package com.jhoogstraat.fast_barcode_scanner
 
-import ImageHelper
+import PreviewConfiguration
 import android.Manifest
 import android.app.Activity
 import android.content.pm.PackageManager
-import android.media.Image
 import android.util.Log
 import android.view.Surface
 import androidx.annotation.OptIn
@@ -101,9 +100,9 @@ class Camera(
             override fun onSuccess(codes: List<Barcode>, imageProxy: ImageProxy) {
                 CoroutineScope(Dispatchers.Main).launch {
                     if (codes.isNotEmpty()) {
-                        if (scannerConfiguration.mode == DetectionMode.pauseDetection) {
+                        if (scannerConfiguration.mode == DetectionMode.PAUSE_DETECTION) {
                             stopDetector()
-                        } else if (scannerConfiguration.mode == DetectionMode.pauseVideo) {
+                        } else if (scannerConfiguration.mode == DetectionMode.PAUSE_VIDEO) {
                             stopCamera()
                         }
                         val code = codes.first().displayValue
@@ -181,7 +180,7 @@ class Camera(
     private fun buildSelectorAndUseCases() {
         cameraSelector = CameraSelector.Builder()
             .requireLensFacing(
-                if (scannerConfiguration.position == CameraPosition.back)
+                if (scannerConfiguration.position == CameraPosition.BACK)
                     CameraSelector.LENS_FACING_BACK
                 else
                     CameraSelector.LENS_FACING_FRONT
@@ -339,10 +338,11 @@ class Camera(
         return PreviewConfiguration(
             flutterTextureEntry.id(),
             0,
-            previewRes.height,
-            previewRes.width,
-            analysisWidth = analysisRes.width,
-            analysisHeight = analysisRes.height
+            previewRes.height.toLong(),
+            previewRes.width.toLong(),
+            analysisResolution = scannerConfiguration.resolution.name,
+            analysisWidth = analysisRes.width.toLong(),
+            analysisHeight = analysisRes.height.toLong()
         )
     }
 

@@ -1,51 +1,47 @@
 package com.jhoogstraat.fast_barcode_scanner.types
 
+import BarcodeType
+import CameraPosition
+import DetectionMode
+import Framerate
+import Resolution
 import android.util.Size
 import com.google.mlkit.vision.barcode.common.Barcode
 
-data class ScannerConfiguration(val formats: IntArray, val mode: DetectionMode, val resolution: Resolution, val framerate: Framerate, val position: CameraPosition)
+data class ScannerConfiguration(
+    val formats: List<Int>,
+    val mode: DetectionMode,
+    val resolution: Resolution,
+    val framerate: Framerate,
+    val position: CameraPosition
+)
 
-enum class Framerate {
-    fps30, fps60, fps120, fps240;
-
-    fun intValue() : Int = when(this) {
-        fps30 -> 30
-        fps60 -> 60
-        fps120 -> 120
-        fps240 -> 240
-    }
-
-    fun duration() : Long = 1 / intValue().toLong()
+// Extension functions for the generated enums
+fun Framerate.intValue(): Int = when (this) {
+    Framerate.FPS30 -> 30
+    Framerate.FPS60 -> 60
+    Framerate.FPS120 -> 120
+    Framerate.FPS240 -> 240
 }
 
-enum class Resolution {
-    sd480, hd720, hd1080, hd4k;
+fun Framerate.duration(): Long = 1 / intValue().toLong()
 
-    private fun width() : Int = when(this) {
-        sd480 -> 640
-        hd720 -> 1280
-        hd1080 -> 1920
-        hd4k -> 3840
-    }
-
-    private fun height() : Int = when(this) {
-        sd480 -> 480
-        hd720 -> 720
-        hd1080 -> 1080
-        hd4k -> 2160
-    }
-
-    fun landscape() : Size = Size(width(), height())
-    fun portrait() : Size = Size(height(), width())
+fun Resolution.width(): Int = when (this) {
+    Resolution.SD480 -> 640
+    Resolution.HD720 -> 1280
+    Resolution.HD1080 -> 1920
+    Resolution.HD4K -> 3840
 }
 
-enum class DetectionMode {
-    pauseDetection, pauseVideo, continuous;
+fun Resolution.height(): Int = when (this) {
+    Resolution.SD480 -> 480
+    Resolution.HD720 -> 720
+    Resolution.HD1080 -> 1080
+    Resolution.HD4K -> 2160
 }
 
-enum class CameraPosition {
-    front, back;
-}
+fun Resolution.landscape(): Size = Size(width(), height())
+fun Resolution.portrait(): Size = Size(height(), width())
 
 val barcodeFormatMap = hashMapOf(
     "aztec" to Barcode.FORMAT_AZTEC,

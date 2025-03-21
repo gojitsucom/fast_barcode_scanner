@@ -1,3 +1,5 @@
+package com.jhoogstraat.fast_barcode_scanner
+
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
@@ -6,9 +8,7 @@ import android.graphics.Matrix
 import android.graphics.Rect
 import android.graphics.YuvImage
 import android.media.Image
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.ByteArrayOutputStream
 import java.io.File
@@ -33,7 +33,7 @@ class ImageHelper {
     // Store image to the path with barcode as filename
     private fun storeImage(imageBytes: ByteArray?, key: String, context: Context) {
         val sanitizedKey = sanitizeFileName(key)
-        val externalFilesDirectory = context.cacheDir;
+        val externalFilesDirectory = context.cacheDir
         val imageFile: File
 
         try {
@@ -105,7 +105,8 @@ class ImageHelper {
                     val out = ByteArrayOutputStream()
                     yuvImage.compressToJpeg(Rect(0, 0, img.width, img.height), 100, out)
                     val jpegBytes = out.toByteArray()
-                    val rotatedJpegBytes = rotateImageIfRequired(jpegBytes) // Rotate 90 degrees for portrait
+                    val rotatedJpegBytes =
+                        rotateImageIfRequired(jpegBytes) // Rotate 90 degrees for portrait
                     storeImage(rotatedJpegBytes, code, context)
                 }
             }
@@ -118,12 +119,12 @@ class ImageHelper {
         val bitmap = BitmapFactory.decodeByteArray(jpegBytes, 0, jpegBytes.size)
         val matrix = Matrix()
         matrix.postRotate(90.0F)
-        val rotatedBitmap = Bitmap.createBitmap(bitmap, 0, 0, bitmap.width, bitmap.height, matrix, true)
+        val rotatedBitmap =
+            Bitmap.createBitmap(bitmap, 0, 0, bitmap.width, bitmap.height, matrix, true)
         val outputStream = ByteArrayOutputStream()
         rotatedBitmap.compress(Bitmap.CompressFormat.JPEG, 100, outputStream)
         return outputStream.toByteArray()
     }
-
 
     private fun sanitizeFileName(url: String): String {
         val md = MessageDigest.getInstance("MD5")

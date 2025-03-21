@@ -1,5 +1,7 @@
 package com.jhoogstraat.fast_barcode_scanner.types
 
+import Framerate
+import Resolution
 import io.flutter.plugin.common.MethodChannel.Result
 import java.io.IOException
 
