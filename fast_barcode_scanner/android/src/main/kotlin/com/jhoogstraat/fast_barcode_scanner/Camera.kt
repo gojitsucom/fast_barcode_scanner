@@ -290,13 +290,13 @@ class Camera(
                 barcodeFormatMap[it] ?: throw ScannerException.InvalidCodeType(it)
             }.toIntArray() else scannerConfiguration.formats
             val detectionMode =
-                if (args.containsKey("mode")) DetectionMode.valueOf(args["mode"] as String) else scannerConfiguration.mode
+                if (args.containsKey("detectionMode")) DetectionMode.valueOf(args["detectionMode"] as String) else scannerConfiguration.mode
             val resolution =
-                if (args.containsKey("res")) Resolution.valueOf(args["res"] as String) else scannerConfiguration.resolution
+                if (args.containsKey("resolution")) Resolution.valueOf(args["resolution"] as String) else scannerConfiguration.resolution
             val framerate =
-                if (args.containsKey("fps")) Framerate.valueOf(args["fps"] as String) else scannerConfiguration.framerate
+                if (args.containsKey("framerate")) Framerate.valueOf(args["framerate"] as String) else scannerConfiguration.framerate
             val position =
-                if (args.containsKey("pos")) CameraPosition.valueOf(args["pos"] as String) else scannerConfiguration.position
+                if (args.containsKey("position")) CameraPosition.valueOf(args["position"] as String) else scannerConfiguration.position
 
             scannerConfiguration = scannerConfiguration.copy(
                 formats = formats,
@@ -339,16 +339,15 @@ class Camera(
         val analysisRes =
             imageAnalysis.resolutionInfo?.resolution ?: throw ScannerException.NotInitialized()
 
-        return PreviewConfiguration(
+        val previewConfig = PreviewConfiguration(
             flutterTextureEntry.id(),
             0,
             previewRes.height.toLong(),
             previewRes.width.toLong(),
-            analysisResolution = scannerConfiguration.resolution.name,
+            analysisResolution = "${analysisRes.width}x${analysisRes.height}",
             analysisWidth = analysisRes.width.toLong(),
             analysisHeight = analysisRes.height.toLong()
         )
+        return previewConfig
     }
-
-
 }
