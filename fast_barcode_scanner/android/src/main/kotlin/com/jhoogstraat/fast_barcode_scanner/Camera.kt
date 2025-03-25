@@ -1,6 +1,11 @@
 package com.jhoogstraat.fast_barcode_scanner
 
+import BarcodeType
+import CameraPosition
+import DetectionMode
+import Framerate
 import PreviewConfiguration
+import Resolution
 import android.Manifest
 import android.app.Activity
 import android.content.pm.PackageManager
@@ -69,21 +74,20 @@ class Camera(
     }
 
     init {
-        val types = (args["types"] as ArrayList<String>)
+        val types = (args["types"] as List<BarcodeType>)
 
         try {
             scannerConfiguration = ScannerConfiguration(
-                types.mapNotNull { barcodeFormatMap[it] }
-                    .toIntArray(),
-                DetectionMode.valueOf(args["mode"] as String),
-                Resolution.valueOf(args["res"] as String),
-                Framerate.valueOf(args["fps"] as String),
-                CameraPosition.valueOf(args["pos"] as String)
+                types.map { it.raw }.toIntArray(),
+                args["detectionMode"] as DetectionMode,
+                args["resolution"] as Resolution,
+                args["framerate"] as Framerate,
+                args["position"] as CameraPosition
             )
 
             // Report to the user if any types are not supported
             if (types.count() != scannerConfiguration.formats.count()) {
-                val unsupportedTypes = types.filter { !barcodeFormatMap.containsKey(it) }
+                val unsupportedTypes = types.filter { !barcodeFormatMap.containsValue(it.raw) }
                 Log.d(TAG, "WARNING: Unsupported barcode types selected: $unsupportedTypes")
             }
 

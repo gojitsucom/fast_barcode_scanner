@@ -107,6 +107,7 @@ class FastBarcodeScannerPlugin : FlutterPlugin, ActivityAware, ScannerPlatformIn
                 .addOnFailureListener { callback(Result.failure(it)) }
 
         } catch (e: Exception) {
+            e.printStackTrace()
             callback(Result.failure(e))
         }
     }
