@@ -13,11 +13,11 @@ class ScanningScreen extends StatefulWidget {
   const ScanningScreen({
     Key? key,
     required this.dispose,
-    this.apiMode = IOSApiMode.avFoundation,
+    this.apiMode,
   }) : super(key: key);
 
   final bool dispose;
-  final IOSApiMode? apiMode;
+  final ApiModeConfig? apiMode;
 
   @override
   _ScanningScreenState createState() => _ScanningScreenState();

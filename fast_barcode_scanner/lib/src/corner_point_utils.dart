@@ -1,5 +1,6 @@
-import 'dart:math';
 import 'dart:ui';
+
+import 'generated/scanner_platform_interface.g.dart';
 
 /// We use BoxFit.cover to display our preview
 ///

@@ -2,8 +2,8 @@ import 'package:fast_barcode_scanner/fast_barcode_scanner.dart';
 import 'package:fast_barcode_scanner/src/overlays/code_boundary_overlay/code_border_painter.dart';
 import 'package:flutter/material.dart';
 
-typedef CodeBorderPaintBuilder = Paint Function(Barcode code);
-typedef CodeValueDisplayBuilder = CodeValueDisplay? Function(Barcode code);
+typedef CodeBorderPaintBuilder = Paint Function(BarcodeData code);
+typedef CodeValueDisplayBuilder = CodeValueDisplay? Function(BarcodeData code);
 
 class CodeBoundaryOverlay extends StatefulWidget {
   final CodeBorderPaintBuilder? codeBorderPaintBuilder;
@@ -24,7 +24,7 @@ class _CodeBoundaryOverlayState extends State<CodeBoundaryOverlay> {
 
   @override
   Widget build(BuildContext context) {
-    return ValueListenableBuilder<List<Barcode>>(
+    return ValueListenableBuilder<List<BarcodeData>>(
         valueListenable: _cameraController.scannedBarcodes,
         builder: (context, barcodes, child) {
           final analysisSize = _cameraController.analysisSize;

@@ -1,8 +1,9 @@
 import 'package:fast_barcode_scanner/fast_barcode_scanner.dart';
-import 'package:fast_barcode_scanner_platform_interface/fast_barcode_scanner_platform_interface.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+
+import 'generated/scanner_platform_interface.g.dart';
 
 typedef ErrorCallback = Widget Function(BuildContext context, Object? error);
 
@@ -43,7 +44,7 @@ class BarcodeCamera extends StatefulWidget {
   final Framerate framerate;
   final DetectionMode mode;
   final CameraPosition position;
-  final IOSApiMode? apiMode;
+  final ApiModeConfig? apiMode;
   final OnDetectionHandler? onScan;
   final List<Widget> children;
   final ErrorCallback onError;
@@ -88,7 +89,7 @@ class BarcodeCameraState extends State<BarcodeCamera> {
     cameraController.events.addListener(onScannerEvent);
   }
 
-  void onScan(List<Barcode> barcodes) {
+  void onScan(List<BarcodeData> barcodes) {
     widget.onScan?.call(barcodes);
   }
 

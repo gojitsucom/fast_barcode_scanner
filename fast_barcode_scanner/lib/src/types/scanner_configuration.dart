@@ -1,4 +1,4 @@
-import 'package:fast_barcode_scanner_platform_interface/fast_barcode_scanner_platform_interface.dart';
+import '../generated/scanner_platform_interface.g.dart';
 
 /// The configuration of the camera and scanner.
 ///

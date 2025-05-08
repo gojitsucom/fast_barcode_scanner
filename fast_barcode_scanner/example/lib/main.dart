@@ -34,9 +34,9 @@ class _HomeScreenState extends State<HomeScreen> {
             ElevatedButton(
               child: const Text('Open Scanner'),
               onPressed: () async {
-                IOSApiMode? apiMode;
+                ApiModeConfig? apiMode;
                 if (Platform.isIOS) {
-                  apiMode = await showDialog<IOSApiMode>(
+                  apiMode = await showDialog<ApiModeConfig>(
                           context: context,
                           builder: (context) => AlertDialog(
                                 title: const Text("Scanning Framework"),
@@ -44,19 +44,19 @@ class _HomeScreenState extends State<HomeScreen> {
                                   TextButton(
                                       onPressed: () {
                                         Navigator.pop(
-                                            context, IOSApiMode.avFoundation);
+                                            context, ApiModeConfig(apiMode: ApiMode.avFoundation, confidence: 0.6));
                                       },
                                       child: const Text("AVFoundation")),
                                   TextButton(
                                     onPressed: () {
                                       Navigator.pop(
-                                          context, IOSApiMode.visionStandard);
+                                          context, ApiModeConfig(apiMode: ApiMode.vision, confidence: 0.6));
                                     },
                                     child: const Text("Vision"),
                                   ),
                                 ],
                               )) ??
-                      IOSApiMode.avFoundation;
+                      ApiModeConfig(apiMode: ApiMode.avFoundation, confidence: 0.6);
                 }
                 Navigator.push(
                   context,
@@ -89,18 +89,19 @@ class _HomeScreenState extends State<HomeScreen> {
                 final result = await showDialog<int>(
                     context: context, builder: (_) => dialog);
 
-                final ImageSource source;
+                final ImageData imageData;
                 if (result == 1) {
                   final bytes = await rootBundle.load('assets/barcodes.png');
-                  source = ImageSource.binary(bytes);
+                  final byteList = bytes.buffer.asUint8List();
+                  imageData = ImageData(bytes: byteList.toList(), rotation: 0, isFromPicker: false);
                 } else if (result == 2) {
-                  source = ImageSource.picker();
+                  imageData = ImageData(isFromPicker: true);
                 } else {
                   return;
                 }
 
                 try {
-                  final barcodes = await cam.scanImage(source);
+                  final barcodes = await cam.scanImage(imageData);
 
                   showDialog(
                     context: context,
