@@ -218,7 +218,6 @@ class _CameraController implements CameraController {
   @override
   Future<void> dispose() async {
     try {
-      await clearCachedImage();
       await _platform.dispose();
       state._scannerConfig = null;
       state._previewConfig = null;
@@ -365,6 +364,7 @@ class _CameraController implements CameraController {
   @override
   Future<void> clearCachedImage() async {
     await _platform.clearCachedImage();
+    await _platform.dispose();
   }
 
   void _onDetectHandler(List<Barcode> codes) {

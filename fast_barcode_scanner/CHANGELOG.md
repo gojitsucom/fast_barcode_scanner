@@ -1,3 +1,6 @@
+## 2.5.0
+- Remove clearImageCache() from `CameraController`'s dispose method.
+
 ## 2.4.6
 - Add android namespace
 
