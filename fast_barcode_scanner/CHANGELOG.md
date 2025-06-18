@@ -1,5 +1,8 @@
-## 2.5.0
+## 2.6.0
 - Update MLKit Barcode Scanning version for Android
+
+## 2.5.0
+- Remove clearImageCache() from `CameraController`'s dispose method.
 
 ## 2.4.6
 - Add android namespace
