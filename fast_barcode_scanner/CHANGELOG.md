@@ -1,3 +1,6 @@
+## 2.5.0
+- Update MLKit Barcode Scanning version for Android
+
 ## 2.4.6
 - Add android namespace
 
