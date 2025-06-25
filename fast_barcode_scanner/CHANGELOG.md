@@ -1,3 +1,6 @@
+## 2.6.1
+- Use `context` directly from `pluginBinding` instead of `camera`'s context in `clearCachedImage`
+
 ## 2.6.0
 - Update MLKit Barcode Scanning version for Android
 

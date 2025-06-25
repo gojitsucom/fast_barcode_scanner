@@ -141,9 +141,9 @@ class FastBarcodeScannerPlugin : FlutterPlugin, MethodCallHandler, StreamHandler
                 }
 
                 "clearCachedImage" -> {
-                    val camera = this.camera ?: throw ScannerException.NotInitialized()
-                    if (camera.activity.applicationContext != null) {
-                        ImageHelper.getInstance().clearCache(camera.activity.applicationContext!!)
+                    val context = pluginBinding?.applicationContext ?: throw ScannerException.ActivityNotConnected()
+                    if (context != null) {
+                        ImageHelper.getInstance().clearCache(context)
                     }
                     return
                 }
