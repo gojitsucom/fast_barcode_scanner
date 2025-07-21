@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:fast_barcode_scanner_platform_interface/src/types/image_source.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/services.dart';
 
 import 'fast_barcode_scanner_platform_interface.dart';
@@ -105,7 +106,7 @@ class MethodChannelFastBarcodeScanner extends FastBarcodeScannerPlatform {
       await _channel.invokeMethod('retrieveCachedImage', {'code': code});
       return path;
     } on PlatformException catch (e) {
-      print('Failed to retrieve image path: ${e.message}');
+      debugPrint('Failed to retrieve image path: ${e.message}');
       return null;
     }
   }
