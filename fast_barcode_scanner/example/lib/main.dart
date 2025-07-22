@@ -50,7 +50,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                   TextButton(
                                     onPressed: () {
                                       Navigator.pop(
-                                          context, IOSApiMode.visionStandard);
+                                          context, IOSApiMode.vision);
                                     },
                                     child: const Text("Vision"),
                                   ),
@@ -89,12 +89,12 @@ class _HomeScreenState extends State<HomeScreen> {
                 final result = await showDialog<int>(
                     context: context, builder: (_) => dialog);
 
-                final ImageSource source;
+                final ImageSourceData source;
                 if (result == 1) {
                   final bytes = await rootBundle.load('assets/barcodes.png');
-                  source = ImageSource.binary(bytes);
+                  source = ImageSourceData(imageBytes: bytes.buffer.asUint8List(), useImagePicker: false);
                 } else if (result == 2) {
-                  source = ImageSource.picker();
+                  source = ImageSourceData(useImagePicker: true);
                 } else {
                   return;
                 }

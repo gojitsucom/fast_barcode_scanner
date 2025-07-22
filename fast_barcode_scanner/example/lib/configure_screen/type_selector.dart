@@ -18,7 +18,7 @@ class _BarcodeTypeSelectorState extends State<BarcodeTypeSelector> {
   void initState() {
     super.initState();
     _items = BarcodeType.values.map((e) => describeEnum(e)).toList();
-    _selected = widget._config.types.toList();
+    _selected = widget._config.types.whereType<BarcodeType>().toList();
   }
 
   late List<String> _items;

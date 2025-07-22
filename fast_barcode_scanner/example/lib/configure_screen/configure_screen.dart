@@ -76,7 +76,7 @@ class _ConfigureScreenState extends State<ConfigureScreen> {
             ListTile(
               title: const Text('Active code types'),
               subtitle:
-                  Text(_config.types.map((e) => describeEnum(e)).join(', ')),
+                  Text(_config.types.whereType<BarcodeType>().map((e) => e.name).join(', ')),
               onTap: () async {
                 final types = await Navigator.push<List<BarcodeType>>(context,
                     MaterialPageRoute(builder: (_) {
@@ -123,10 +123,10 @@ class _ConfigureScreenState extends State<ConfigureScreen> {
             ListTile(
               title: const Text('Detection Mode'),
               trailing: DropdownButton<DetectionMode>(
-                  value: _config.detectionMode,
+                  value: _config.mode,
                   onChanged: (value) {
                     setState(() {
-                      _config = _config.copyWith(detectionMode: value);
+                      _config = _config.copyWith(mode: value);
                     });
                   },
                   items: buildDropdownItems(DetectionMode.values)),
@@ -164,10 +164,10 @@ class _ConfigureScreenState extends State<ConfigureScreen> {
   Future<void> applyChanges() async {
     try {
       await CameraController().configure(
-        types: _config.types,
+        types: _config.types.whereType<BarcodeType>().toList(),
         framerate: _config.framerate,
         resolution: _config.resolution,
-        detectionMode: _config.detectionMode,
+        detectionMode: _config.mode,
         position: _config.position,
       );
     } catch (error) {

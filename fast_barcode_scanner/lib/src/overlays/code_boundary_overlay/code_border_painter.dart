@@ -44,7 +44,7 @@ class CodeBorderPainter extends CustomPainter {
       if (corners != null) {
         final offsets = corners
             .map((e) => scaleCodeCornerPoint(
-                cornerPoint: Offset(e.x.toDouble(), e.y.toDouble()),
+                cornerPoint: e?.toOffset() ?? Offset.zero,
                 analysisImageSize: imageSize,
                 widgetSize: size))
             .toList();

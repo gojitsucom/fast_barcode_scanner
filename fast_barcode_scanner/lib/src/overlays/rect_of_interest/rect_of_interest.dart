@@ -1,6 +1,8 @@
+import 'package:fast_barcode_scanner/fast_barcode_scanner.dart';
 import 'dart:ui';
 
 import 'package:fast_barcode_scanner_platform_interface/fast_barcode_scanner_platform_interface.dart';
+
 
 import '../../corner_point_utils.dart';
 
@@ -30,7 +32,7 @@ abstract class RectOfInterest {
       if (cornerPoints != null) {
         for (final cornerPoint in cornerPoints) {
           final scaledCornerOffset = scaleCodeCornerPoint(
-            cornerPoint: cornerPoint.toOffset(),
+            cornerPoint: cornerPoint?.toOffset() ?? Offset.zero,
             analysisImageSize: analysisSize,
             widgetSize: previewSize,
           );
@@ -56,7 +58,7 @@ abstract class RectOfInterest {
       if (cornerPoints != null) {
         for (final cornerPoint in cornerPoints) {
           final scaledCornerOffset = scaleCodeCornerPoint(
-            cornerPoint: cornerPoint.toOffset(),
+            cornerPoint: cornerPoint?.toOffset() ?? Offset.zero,
             analysisImageSize: analysisSize,
             widgetSize: previewSize,
           );

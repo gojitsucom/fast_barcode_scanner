@@ -82,7 +82,7 @@ class FlutterError (
 ) : Throwable()
 
 /** Enum representing different barcode types */
-enum class BarcodeTypeEnum(val raw: Int) {
+enum class BarcodeType(val raw: Int) {
   AZTEC(0),
   CODE128(1),
   CODE39(2),
@@ -100,14 +100,14 @@ enum class BarcodeTypeEnum(val raw: Int) {
   INTERLEAVED(14);
 
   companion object {
-    fun ofRaw(raw: Int): BarcodeTypeEnum? {
+    fun ofRaw(raw: Int): BarcodeType? {
       return values().firstOrNull { it.raw == raw }
     }
   }
 }
 
 /** Enum representing barcode value types (Android only) */
-enum class BarcodeValueTypeEnum(val raw: Int) {
+enum class BarcodeValueType(val raw: Int) {
   UNKNOWN(0),
   CONTACT_INFO(1),
   EMAIL(2),
@@ -123,72 +123,72 @@ enum class BarcodeValueTypeEnum(val raw: Int) {
   LICENSE(12);
 
   companion object {
-    fun ofRaw(raw: Int): BarcodeValueTypeEnum? {
+    fun ofRaw(raw: Int): BarcodeValueType? {
       return values().firstOrNull { it.raw == raw }
     }
   }
 }
 
 /** Enum representing camera resolutions */
-enum class ResolutionEnum(val raw: Int) {
+enum class Resolution(val raw: Int) {
   SD480(0),
   HD720(1),
   HD1080(2),
   HD4K(3);
 
   companion object {
-    fun ofRaw(raw: Int): ResolutionEnum? {
+    fun ofRaw(raw: Int): Resolution? {
       return values().firstOrNull { it.raw == raw }
     }
   }
 }
 
 /** Enum representing camera framerates */
-enum class FramerateEnum(val raw: Int) {
+enum class Framerate(val raw: Int) {
   FPS30(0),
   FPS60(1),
   FPS120(2),
   FPS240(3);
 
   companion object {
-    fun ofRaw(raw: Int): FramerateEnum? {
+    fun ofRaw(raw: Int): Framerate? {
       return values().firstOrNull { it.raw == raw }
     }
   }
 }
 
 /** Enum representing detection modes */
-enum class DetectionModeEnum(val raw: Int) {
+enum class DetectionMode(val raw: Int) {
   PAUSE_DETECTION(0),
   PAUSE_VIDEO(1),
   CONTINUOUS(2);
 
   companion object {
-    fun ofRaw(raw: Int): DetectionModeEnum? {
+    fun ofRaw(raw: Int): DetectionMode? {
       return values().firstOrNull { it.raw == raw }
     }
   }
 }
 
 /** Enum representing camera positions */
-enum class CameraPositionEnum(val raw: Int) {
+enum class CameraPosition(val raw: Int) {
   FRONT(0),
   BACK(1);
 
   companion object {
-    fun ofRaw(raw: Int): CameraPositionEnum? {
+    fun ofRaw(raw: Int): CameraPosition? {
       return values().firstOrNull { it.raw == raw }
     }
   }
 }
 
 /** Enum representing iOS API modes */
-enum class IOSApiModeEnum(val raw: Int) {
+enum class IOSApiMode(val raw: Int) {
   AV_FOUNDATION(0),
   VISION(1);
 
   companion object {
-    fun ofRaw(raw: Int): IOSApiModeEnum? {
+    fun ofRaw(raw: Int): IOSApiMode? {
       return values().firstOrNull { it.raw == raw }
     }
   }
@@ -234,20 +234,20 @@ data class PointData (
  *
  * Generated class from Pigeon that represents data sent in messages.
  */
-data class BarcodeData (
-  val type: BarcodeTypeEnum,
+data class Barcode (
+  val type: BarcodeType,
   val value: String,
-  val valueType: BarcodeValueTypeEnum? = null,
+  val valueType: BarcodeValueType? = null,
   val cornerPoints: List<PointData?>? = null
 )
  {
   companion object {
-    fun fromList(pigeonVar_list: List<Any?>): BarcodeData {
-      val type = pigeonVar_list[0] as BarcodeTypeEnum
+    fun fromList(pigeonVar_list: List<Any?>): Barcode {
+      val type = pigeonVar_list[0] as BarcodeType
       val value = pigeonVar_list[1] as String
-      val valueType = pigeonVar_list[2] as BarcodeValueTypeEnum?
+      val valueType = pigeonVar_list[2] as BarcodeValueType?
       val cornerPoints = pigeonVar_list[3] as List<PointData?>?
-      return BarcodeData(type, value, valueType, cornerPoints)
+      return Barcode(type, value, valueType, cornerPoints)
     }
   }
   fun toList(): List<Any?> {
@@ -259,7 +259,7 @@ data class BarcodeData (
     )
   }
   override fun equals(other: Any?): Boolean {
-    if (other !is BarcodeData) {
+    if (other !is Barcode) {
       return false
     }
     if (this === other) {
@@ -275,7 +275,7 @@ data class BarcodeData (
  *
  * Generated class from Pigeon that represents data sent in messages.
  */
-data class PreviewConfigurationData (
+data class PreviewConfiguration (
   val textureId: Long,
   val targetRotation: Long,
   val height: Long,
@@ -285,14 +285,14 @@ data class PreviewConfigurationData (
 )
  {
   companion object {
-    fun fromList(pigeonVar_list: List<Any?>): PreviewConfigurationData {
+    fun fromList(pigeonVar_list: List<Any?>): PreviewConfiguration {
       val textureId = pigeonVar_list[0] as Long
       val targetRotation = pigeonVar_list[1] as Long
       val height = pigeonVar_list[2] as Long
       val width = pigeonVar_list[3] as Long
       val analysisWidth = pigeonVar_list[4] as Long
       val analysisHeight = pigeonVar_list[5] as Long
-      return PreviewConfigurationData(textureId, targetRotation, height, width, analysisWidth, analysisHeight)
+      return PreviewConfiguration(textureId, targetRotation, height, width, analysisWidth, analysisHeight)
     }
   }
   fun toList(): List<Any?> {
@@ -306,7 +306,7 @@ data class PreviewConfigurationData (
     )
   }
   override fun equals(other: Any?): Boolean {
-    if (other !is PreviewConfigurationData) {
+    if (other !is PreviewConfiguration) {
       return false
     }
     if (this === other) {
@@ -322,26 +322,26 @@ data class PreviewConfigurationData (
  *
  * Generated class from Pigeon that represents data sent in messages.
  */
-data class ScannerConfigurationData (
-  val types: List<BarcodeTypeEnum?>,
-  val mode: DetectionModeEnum,
-  val resolution: ResolutionEnum,
-  val framerate: FramerateEnum,
-  val position: CameraPositionEnum,
-  val apiMode: IOSApiModeEnum? = null,
+data class ScannerConfiguration (
+  val types: List<BarcodeType?>,
+  val mode: DetectionMode,
+  val resolution: Resolution,
+  val framerate: Framerate,
+  val position: CameraPosition,
+  val apiMode: IOSApiMode? = null,
   val confidence: Double? = null
 )
  {
   companion object {
-    fun fromList(pigeonVar_list: List<Any?>): ScannerConfigurationData {
-      val types = pigeonVar_list[0] as List<BarcodeTypeEnum?>
-      val mode = pigeonVar_list[1] as DetectionModeEnum
-      val resolution = pigeonVar_list[2] as ResolutionEnum
-      val framerate = pigeonVar_list[3] as FramerateEnum
-      val position = pigeonVar_list[4] as CameraPositionEnum
-      val apiMode = pigeonVar_list[5] as IOSApiModeEnum?
+    fun fromList(pigeonVar_list: List<Any?>): ScannerConfiguration {
+      val types = pigeonVar_list[0] as List<BarcodeType?>
+      val mode = pigeonVar_list[1] as DetectionMode
+      val resolution = pigeonVar_list[2] as Resolution
+      val framerate = pigeonVar_list[3] as Framerate
+      val position = pigeonVar_list[4] as CameraPosition
+      val apiMode = pigeonVar_list[5] as IOSApiMode?
       val confidence = pigeonVar_list[6] as Double?
-      return ScannerConfigurationData(types, mode, resolution, framerate, position, apiMode, confidence)
+      return ScannerConfiguration(types, mode, resolution, framerate, position, apiMode, confidence)
     }
   }
   fun toList(): List<Any?> {
@@ -356,7 +356,7 @@ data class ScannerConfigurationData (
     )
   }
   override fun equals(other: Any?): Boolean {
-    if (other !is ScannerConfigurationData) {
+    if (other !is ScannerConfiguration) {
       return false
     }
     if (this === other) {
@@ -372,22 +372,22 @@ data class ScannerConfigurationData (
  *
  * Generated class from Pigeon that represents data sent in messages.
  */
-data class UpdateConfigurationData (
-  val types: List<BarcodeTypeEnum?>? = null,
-  val mode: DetectionModeEnum? = null,
-  val resolution: ResolutionEnum? = null,
-  val framerate: FramerateEnum? = null,
-  val position: CameraPositionEnum? = null
+data class UpdateConfiguration (
+  val types: List<BarcodeType?>? = null,
+  val mode: DetectionMode? = null,
+  val resolution: Resolution? = null,
+  val framerate: Framerate? = null,
+  val position: CameraPosition? = null
 )
  {
   companion object {
-    fun fromList(pigeonVar_list: List<Any?>): UpdateConfigurationData {
-      val types = pigeonVar_list[0] as List<BarcodeTypeEnum?>?
-      val mode = pigeonVar_list[1] as DetectionModeEnum?
-      val resolution = pigeonVar_list[2] as ResolutionEnum?
-      val framerate = pigeonVar_list[3] as FramerateEnum?
-      val position = pigeonVar_list[4] as CameraPositionEnum?
-      return UpdateConfigurationData(types, mode, resolution, framerate, position)
+    fun fromList(pigeonVar_list: List<Any?>): UpdateConfiguration {
+      val types = pigeonVar_list[0] as List<BarcodeType?>?
+      val mode = pigeonVar_list[1] as DetectionMode?
+      val resolution = pigeonVar_list[2] as Resolution?
+      val framerate = pigeonVar_list[3] as Framerate?
+      val position = pigeonVar_list[4] as CameraPosition?
+      return UpdateConfiguration(types, mode, resolution, framerate, position)
     }
   }
   fun toList(): List<Any?> {
@@ -400,7 +400,7 @@ data class UpdateConfigurationData (
     )
   }
   override fun equals(other: Any?): Boolean {
-    if (other !is UpdateConfigurationData) {
+    if (other !is UpdateConfiguration) {
       return false
     }
     if (this === other) {
@@ -453,37 +453,37 @@ private open class BarcodeApiPigeonCodec : StandardMessageCodec() {
     return when (type) {
       129.toByte() -> {
         return (readValue(buffer) as Long?)?.let {
-          BarcodeTypeEnum.ofRaw(it.toInt())
+          BarcodeType.ofRaw(it.toInt())
         }
       }
       130.toByte() -> {
         return (readValue(buffer) as Long?)?.let {
-          BarcodeValueTypeEnum.ofRaw(it.toInt())
+          BarcodeValueType.ofRaw(it.toInt())
         }
       }
       131.toByte() -> {
         return (readValue(buffer) as Long?)?.let {
-          ResolutionEnum.ofRaw(it.toInt())
+          Resolution.ofRaw(it.toInt())
         }
       }
       132.toByte() -> {
         return (readValue(buffer) as Long?)?.let {
-          FramerateEnum.ofRaw(it.toInt())
+          Framerate.ofRaw(it.toInt())
         }
       }
       133.toByte() -> {
         return (readValue(buffer) as Long?)?.let {
-          DetectionModeEnum.ofRaw(it.toInt())
+          DetectionMode.ofRaw(it.toInt())
         }
       }
       134.toByte() -> {
         return (readValue(buffer) as Long?)?.let {
-          CameraPositionEnum.ofRaw(it.toInt())
+          CameraPosition.ofRaw(it.toInt())
         }
       }
       135.toByte() -> {
         return (readValue(buffer) as Long?)?.let {
-          IOSApiModeEnum.ofRaw(it.toInt())
+          IOSApiMode.ofRaw(it.toInt())
         }
       }
       136.toByte() -> {
@@ -493,22 +493,22 @@ private open class BarcodeApiPigeonCodec : StandardMessageCodec() {
       }
       137.toByte() -> {
         return (readValue(buffer) as? List<Any?>)?.let {
-          BarcodeData.fromList(it)
+          Barcode.fromList(it)
         }
       }
       138.toByte() -> {
         return (readValue(buffer) as? List<Any?>)?.let {
-          PreviewConfigurationData.fromList(it)
+          PreviewConfiguration.fromList(it)
         }
       }
       139.toByte() -> {
         return (readValue(buffer) as? List<Any?>)?.let {
-          ScannerConfigurationData.fromList(it)
+          ScannerConfiguration.fromList(it)
         }
       }
       140.toByte() -> {
         return (readValue(buffer) as? List<Any?>)?.let {
-          UpdateConfigurationData.fromList(it)
+          UpdateConfiguration.fromList(it)
         }
       }
       141.toByte() -> {
@@ -521,31 +521,31 @@ private open class BarcodeApiPigeonCodec : StandardMessageCodec() {
   }
   override fun writeValue(stream: ByteArrayOutputStream, value: Any?)   {
     when (value) {
-      is BarcodeTypeEnum -> {
+      is BarcodeType -> {
         stream.write(129)
         writeValue(stream, value.raw)
       }
-      is BarcodeValueTypeEnum -> {
+      is BarcodeValueType -> {
         stream.write(130)
         writeValue(stream, value.raw)
       }
-      is ResolutionEnum -> {
+      is Resolution -> {
         stream.write(131)
         writeValue(stream, value.raw)
       }
-      is FramerateEnum -> {
+      is Framerate -> {
         stream.write(132)
         writeValue(stream, value.raw)
       }
-      is DetectionModeEnum -> {
+      is DetectionMode -> {
         stream.write(133)
         writeValue(stream, value.raw)
       }
-      is CameraPositionEnum -> {
+      is CameraPosition -> {
         stream.write(134)
         writeValue(stream, value.raw)
       }
-      is IOSApiModeEnum -> {
+      is IOSApiMode -> {
         stream.write(135)
         writeValue(stream, value.raw)
       }
@@ -553,19 +553,19 @@ private open class BarcodeApiPigeonCodec : StandardMessageCodec() {
         stream.write(136)
         writeValue(stream, value.toList())
       }
-      is BarcodeData -> {
+      is Barcode -> {
         stream.write(137)
         writeValue(stream, value.toList())
       }
-      is PreviewConfigurationData -> {
+      is PreviewConfiguration -> {
         stream.write(138)
         writeValue(stream, value.toList())
       }
-      is ScannerConfigurationData -> {
+      is ScannerConfiguration -> {
         stream.write(139)
         writeValue(stream, value.toList())
       }
-      is UpdateConfigurationData -> {
+      is UpdateConfiguration -> {
         stream.write(140)
         writeValue(stream, value.toList())
       }
@@ -586,7 +586,7 @@ private open class BarcodeApiPigeonCodec : StandardMessageCodec() {
  */
 interface FastBarcodeScannerHostApi {
   /** Initialize the camera and scanner with the given configuration */
-  fun initialize(configuration: ScannerConfigurationData, callback: (Result<PreviewConfigurationData>) -> Unit)
+  fun initialize(configuration: ScannerConfiguration, callback: (Result<PreviewConfiguration>) -> Unit)
   /** Start the camera */
   fun start(callback: (Result<Unit>) -> Unit)
   /** Stop the camera */
@@ -600,9 +600,9 @@ interface FastBarcodeScannerHostApi {
   /** Toggle the camera torch/flash */
   fun toggleTorch(callback: (Result<Boolean>) -> Unit)
   /** Update scanner configuration */
-  fun changeConfiguration(configuration: UpdateConfigurationData, callback: (Result<PreviewConfigurationData>) -> Unit)
+  fun changeConfiguration(configuration: UpdateConfiguration, callback: (Result<PreviewConfiguration>) -> Unit)
   /** Scan barcode from image */
-  fun scanImage(imageSource: ImageSourceData, callback: (Result<List<BarcodeData?>>) -> Unit)
+  fun scanImage(imageSource: ImageSourceData, callback: (Result<List<Barcode?>>) -> Unit)
   /** Retrieve cached image path for a barcode */
   fun retrieveCachedImage(code: String, callback: (Result<String?>) -> Unit)
   /** Clear all cached images */
@@ -622,8 +622,8 @@ interface FastBarcodeScannerHostApi {
         if (api != null) {
           channel.setMessageHandler { message, reply ->
             val args = message as List<Any?>
-            val configurationArg = args[0] as ScannerConfigurationData
-            api.initialize(configurationArg) { result: Result<PreviewConfigurationData> ->
+            val configurationArg = args[0] as ScannerConfiguration
+            api.initialize(configurationArg) { result: Result<PreviewConfiguration> ->
               val error = result.exceptionOrNull()
               if (error != null) {
                 reply.reply(BarcodeApiPigeonUtils.wrapError(error))
@@ -745,8 +745,8 @@ interface FastBarcodeScannerHostApi {
         if (api != null) {
           channel.setMessageHandler { message, reply ->
             val args = message as List<Any?>
-            val configurationArg = args[0] as UpdateConfigurationData
-            api.changeConfiguration(configurationArg) { result: Result<PreviewConfigurationData> ->
+            val configurationArg = args[0] as UpdateConfiguration
+            api.changeConfiguration(configurationArg) { result: Result<PreviewConfiguration> ->
               val error = result.exceptionOrNull()
               if (error != null) {
                 reply.reply(BarcodeApiPigeonUtils.wrapError(error))
@@ -766,7 +766,7 @@ interface FastBarcodeScannerHostApi {
           channel.setMessageHandler { message, reply ->
             val args = message as List<Any?>
             val imageSourceArg = args[0] as ImageSourceData
-            api.scanImage(imageSourceArg) { result: Result<List<BarcodeData?>> ->
+            api.scanImage(imageSourceArg) { result: Result<List<Barcode?>> ->
               val error = result.exceptionOrNull()
               if (error != null) {
                 reply.reply(BarcodeApiPigeonUtils.wrapError(error))
@@ -833,7 +833,7 @@ class FastBarcodeScannerFlutterApi(private val binaryMessenger: BinaryMessenger,
     }
   }
   /** Called when barcodes are detected */
-  fun onBarcodesDetected(barcodesArg: List<BarcodeData?>, callback: (Result<Unit>) -> Unit)
+  fun onBarcodesDetected(barcodesArg: List<Barcode?>, callback: (Result<Unit>) -> Unit)
 {
     val separatedMessageChannelSuffix = if (messageChannelSuffix.isNotEmpty()) ".$messageChannelSuffix" else ""
     val channelName = "dev.flutter.pigeon.fast_barcode_scanner_platform_interface.FastBarcodeScannerFlutterApi.onBarcodesDetected$separatedMessageChannelSuffix"

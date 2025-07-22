@@ -15,8 +15,7 @@ PlatformException _createConnectionError(String channelName) {
   );
 }
 
-List<Object?> wrapResponse(
-    {Object? result, PlatformException? error, bool empty = false}) {
+List<Object?> wrapResponse({Object? result, PlatformException? error, bool empty = false}) {
   if (empty) {
     return <Object?>[];
   }
@@ -25,25 +24,23 @@ List<Object?> wrapResponse(
   }
   return <Object?>[error.code, error.message, error.details];
 }
-
 bool _deepEquals(Object? a, Object? b) {
   if (a is List && b is List) {
     return a.length == b.length &&
         a.indexed
-            .every(((int, dynamic) item) => _deepEquals(item.$2, b[item.$1]));
+        .every(((int, dynamic) item) => _deepEquals(item.$2, b[item.$1]));
   }
   if (a is Map && b is Map) {
-    return a.length == b.length &&
-        a.entries.every((MapEntry<Object?, Object?> entry) =>
+    return a.length == b.length && a.entries.every((MapEntry<Object?, Object?> entry) =>
         (b as Map<Object?, Object?>).containsKey(entry.key) &&
-            _deepEquals(entry.value, b[entry.key]));
+        _deepEquals(entry.value, b[entry.key]));
   }
   return a == b;
 }
 
 
 /// Enum representing different barcode types
-enum BarcodeTypeEnum {
+enum BarcodeType {
   aztec,
   code128,
   code39,
@@ -62,7 +59,7 @@ enum BarcodeTypeEnum {
 }
 
 /// Enum representing barcode value types (Android only)
-enum BarcodeValueTypeEnum {
+enum BarcodeValueType {
   unknown,
   contactInfo,
   email,
@@ -79,7 +76,7 @@ enum BarcodeValueTypeEnum {
 }
 
 /// Enum representing camera resolutions
-enum ResolutionEnum {
+enum Resolution {
   sd480,
   hd720,
   hd1080,
@@ -87,7 +84,7 @@ enum ResolutionEnum {
 }
 
 /// Enum representing camera framerates
-enum FramerateEnum {
+enum Framerate {
   fps30,
   fps60,
   fps120,
@@ -95,20 +92,20 @@ enum FramerateEnum {
 }
 
 /// Enum representing detection modes
-enum DetectionModeEnum {
+enum DetectionMode {
   pauseDetection,
   pauseVideo,
   continuous,
 }
 
 /// Enum representing camera positions
-enum CameraPositionEnum {
+enum CameraPosition {
   front,
   back,
 }
 
 /// Enum representing iOS API modes
-enum IOSApiModeEnum {
+enum IOSApiMode {
   avFoundation,
   vision,
 }
@@ -132,8 +129,7 @@ class PointData {
   }
 
   Object encode() {
-    return _toList();
-  }
+    return _toList();  }
 
   static PointData decode(Object result) {
     result as List<Object?>;
@@ -158,23 +154,23 @@ class PointData {
   @override
   // ignore: avoid_equals_and_hash_code_on_mutable_classes
   int get hashCode => Object.hashAll(_toList())
-  ;
+;
 }
 
 /// Represents a detected barcode
-class BarcodeData {
-  BarcodeData({
+class Barcode {
+  Barcode({
     required this.type,
     required this.value,
     this.valueType,
     this.cornerPoints,
   });
 
-  BarcodeTypeEnum type;
+  BarcodeType type;
 
   String value;
 
-  BarcodeValueTypeEnum? valueType;
+  BarcodeValueType? valueType;
 
   List<PointData?>? cornerPoints;
 
@@ -188,15 +184,14 @@ class BarcodeData {
   }
 
   Object encode() {
-    return _toList();
-  }
+    return _toList();  }
 
-  static BarcodeData decode(Object result) {
+  static Barcode decode(Object result) {
     result as List<Object?>;
-    return BarcodeData(
-      type: result[0]! as BarcodeTypeEnum,
+    return Barcode(
+      type: result[0]! as BarcodeType,
       value: result[1]! as String,
-      valueType: result[2] as BarcodeValueTypeEnum?,
+      valueType: result[2] as BarcodeValueType?,
       cornerPoints: (result[3] as List<Object?>?)?.cast<PointData?>(),
     );
   }
@@ -204,7 +199,7 @@ class BarcodeData {
   @override
   // ignore: avoid_equals_and_hash_code_on_mutable_classes
   bool operator ==(Object other) {
-    if (other is! BarcodeData || other.runtimeType != runtimeType) {
+    if (other is! Barcode || other.runtimeType != runtimeType) {
       return false;
     }
     if (identical(this, other)) {
@@ -216,12 +211,12 @@ class BarcodeData {
   @override
   // ignore: avoid_equals_and_hash_code_on_mutable_classes
   int get hashCode => Object.hashAll(_toList())
-  ;
+;
 }
 
 /// Configuration for camera preview
-class PreviewConfigurationData {
-  PreviewConfigurationData({
+class PreviewConfiguration {
+  PreviewConfiguration({
     required this.textureId,
     required this.targetRotation,
     required this.height,
@@ -254,12 +249,11 @@ class PreviewConfigurationData {
   }
 
   Object encode() {
-    return _toList();
-  }
+    return _toList();  }
 
-  static PreviewConfigurationData decode(Object result) {
+  static PreviewConfiguration decode(Object result) {
     result as List<Object?>;
-    return PreviewConfigurationData(
+    return PreviewConfiguration(
       textureId: result[0]! as int,
       targetRotation: result[1]! as int,
       height: result[2]! as int,
@@ -272,8 +266,7 @@ class PreviewConfigurationData {
   @override
   // ignore: avoid_equals_and_hash_code_on_mutable_classes
   bool operator ==(Object other) {
-    if (other is! PreviewConfigurationData ||
-        other.runtimeType != runtimeType) {
+    if (other is! PreviewConfiguration || other.runtimeType != runtimeType) {
       return false;
     }
     if (identical(this, other)) {
@@ -285,12 +278,12 @@ class PreviewConfigurationData {
   @override
   // ignore: avoid_equals_and_hash_code_on_mutable_classes
   int get hashCode => Object.hashAll(_toList())
-  ;
+;
 }
 
 /// Configuration for initializing the scanner
-class ScannerConfigurationData {
-  ScannerConfigurationData({
+class ScannerConfiguration {
+  ScannerConfiguration({
     required this.types,
     required this.mode,
     required this.resolution,
@@ -300,17 +293,17 @@ class ScannerConfigurationData {
     this.confidence,
   });
 
-  List<BarcodeTypeEnum?> types;
+  List<BarcodeType?> types;
 
-  DetectionModeEnum mode;
+  DetectionMode mode;
 
-  ResolutionEnum resolution;
+  Resolution resolution;
 
-  FramerateEnum framerate;
+  Framerate framerate;
 
-  CameraPositionEnum position;
+  CameraPosition position;
 
-  IOSApiModeEnum? apiMode;
+  IOSApiMode? apiMode;
 
   double? confidence;
 
@@ -327,18 +320,17 @@ class ScannerConfigurationData {
   }
 
   Object encode() {
-    return _toList();
-  }
+    return _toList();  }
 
-  static ScannerConfigurationData decode(Object result) {
+  static ScannerConfiguration decode(Object result) {
     result as List<Object?>;
-    return ScannerConfigurationData(
-      types: (result[0] as List<Object?>?)!.cast<BarcodeTypeEnum?>(),
-      mode: result[1]! as DetectionModeEnum,
-      resolution: result[2]! as ResolutionEnum,
-      framerate: result[3]! as FramerateEnum,
-      position: result[4]! as CameraPositionEnum,
-      apiMode: result[5] as IOSApiModeEnum?,
+    return ScannerConfiguration(
+      types: (result[0] as List<Object?>?)!.cast<BarcodeType?>(),
+      mode: result[1]! as DetectionMode,
+      resolution: result[2]! as Resolution,
+      framerate: result[3]! as Framerate,
+      position: result[4]! as CameraPosition,
+      apiMode: result[5] as IOSApiMode?,
       confidence: result[6] as double?,
     );
   }
@@ -346,8 +338,7 @@ class ScannerConfigurationData {
   @override
   // ignore: avoid_equals_and_hash_code_on_mutable_classes
   bool operator ==(Object other) {
-    if (other is! ScannerConfigurationData ||
-        other.runtimeType != runtimeType) {
+    if (other is! ScannerConfiguration || other.runtimeType != runtimeType) {
       return false;
     }
     if (identical(this, other)) {
@@ -359,12 +350,12 @@ class ScannerConfigurationData {
   @override
   // ignore: avoid_equals_and_hash_code_on_mutable_classes
   int get hashCode => Object.hashAll(_toList())
-  ;
+;
 }
 
 /// Configuration for updating scanner settings
-class UpdateConfigurationData {
-  UpdateConfigurationData({
+class UpdateConfiguration {
+  UpdateConfiguration({
     this.types,
     this.mode,
     this.resolution,
@@ -372,15 +363,15 @@ class UpdateConfigurationData {
     this.position,
   });
 
-  List<BarcodeTypeEnum?>? types;
+  List<BarcodeType?>? types;
 
-  DetectionModeEnum? mode;
+  DetectionMode? mode;
 
-  ResolutionEnum? resolution;
+  Resolution? resolution;
 
-  FramerateEnum? framerate;
+  Framerate? framerate;
 
-  CameraPositionEnum? position;
+  CameraPosition? position;
 
   List<Object?> _toList() {
     return <Object?>[
@@ -393,24 +384,23 @@ class UpdateConfigurationData {
   }
 
   Object encode() {
-    return _toList();
-  }
+    return _toList();  }
 
-  static UpdateConfigurationData decode(Object result) {
+  static UpdateConfiguration decode(Object result) {
     result as List<Object?>;
-    return UpdateConfigurationData(
-      types: (result[0] as List<Object?>?)?.cast<BarcodeTypeEnum?>(),
-      mode: result[1] as DetectionModeEnum?,
-      resolution: result[2] as ResolutionEnum?,
-      framerate: result[3] as FramerateEnum?,
-      position: result[4] as CameraPositionEnum?,
+    return UpdateConfiguration(
+      types: (result[0] as List<Object?>?)?.cast<BarcodeType?>(),
+      mode: result[1] as DetectionMode?,
+      resolution: result[2] as Resolution?,
+      framerate: result[3] as Framerate?,
+      position: result[4] as CameraPosition?,
     );
   }
 
   @override
   // ignore: avoid_equals_and_hash_code_on_mutable_classes
   bool operator ==(Object other) {
-    if (other is! UpdateConfigurationData || other.runtimeType != runtimeType) {
+    if (other is! UpdateConfiguration || other.runtimeType != runtimeType) {
       return false;
     }
     if (identical(this, other)) {
@@ -422,7 +412,7 @@ class UpdateConfigurationData {
   @override
   // ignore: avoid_equals_and_hash_code_on_mutable_classes
   int get hashCode => Object.hashAll(_toList())
-  ;
+;
 }
 
 /// Data for image scanning
@@ -448,8 +438,7 @@ class ImageSourceData {
   }
 
   Object encode() {
-    return _toList();
-  }
+    return _toList();  }
 
   static ImageSourceData decode(Object result) {
     result as List<Object?>;
@@ -475,55 +464,54 @@ class ImageSourceData {
   @override
   // ignore: avoid_equals_and_hash_code_on_mutable_classes
   int get hashCode => Object.hashAll(_toList())
-  ;
+;
 }
 
 
 class _PigeonCodec extends StandardMessageCodec {
   const _PigeonCodec();
-
   @override
   void writeValue(WriteBuffer buffer, Object? value) {
     if (value is int) {
       buffer.putUint8(4);
       buffer.putInt64(value);
-    } else if (value is BarcodeTypeEnum) {
+    }    else if (value is BarcodeType) {
       buffer.putUint8(129);
       writeValue(buffer, value.index);
-    } else if (value is BarcodeValueTypeEnum) {
+    }    else if (value is BarcodeValueType) {
       buffer.putUint8(130);
       writeValue(buffer, value.index);
-    } else if (value is ResolutionEnum) {
+    }    else if (value is Resolution) {
       buffer.putUint8(131);
       writeValue(buffer, value.index);
-    } else if (value is FramerateEnum) {
+    }    else if (value is Framerate) {
       buffer.putUint8(132);
       writeValue(buffer, value.index);
-    } else if (value is DetectionModeEnum) {
+    }    else if (value is DetectionMode) {
       buffer.putUint8(133);
       writeValue(buffer, value.index);
-    } else if (value is CameraPositionEnum) {
+    }    else if (value is CameraPosition) {
       buffer.putUint8(134);
       writeValue(buffer, value.index);
-    } else if (value is IOSApiModeEnum) {
+    }    else if (value is IOSApiMode) {
       buffer.putUint8(135);
       writeValue(buffer, value.index);
-    } else if (value is PointData) {
+    }    else if (value is PointData) {
       buffer.putUint8(136);
       writeValue(buffer, value.encode());
-    } else if (value is BarcodeData) {
+    }    else if (value is Barcode) {
       buffer.putUint8(137);
       writeValue(buffer, value.encode());
-    } else if (value is PreviewConfigurationData) {
+    }    else if (value is PreviewConfiguration) {
       buffer.putUint8(138);
       writeValue(buffer, value.encode());
-    } else if (value is ScannerConfigurationData) {
+    }    else if (value is ScannerConfiguration) {
       buffer.putUint8(139);
       writeValue(buffer, value.encode());
-    } else if (value is UpdateConfigurationData) {
+    }    else if (value is UpdateConfiguration) {
       buffer.putUint8(140);
       writeValue(buffer, value.encode());
-    } else if (value is ImageSourceData) {
+    }    else if (value is ImageSourceData) {
       buffer.putUint8(141);
       writeValue(buffer, value.encode());
     } else {
@@ -534,38 +522,38 @@ class _PigeonCodec extends StandardMessageCodec {
   @override
   Object? readValueOfType(int type, ReadBuffer buffer) {
     switch (type) {
-      case 129:
+      case 129: 
         final int? value = readValue(buffer) as int?;
-        return value == null ? null : BarcodeTypeEnum.values[value];
-      case 130:
+        return value == null ? null : BarcodeType.values[value];
+      case 130: 
         final int? value = readValue(buffer) as int?;
-        return value == null ? null : BarcodeValueTypeEnum.values[value];
-      case 131:
+        return value == null ? null : BarcodeValueType.values[value];
+      case 131: 
         final int? value = readValue(buffer) as int?;
-        return value == null ? null : ResolutionEnum.values[value];
-      case 132:
+        return value == null ? null : Resolution.values[value];
+      case 132: 
         final int? value = readValue(buffer) as int?;
-        return value == null ? null : FramerateEnum.values[value];
-      case 133:
+        return value == null ? null : Framerate.values[value];
+      case 133: 
         final int? value = readValue(buffer) as int?;
-        return value == null ? null : DetectionModeEnum.values[value];
-      case 134:
+        return value == null ? null : DetectionMode.values[value];
+      case 134: 
         final int? value = readValue(buffer) as int?;
-        return value == null ? null : CameraPositionEnum.values[value];
-      case 135:
+        return value == null ? null : CameraPosition.values[value];
+      case 135: 
         final int? value = readValue(buffer) as int?;
-        return value == null ? null : IOSApiModeEnum.values[value];
-      case 136:
+        return value == null ? null : IOSApiMode.values[value];
+      case 136: 
         return PointData.decode(readValue(buffer)!);
-      case 137:
-        return BarcodeData.decode(readValue(buffer)!);
-      case 138:
-        return PreviewConfigurationData.decode(readValue(buffer)!);
-      case 139:
-        return ScannerConfigurationData.decode(readValue(buffer)!);
-      case 140:
-        return UpdateConfigurationData.decode(readValue(buffer)!);
-      case 141:
+      case 137: 
+        return Barcode.decode(readValue(buffer)!);
+      case 138: 
+        return PreviewConfiguration.decode(readValue(buffer)!);
+      case 139: 
+        return ScannerConfiguration.decode(readValue(buffer)!);
+      case 140: 
+        return UpdateConfiguration.decode(readValue(buffer)!);
+      case 141: 
         return ImageSourceData.decode(readValue(buffer)!);
       default:
         return super.readValueOfType(type, buffer);
@@ -578,12 +566,9 @@ class FastBarcodeScannerHostApi {
   /// Constructor for [FastBarcodeScannerHostApi].  The [binaryMessenger] named argument is
   /// available for dependency injection.  If it is left null, the default
   /// BinaryMessenger will be used which routes to the host platform.
-  FastBarcodeScannerHostApi(
-      {BinaryMessenger? binaryMessenger, String messageChannelSuffix = ''})
+  FastBarcodeScannerHostApi({BinaryMessenger? binaryMessenger, String messageChannelSuffix = ''})
       : pigeonVar_binaryMessenger = binaryMessenger,
-        pigeonVar_messageChannelSuffix = messageChannelSuffix.isNotEmpty
-            ? '.$messageChannelSuffix'
-            : '';
+        pigeonVar_messageChannelSuffix = messageChannelSuffix.isNotEmpty ? '.$messageChannelSuffix' : '';
   final BinaryMessenger? pigeonVar_binaryMessenger;
 
   static const MessageCodec<Object?> pigeonChannelCodec = _PigeonCodec();
@@ -591,19 +576,16 @@ class FastBarcodeScannerHostApi {
   final String pigeonVar_messageChannelSuffix;
 
   /// Initialize the camera and scanner with the given configuration
-  Future<PreviewConfigurationData> initialize(
-      ScannerConfigurationData configuration) async {
+  Future<PreviewConfiguration> initialize(ScannerConfiguration configuration) async {
     final String pigeonVar_channelName = 'dev.flutter.pigeon.fast_barcode_scanner_platform_interface.FastBarcodeScannerHostApi.initialize$pigeonVar_messageChannelSuffix';
-    final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<
-        Object?>(
+    final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
     );
-    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(
-        <Object?>[configuration]);
+    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(<Object?>[configuration]);
     final List<Object?>? pigeonVar_replyList =
-    await pigeonVar_sendFuture as List<Object?>?;
+        await pigeonVar_sendFuture as List<Object?>?;
     if (pigeonVar_replyList == null) {
       throw _createConnectionError(pigeonVar_channelName);
     } else if (pigeonVar_replyList.length > 1) {
@@ -618,22 +600,21 @@ class FastBarcodeScannerHostApi {
         message: 'Host platform returned null value for non-null return value.',
       );
     } else {
-      return (pigeonVar_replyList[0] as PreviewConfigurationData?)!;
+      return (pigeonVar_replyList[0] as PreviewConfiguration?)!;
     }
   }
 
   /// Start the camera
   Future<void> start() async {
     final String pigeonVar_channelName = 'dev.flutter.pigeon.fast_barcode_scanner_platform_interface.FastBarcodeScannerHostApi.start$pigeonVar_messageChannelSuffix';
-    final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<
-        Object?>(
+    final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
     );
     final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(null);
     final List<Object?>? pigeonVar_replyList =
-    await pigeonVar_sendFuture as List<Object?>?;
+        await pigeonVar_sendFuture as List<Object?>?;
     if (pigeonVar_replyList == null) {
       throw _createConnectionError(pigeonVar_channelName);
     } else if (pigeonVar_replyList.length > 1) {
@@ -650,15 +631,14 @@ class FastBarcodeScannerHostApi {
   /// Stop the camera
   Future<void> stop() async {
     final String pigeonVar_channelName = 'dev.flutter.pigeon.fast_barcode_scanner_platform_interface.FastBarcodeScannerHostApi.stop$pigeonVar_messageChannelSuffix';
-    final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<
-        Object?>(
+    final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
     );
     final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(null);
     final List<Object?>? pigeonVar_replyList =
-    await pigeonVar_sendFuture as List<Object?>?;
+        await pigeonVar_sendFuture as List<Object?>?;
     if (pigeonVar_replyList == null) {
       throw _createConnectionError(pigeonVar_channelName);
     } else if (pigeonVar_replyList.length > 1) {
@@ -675,15 +655,14 @@ class FastBarcodeScannerHostApi {
   /// Start the barcode detector
   Future<void> startDetector() async {
     final String pigeonVar_channelName = 'dev.flutter.pigeon.fast_barcode_scanner_platform_interface.FastBarcodeScannerHostApi.startDetector$pigeonVar_messageChannelSuffix';
-    final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<
-        Object?>(
+    final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
     );
     final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(null);
     final List<Object?>? pigeonVar_replyList =
-    await pigeonVar_sendFuture as List<Object?>?;
+        await pigeonVar_sendFuture as List<Object?>?;
     if (pigeonVar_replyList == null) {
       throw _createConnectionError(pigeonVar_channelName);
     } else if (pigeonVar_replyList.length > 1) {
@@ -700,15 +679,14 @@ class FastBarcodeScannerHostApi {
   /// Stop the barcode detector
   Future<void> stopDetector() async {
     final String pigeonVar_channelName = 'dev.flutter.pigeon.fast_barcode_scanner_platform_interface.FastBarcodeScannerHostApi.stopDetector$pigeonVar_messageChannelSuffix';
-    final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<
-        Object?>(
+    final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
     );
     final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(null);
     final List<Object?>? pigeonVar_replyList =
-    await pigeonVar_sendFuture as List<Object?>?;
+        await pigeonVar_sendFuture as List<Object?>?;
     if (pigeonVar_replyList == null) {
       throw _createConnectionError(pigeonVar_channelName);
     } else if (pigeonVar_replyList.length > 1) {
@@ -725,15 +703,14 @@ class FastBarcodeScannerHostApi {
   /// Dispose camera resources
   Future<void> dispose() async {
     final String pigeonVar_channelName = 'dev.flutter.pigeon.fast_barcode_scanner_platform_interface.FastBarcodeScannerHostApi.dispose$pigeonVar_messageChannelSuffix';
-    final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<
-        Object?>(
+    final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
     );
     final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(null);
     final List<Object?>? pigeonVar_replyList =
-    await pigeonVar_sendFuture as List<Object?>?;
+        await pigeonVar_sendFuture as List<Object?>?;
     if (pigeonVar_replyList == null) {
       throw _createConnectionError(pigeonVar_channelName);
     } else if (pigeonVar_replyList.length > 1) {
@@ -750,15 +727,14 @@ class FastBarcodeScannerHostApi {
   /// Toggle the camera torch/flash
   Future<bool> toggleTorch() async {
     final String pigeonVar_channelName = 'dev.flutter.pigeon.fast_barcode_scanner_platform_interface.FastBarcodeScannerHostApi.toggleTorch$pigeonVar_messageChannelSuffix';
-    final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<
-        Object?>(
+    final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
     );
     final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(null);
     final List<Object?>? pigeonVar_replyList =
-    await pigeonVar_sendFuture as List<Object?>?;
+        await pigeonVar_sendFuture as List<Object?>?;
     if (pigeonVar_replyList == null) {
       throw _createConnectionError(pigeonVar_channelName);
     } else if (pigeonVar_replyList.length > 1) {
@@ -778,19 +754,16 @@ class FastBarcodeScannerHostApi {
   }
 
   /// Update scanner configuration
-  Future<PreviewConfigurationData> changeConfiguration(
-      UpdateConfigurationData configuration) async {
+  Future<PreviewConfiguration> changeConfiguration(UpdateConfiguration configuration) async {
     final String pigeonVar_channelName = 'dev.flutter.pigeon.fast_barcode_scanner_platform_interface.FastBarcodeScannerHostApi.changeConfiguration$pigeonVar_messageChannelSuffix';
-    final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<
-        Object?>(
+    final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
     );
-    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(
-        <Object?>[configuration]);
+    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(<Object?>[configuration]);
     final List<Object?>? pigeonVar_replyList =
-    await pigeonVar_sendFuture as List<Object?>?;
+        await pigeonVar_sendFuture as List<Object?>?;
     if (pigeonVar_replyList == null) {
       throw _createConnectionError(pigeonVar_channelName);
     } else if (pigeonVar_replyList.length > 1) {
@@ -805,23 +778,21 @@ class FastBarcodeScannerHostApi {
         message: 'Host platform returned null value for non-null return value.',
       );
     } else {
-      return (pigeonVar_replyList[0] as PreviewConfigurationData?)!;
+      return (pigeonVar_replyList[0] as PreviewConfiguration?)!;
     }
   }
 
   /// Scan barcode from image
-  Future<List<BarcodeData?>> scanImage(ImageSourceData imageSource) async {
+  Future<List<Barcode?>> scanImage(ImageSourceData imageSource) async {
     final String pigeonVar_channelName = 'dev.flutter.pigeon.fast_barcode_scanner_platform_interface.FastBarcodeScannerHostApi.scanImage$pigeonVar_messageChannelSuffix';
-    final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<
-        Object?>(
+    final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
     );
-    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(
-        <Object?>[imageSource]);
+    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(<Object?>[imageSource]);
     final List<Object?>? pigeonVar_replyList =
-    await pigeonVar_sendFuture as List<Object?>?;
+        await pigeonVar_sendFuture as List<Object?>?;
     if (pigeonVar_replyList == null) {
       throw _createConnectionError(pigeonVar_channelName);
     } else if (pigeonVar_replyList.length > 1) {
@@ -836,23 +807,21 @@ class FastBarcodeScannerHostApi {
         message: 'Host platform returned null value for non-null return value.',
       );
     } else {
-      return (pigeonVar_replyList[0] as List<Object?>?)!.cast<BarcodeData?>();
+      return (pigeonVar_replyList[0] as List<Object?>?)!.cast<Barcode?>();
     }
   }
 
   /// Retrieve cached image path for a barcode
   Future<String?> retrieveCachedImage(String code) async {
     final String pigeonVar_channelName = 'dev.flutter.pigeon.fast_barcode_scanner_platform_interface.FastBarcodeScannerHostApi.retrieveCachedImage$pigeonVar_messageChannelSuffix';
-    final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<
-        Object?>(
+    final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
     );
-    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(
-        <Object?>[code]);
+    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(<Object?>[code]);
     final List<Object?>? pigeonVar_replyList =
-    await pigeonVar_sendFuture as List<Object?>?;
+        await pigeonVar_sendFuture as List<Object?>?;
     if (pigeonVar_replyList == null) {
       throw _createConnectionError(pigeonVar_channelName);
     } else if (pigeonVar_replyList.length > 1) {
@@ -869,15 +838,14 @@ class FastBarcodeScannerHostApi {
   /// Clear all cached images
   Future<void> clearCachedImage() async {
     final String pigeonVar_channelName = 'dev.flutter.pigeon.fast_barcode_scanner_platform_interface.FastBarcodeScannerHostApi.clearCachedImage$pigeonVar_messageChannelSuffix';
-    final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<
-        Object?>(
+    final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
     );
     final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(null);
     final List<Object?>? pigeonVar_replyList =
-    await pigeonVar_sendFuture as List<Object?>?;
+        await pigeonVar_sendFuture as List<Object?>?;
     if (pigeonVar_replyList == null) {
       throw _createConnectionError(pigeonVar_channelName);
     } else if (pigeonVar_replyList.length > 1) {
@@ -897,20 +865,16 @@ abstract class FastBarcodeScannerFlutterApi {
   static const MessageCodec<Object?> pigeonChannelCodec = _PigeonCodec();
 
   /// Called when barcodes are detected
-  void onBarcodesDetected(List<BarcodeData?> barcodes);
+  void onBarcodesDetected(List<Barcode?> barcodes);
 
   /// Called when an error occurs
   void onError(String errorCode, String errorMessage, String? errorDetails);
 
-  static void setUp(FastBarcodeScannerFlutterApi? api,
-      {BinaryMessenger? binaryMessenger, String messageChannelSuffix = '',}) {
-    messageChannelSuffix =
-    messageChannelSuffix.isNotEmpty ? '.$messageChannelSuffix' : '';
+  static void setUp(FastBarcodeScannerFlutterApi? api, {BinaryMessenger? binaryMessenger, String messageChannelSuffix = '',}) {
+    messageChannelSuffix = messageChannelSuffix.isNotEmpty ? '.$messageChannelSuffix' : '';
     {
-      final BasicMessageChannel<
-          Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
-          'dev.flutter.pigeon.fast_barcode_scanner_platform_interface.FastBarcodeScannerFlutterApi.onBarcodesDetected$messageChannelSuffix',
-          pigeonChannelCodec,
+      final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
+          'dev.flutter.pigeon.fast_barcode_scanner_platform_interface.FastBarcodeScannerFlutterApi.onBarcodesDetected$messageChannelSuffix', pigeonChannelCodec,
           binaryMessenger: binaryMessenger);
       if (api == null) {
         pigeonVar_channel.setMessageHandler(null);
@@ -919,27 +883,23 @@ abstract class FastBarcodeScannerFlutterApi {
           assert(message != null,
           'Argument for dev.flutter.pigeon.fast_barcode_scanner_platform_interface.FastBarcodeScannerFlutterApi.onBarcodesDetected was null.');
           final List<Object?> args = (message as List<Object?>?)!;
-          final List<BarcodeData?>? arg_barcodes = (args[0] as List<Object?>?)
-              ?.cast<BarcodeData?>();
+          final List<Barcode?>? arg_barcodes = (args[0] as List<Object?>?)?.cast<Barcode?>();
           assert(arg_barcodes != null,
-          'Argument for dev.flutter.pigeon.fast_barcode_scanner_platform_interface.FastBarcodeScannerFlutterApi.onBarcodesDetected was null, expected non-null List<BarcodeData?>.');
+              'Argument for dev.flutter.pigeon.fast_barcode_scanner_platform_interface.FastBarcodeScannerFlutterApi.onBarcodesDetected was null, expected non-null List<Barcode?>.');
           try {
             api.onBarcodesDetected(arg_barcodes!);
             return wrapResponse(empty: true);
           } on PlatformException catch (e) {
             return wrapResponse(error: e);
-          } catch (e) {
-            return wrapResponse(
-                error: PlatformException(code: 'error', message: e.toString()));
+          }          catch (e) {
+            return wrapResponse(error: PlatformException(code: 'error', message: e.toString()));
           }
         });
       }
     }
     {
-      final BasicMessageChannel<
-          Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
-          'dev.flutter.pigeon.fast_barcode_scanner_platform_interface.FastBarcodeScannerFlutterApi.onError$messageChannelSuffix',
-          pigeonChannelCodec,
+      final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
+          'dev.flutter.pigeon.fast_barcode_scanner_platform_interface.FastBarcodeScannerFlutterApi.onError$messageChannelSuffix', pigeonChannelCodec,
           binaryMessenger: binaryMessenger);
       if (api == null) {
         pigeonVar_channel.setMessageHandler(null);
@@ -950,19 +910,18 @@ abstract class FastBarcodeScannerFlutterApi {
           final List<Object?> args = (message as List<Object?>?)!;
           final String? arg_errorCode = (args[0] as String?);
           assert(arg_errorCode != null,
-          'Argument for dev.flutter.pigeon.fast_barcode_scanner_platform_interface.FastBarcodeScannerFlutterApi.onError was null, expected non-null String.');
+              'Argument for dev.flutter.pigeon.fast_barcode_scanner_platform_interface.FastBarcodeScannerFlutterApi.onError was null, expected non-null String.');
           final String? arg_errorMessage = (args[1] as String?);
           assert(arg_errorMessage != null,
-          'Argument for dev.flutter.pigeon.fast_barcode_scanner_platform_interface.FastBarcodeScannerFlutterApi.onError was null, expected non-null String.');
+              'Argument for dev.flutter.pigeon.fast_barcode_scanner_platform_interface.FastBarcodeScannerFlutterApi.onError was null, expected non-null String.');
           final String? arg_errorDetails = (args[2] as String?);
           try {
             api.onError(arg_errorCode!, arg_errorMessage!, arg_errorDetails);
             return wrapResponse(empty: true);
           } on PlatformException catch (e) {
             return wrapResponse(error: e);
-          } catch (e) {
-            return wrapResponse(
-                error: PlatformException(code: 'error', message: e.toString()));
+          }          catch (e) {
+            return wrapResponse(error: PlatformException(code: 'error', message: e.toString()));
           }
         });
       }

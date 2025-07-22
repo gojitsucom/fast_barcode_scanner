@@ -79,7 +79,7 @@ class _ScanningScreenState extends State<ScanningScreen> {
                         Text("Texture Id: ${preview.textureId}"),
                         Text(
                             "Preview (WxH): ${preview.width}x${preview.height}"),
-                        Text("Analysis (WxH): ${preview.analysisResolution}"),
+                        Text("Analysis (WxH): ${"${preview.analysisWidth}x${preview.analysisHeight}"}"),
                         Text(
                             "Target Rotation (unused): ${preview.targetRotation}"),
                       ],
@@ -107,6 +107,7 @@ class _ScanningScreenState extends State<ScanningScreen> {
           history.addAll(code);
           currentCode = code.first.value;
         },
+        dispose: widget.dispose,
         children: [
           if (_scanningOverlayConfig.enabledOverlays
               .contains(ScanningOverlayType.materialOverlay))
@@ -146,7 +147,6 @@ class _ScanningScreenState extends State<ScanningScreen> {
               .contains(ScanningOverlayType.blurPreview))
             const BlurPreviewOverlay()
         ],
-        dispose: widget.dispose,
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {

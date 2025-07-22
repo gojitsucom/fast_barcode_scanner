@@ -6,17 +6,18 @@ homepage: https://github.com/jhoogstraat/fast_barcode_scanner
 repository: https://github.com/jhoogstraat/fast_barcode_scanner
 
 environment:
-  sdk: ">=2.12.0 <3.0.0"
+  sdk: ^3.0.0
   flutter: ">=2.0.0"
 
 dependencies:
   flutter:
     sdk: flutter
   fast_barcode_scanner_platform_interface:
-    hosted:
-      name: fast_barcode_scanner_platform_interface
-      url: http://nexus.gojitsu.com:7777
-    version: ^2.2.0
+    path: ../fast_barcode_scanner_platform_interface
+#    hosted:
+#      name: fast_barcode_scanner_platform_interface
+#      url: http://nexus.gojitsu.com:7777
+#    version: ^2.2.0
 
 dev_dependencies:
   flutter_test:

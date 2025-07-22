@@ -110,7 +110,7 @@ abstract class CameraController {
   /// Analyze a still image, which can be chosen from an image picker.
   ///
   /// It is recommended to pause the live scanner before calling this.
-  Future<List<Barcode>?> scanImage(ImageSource source);
+  Future<List<Barcode>?> scanImage(ImageSourceData source);
 
   Future<String?> retrieveCachedImage(String code);
 
@@ -203,7 +203,13 @@ class _CameraController implements CameraController {
       _platform.setOnDetectHandler(_onDetectHandler);
 
       state._scannerConfig = ScannerConfiguration(
-          types, resolution, framerate, position, detectionMode);
+        types: types,
+        resolution: resolution,
+        framerate: framerate,
+        position: position,
+        mode: detectionMode,
+        apiMode: apiMode,
+      );
 
       state._error = null;
 
@@ -323,7 +329,7 @@ class _CameraController implements CameraController {
           types: types,
           resolution: resolution,
           framerate: framerate,
-          detectionMode: detectionMode,
+          mode: detectionMode,
           position: position,
         );
 
@@ -339,7 +345,7 @@ class _CameraController implements CameraController {
   }
 
   @override
-  Future<List<Barcode>?> scanImage(ImageSource source) async {
+  Future<List<Barcode>?> scanImage(ImageSourceData source) async {
     try {
       return _platform.scanImage(source);
     } catch (error) {

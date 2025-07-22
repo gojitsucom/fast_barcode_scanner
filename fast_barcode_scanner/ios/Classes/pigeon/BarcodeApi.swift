@@ -133,7 +133,7 @@ func deepHashBarcodeApi(value: Any?, hasher: inout Hasher) {
     
 
 /// Enum representing different barcode types
-enum BarcodeTypeEnum: Int {
+enum BarcodeType: Int {
   case aztec = 0
   case code128 = 1
   case code39 = 2
@@ -152,7 +152,7 @@ enum BarcodeTypeEnum: Int {
 }
 
 /// Enum representing barcode value types (Android only)
-enum BarcodeValueTypeEnum: Int {
+enum BarcodeValueType: Int {
   case unknown = 0
   case contactInfo = 1
   case email = 2
@@ -169,7 +169,7 @@ enum BarcodeValueTypeEnum: Int {
 }
 
 /// Enum representing camera resolutions
-enum ResolutionEnum: Int {
+enum Resolution: Int {
   case sd480 = 0
   case hd720 = 1
   case hd1080 = 2
@@ -177,7 +177,7 @@ enum ResolutionEnum: Int {
 }
 
 /// Enum representing camera framerates
-enum FramerateEnum: Int {
+enum Framerate: Int {
   case fps30 = 0
   case fps60 = 1
   case fps120 = 2
@@ -185,20 +185,20 @@ enum FramerateEnum: Int {
 }
 
 /// Enum representing detection modes
-enum DetectionModeEnum: Int {
+enum DetectionMode: Int {
   case pauseDetection = 0
   case pauseVideo = 1
   case continuous = 2
 }
 
 /// Enum representing camera positions
-enum CameraPositionEnum: Int {
+enum CameraPosition: Int {
   case front = 0
   case back = 1
 }
 
 /// Enum representing iOS API modes
-enum IOSApiModeEnum: Int {
+enum IOSApiMode: Int {
   case avFoundation = 0
   case vision = 1
 }
@@ -237,21 +237,21 @@ struct PointData: Hashable {
 /// Represents a detected barcode
 ///
 /// Generated class from Pigeon that represents data sent in messages.
-struct BarcodeData: Hashable {
-  var type: BarcodeTypeEnum
+struct Barcode: Hashable {
+  var type: BarcodeType
   var value: String
-  var valueType: BarcodeValueTypeEnum? = nil
+  var valueType: BarcodeValueType? = nil
   var cornerPoints: [PointData?]? = nil
 
 
   // swift-format-ignore: AlwaysUseLowerCamelCase
-  static func fromList(_ pigeonVar_list: [Any?]) -> BarcodeData? {
-    let type = pigeonVar_list[0] as! BarcodeTypeEnum
+  static func fromList(_ pigeonVar_list: [Any?]) -> Barcode? {
+    let type = pigeonVar_list[0] as! BarcodeType
     let value = pigeonVar_list[1] as! String
-    let valueType: BarcodeValueTypeEnum? = nilOrValue(pigeonVar_list[2])
+    let valueType: BarcodeValueType? = nilOrValue(pigeonVar_list[2])
     let cornerPoints: [PointData?]? = nilOrValue(pigeonVar_list[3])
 
-    return BarcodeData(
+    return Barcode(
       type: type,
       value: value,
       valueType: valueType,
@@ -266,7 +266,7 @@ struct BarcodeData: Hashable {
       cornerPoints,
     ]
   }
-  static func == (lhs: BarcodeData, rhs: BarcodeData) -> Bool {
+  static func == (lhs: Barcode, rhs: Barcode) -> Bool {
     return deepEqualsBarcodeApi(lhs.toList(), rhs.toList())  }
   func hash(into hasher: inout Hasher) {
     deepHashBarcodeApi(value: toList(), hasher: &hasher)
@@ -276,7 +276,7 @@ struct BarcodeData: Hashable {
 /// Configuration for camera preview
 ///
 /// Generated class from Pigeon that represents data sent in messages.
-struct PreviewConfigurationData: Hashable {
+struct PreviewConfiguration: Hashable {
   var textureId: Int64
   var targetRotation: Int64
   var height: Int64
@@ -286,7 +286,7 @@ struct PreviewConfigurationData: Hashable {
 
 
   // swift-format-ignore: AlwaysUseLowerCamelCase
-  static func fromList(_ pigeonVar_list: [Any?]) -> PreviewConfigurationData? {
+  static func fromList(_ pigeonVar_list: [Any?]) -> PreviewConfiguration? {
     let textureId = pigeonVar_list[0] as! Int64
     let targetRotation = pigeonVar_list[1] as! Int64
     let height = pigeonVar_list[2] as! Int64
@@ -294,7 +294,7 @@ struct PreviewConfigurationData: Hashable {
     let analysisWidth = pigeonVar_list[4] as! Int64
     let analysisHeight = pigeonVar_list[5] as! Int64
 
-    return PreviewConfigurationData(
+    return PreviewConfiguration(
       textureId: textureId,
       targetRotation: targetRotation,
       height: height,
@@ -313,7 +313,7 @@ struct PreviewConfigurationData: Hashable {
       analysisHeight,
     ]
   }
-  static func == (lhs: PreviewConfigurationData, rhs: PreviewConfigurationData) -> Bool {
+  static func == (lhs: PreviewConfiguration, rhs: PreviewConfiguration) -> Bool {
     return deepEqualsBarcodeApi(lhs.toList(), rhs.toList())  }
   func hash(into hasher: inout Hasher) {
     deepHashBarcodeApi(value: toList(), hasher: &hasher)
@@ -323,27 +323,27 @@ struct PreviewConfigurationData: Hashable {
 /// Configuration for initializing the scanner
 ///
 /// Generated class from Pigeon that represents data sent in messages.
-struct ScannerConfigurationData: Hashable {
-  var types: [BarcodeTypeEnum?]
-  var mode: DetectionModeEnum
-  var resolution: ResolutionEnum
-  var framerate: FramerateEnum
-  var position: CameraPositionEnum
-  var apiMode: IOSApiModeEnum? = nil
+struct ScannerConfiguration: Hashable {
+  var types: [BarcodeType?]
+  var mode: DetectionMode
+  var resolution: Resolution
+  var framerate: Framerate
+  var position: CameraPosition
+  var apiMode: IOSApiMode? = nil
   var confidence: Double? = nil
 
 
   // swift-format-ignore: AlwaysUseLowerCamelCase
-  static func fromList(_ pigeonVar_list: [Any?]) -> ScannerConfigurationData? {
-    let types = pigeonVar_list[0] as! [BarcodeTypeEnum?]
-    let mode = pigeonVar_list[1] as! DetectionModeEnum
-    let resolution = pigeonVar_list[2] as! ResolutionEnum
-    let framerate = pigeonVar_list[3] as! FramerateEnum
-    let position = pigeonVar_list[4] as! CameraPositionEnum
-    let apiMode: IOSApiModeEnum? = nilOrValue(pigeonVar_list[5])
+  static func fromList(_ pigeonVar_list: [Any?]) -> ScannerConfiguration? {
+    let types = pigeonVar_list[0] as! [BarcodeType?]
+    let mode = pigeonVar_list[1] as! DetectionMode
+    let resolution = pigeonVar_list[2] as! Resolution
+    let framerate = pigeonVar_list[3] as! Framerate
+    let position = pigeonVar_list[4] as! CameraPosition
+    let apiMode: IOSApiMode? = nilOrValue(pigeonVar_list[5])
     let confidence: Double? = nilOrValue(pigeonVar_list[6])
 
-    return ScannerConfigurationData(
+    return ScannerConfiguration(
       types: types,
       mode: mode,
       resolution: resolution,
@@ -364,7 +364,7 @@ struct ScannerConfigurationData: Hashable {
       confidence,
     ]
   }
-  static func == (lhs: ScannerConfigurationData, rhs: ScannerConfigurationData) -> Bool {
+  static func == (lhs: ScannerConfiguration, rhs: ScannerConfiguration) -> Bool {
     return deepEqualsBarcodeApi(lhs.toList(), rhs.toList())  }
   func hash(into hasher: inout Hasher) {
     deepHashBarcodeApi(value: toList(), hasher: &hasher)
@@ -374,23 +374,23 @@ struct ScannerConfigurationData: Hashable {
 /// Configuration for updating scanner settings
 ///
 /// Generated class from Pigeon that represents data sent in messages.
-struct UpdateConfigurationData: Hashable {
-  var types: [BarcodeTypeEnum?]? = nil
-  var mode: DetectionModeEnum? = nil
-  var resolution: ResolutionEnum? = nil
-  var framerate: FramerateEnum? = nil
-  var position: CameraPositionEnum? = nil
+struct UpdateConfiguration: Hashable {
+  var types: [BarcodeType?]? = nil
+  var mode: DetectionMode? = nil
+  var resolution: Resolution? = nil
+  var framerate: Framerate? = nil
+  var position: CameraPosition? = nil
 
 
   // swift-format-ignore: AlwaysUseLowerCamelCase
-  static func fromList(_ pigeonVar_list: [Any?]) -> UpdateConfigurationData? {
-    let types: [BarcodeTypeEnum?]? = nilOrValue(pigeonVar_list[0])
-    let mode: DetectionModeEnum? = nilOrValue(pigeonVar_list[1])
-    let resolution: ResolutionEnum? = nilOrValue(pigeonVar_list[2])
-    let framerate: FramerateEnum? = nilOrValue(pigeonVar_list[3])
-    let position: CameraPositionEnum? = nilOrValue(pigeonVar_list[4])
+  static func fromList(_ pigeonVar_list: [Any?]) -> UpdateConfiguration? {
+    let types: [BarcodeType?]? = nilOrValue(pigeonVar_list[0])
+    let mode: DetectionMode? = nilOrValue(pigeonVar_list[1])
+    let resolution: Resolution? = nilOrValue(pigeonVar_list[2])
+    let framerate: Framerate? = nilOrValue(pigeonVar_list[3])
+    let position: CameraPosition? = nilOrValue(pigeonVar_list[4])
 
-    return UpdateConfigurationData(
+    return UpdateConfiguration(
       types: types,
       mode: mode,
       resolution: resolution,
@@ -407,7 +407,7 @@ struct UpdateConfigurationData: Hashable {
       position,
     ]
   }
-  static func == (lhs: UpdateConfigurationData, rhs: UpdateConfigurationData) -> Bool {
+  static func == (lhs: UpdateConfiguration, rhs: UpdateConfiguration) -> Bool {
     return deepEqualsBarcodeApi(lhs.toList(), rhs.toList())  }
   func hash(into hasher: inout Hasher) {
     deepHashBarcodeApi(value: toList(), hasher: &hasher)
@@ -455,55 +455,55 @@ private class BarcodeApiPigeonCodecReader: FlutterStandardReader {
     case 129:
       let enumResultAsInt: Int? = nilOrValue(self.readValue() as! Int?)
       if let enumResultAsInt = enumResultAsInt {
-        return BarcodeTypeEnum(rawValue: enumResultAsInt)
+        return BarcodeType(rawValue: enumResultAsInt)
       }
       return nil
     case 130:
       let enumResultAsInt: Int? = nilOrValue(self.readValue() as! Int?)
       if let enumResultAsInt = enumResultAsInt {
-        return BarcodeValueTypeEnum(rawValue: enumResultAsInt)
+        return BarcodeValueType(rawValue: enumResultAsInt)
       }
       return nil
     case 131:
       let enumResultAsInt: Int? = nilOrValue(self.readValue() as! Int?)
       if let enumResultAsInt = enumResultAsInt {
-        return ResolutionEnum(rawValue: enumResultAsInt)
+        return Resolution(rawValue: enumResultAsInt)
       }
       return nil
     case 132:
       let enumResultAsInt: Int? = nilOrValue(self.readValue() as! Int?)
       if let enumResultAsInt = enumResultAsInt {
-        return FramerateEnum(rawValue: enumResultAsInt)
+        return Framerate(rawValue: enumResultAsInt)
       }
       return nil
     case 133:
       let enumResultAsInt: Int? = nilOrValue(self.readValue() as! Int?)
       if let enumResultAsInt = enumResultAsInt {
-        return DetectionModeEnum(rawValue: enumResultAsInt)
+        return DetectionMode(rawValue: enumResultAsInt)
       }
       return nil
     case 134:
       let enumResultAsInt: Int? = nilOrValue(self.readValue() as! Int?)
       if let enumResultAsInt = enumResultAsInt {
-        return CameraPositionEnum(rawValue: enumResultAsInt)
+        return CameraPosition(rawValue: enumResultAsInt)
       }
       return nil
     case 135:
       let enumResultAsInt: Int? = nilOrValue(self.readValue() as! Int?)
       if let enumResultAsInt = enumResultAsInt {
-        return IOSApiModeEnum(rawValue: enumResultAsInt)
+        return IOSApiMode(rawValue: enumResultAsInt)
       }
       return nil
     case 136:
       return PointData.fromList(self.readValue() as! [Any?])
     case 137:
-      return BarcodeData.fromList(self.readValue() as! [Any?])
+      return Barcode.fromList(self.readValue() as! [Any?])
     case 138:
-      return PreviewConfigurationData.fromList(self.readValue() as! [Any?])
+      return PreviewConfiguration.fromList(self.readValue() as! [Any?])
     case 139:
-      return ScannerConfigurationData.fromList(self.readValue() as! [Any?])
+      return ScannerConfiguration.fromList(self.readValue() as! [Any?])
     case 140:
-      return UpdateConfigurationData.fromList(self.readValue() as! [Any?])
+      return UpdateConfiguration.fromList(self.readValue() as! [Any?])
     case 141:
       return ImageSourceData.fromList(self.readValue() as! [Any?])
     default:
@@ -514,40 +514,40 @@ private class BarcodeApiPigeonCodecReader: FlutterStandardReader {
 
 private class BarcodeApiPigeonCodecWriter: FlutterStandardWriter {
   override func writeValue(_ value: Any) {
-    if let value = value as? BarcodeTypeEnum {
+    if let value = value as? BarcodeType {
       super.writeByte(129)
       super.writeValue(value.rawValue)
-    } else if let value = value as? BarcodeValueTypeEnum {
+    } else if let value = value as? BarcodeValueType {
       super.writeByte(130)
       super.writeValue(value.rawValue)
-    } else if let value = value as? ResolutionEnum {
+    } else if let value = value as? Resolution {
       super.writeByte(131)
       super.writeValue(value.rawValue)
-    } else if let value = value as? FramerateEnum {
+    } else if let value = value as? Framerate {
       super.writeByte(132)
       super.writeValue(value.rawValue)
-    } else if let value = value as? DetectionModeEnum {
+    } else if let value = value as? DetectionMode {
       super.writeByte(133)
       super.writeValue(value.rawValue)
-    } else if let value = value as? CameraPositionEnum {
+    } else if let value = value as? CameraPosition {
       super.writeByte(134)
       super.writeValue(value.rawValue)
-    } else if let value = value as? IOSApiModeEnum {
+    } else if let value = value as? IOSApiMode {
       super.writeByte(135)
       super.writeValue(value.rawValue)
     } else if let value = value as? PointData {
       super.writeByte(136)
       super.writeValue(value.toList())
-    } else if let value = value as? BarcodeData {
+    } else if let value = value as? Barcode {
       super.writeByte(137)
       super.writeValue(value.toList())
-    } else if let value = value as? PreviewConfigurationData {
+    } else if let value = value as? PreviewConfiguration {
       super.writeByte(138)
       super.writeValue(value.toList())
-    } else if let value = value as? ScannerConfigurationData {
+    } else if let value = value as? ScannerConfiguration {
       super.writeByte(139)
       super.writeValue(value.toList())
-    } else if let value = value as? UpdateConfigurationData {
+    } else if let value = value as? UpdateConfiguration {
       super.writeByte(140)
       super.writeValue(value.toList())
     } else if let value = value as? ImageSourceData {
@@ -579,7 +579,7 @@ class BarcodeApiPigeonCodec: FlutterStandardMessageCodec, @unchecked Sendable {
 /// Generated protocol from Pigeon that represents a handler of messages from Flutter.
 protocol FastBarcodeScannerHostApi {
   /// Initialize the camera and scanner with the given configuration
-  func initialize(configuration: ScannerConfigurationData, completion: @escaping (Result<PreviewConfigurationData, Error>) -> Void)
+  func initialize(configuration: ScannerConfiguration, completion: @escaping (Result<PreviewConfiguration, Error>) -> Void)
   /// Start the camera
   func start(completion: @escaping (Result<Void, Error>) -> Void)
   /// Stop the camera
@@ -593,9 +593,9 @@ protocol FastBarcodeScannerHostApi {
   /// Toggle the camera torch/flash
   func toggleTorch(completion: @escaping (Result<Bool, Error>) -> Void)
   /// Update scanner configuration
-  func changeConfiguration(configuration: UpdateConfigurationData, completion: @escaping (Result<PreviewConfigurationData, Error>) -> Void)
+  func changeConfiguration(configuration: UpdateConfiguration, completion: @escaping (Result<PreviewConfiguration, Error>) -> Void)
   /// Scan barcode from image
-  func scanImage(imageSource: ImageSourceData, completion: @escaping (Result<[BarcodeData?], Error>) -> Void)
+  func scanImage(imageSource: ImageSourceData, completion: @escaping (Result<[Barcode?], Error>) -> Void)
   /// Retrieve cached image path for a barcode
   func retrieveCachedImage(code: String, completion: @escaping (Result<String?, Error>) -> Void)
   /// Clear all cached images
@@ -613,7 +613,7 @@ class FastBarcodeScannerHostApiSetup {
     if let api = api {
       initializeChannel.setMessageHandler { message, reply in
         let args = message as! [Any?]
-        let configurationArg = args[0] as! ScannerConfigurationData
+        let configurationArg = args[0] as! ScannerConfiguration
         api.initialize(configuration: configurationArg) { result in
           switch result {
           case .success(let res):
@@ -727,7 +727,7 @@ class FastBarcodeScannerHostApiSetup {
     if let api = api {
       changeConfigurationChannel.setMessageHandler { message, reply in
         let args = message as! [Any?]
-        let configurationArg = args[0] as! UpdateConfigurationData
+        let configurationArg = args[0] as! UpdateConfiguration
         api.changeConfiguration(configuration: configurationArg) { result in
           switch result {
           case .success(let res):
@@ -799,7 +799,7 @@ class FastBarcodeScannerHostApiSetup {
 /// Generated protocol from Pigeon that represents Flutter messages that can be called from Swift.
 protocol FastBarcodeScannerFlutterApiProtocol {
   /// Called when barcodes are detected
-  func onBarcodesDetected(barcodes barcodesArg: [BarcodeData?], completion: @escaping (Result<Void, PigeonError>) -> Void)
+  func onBarcodesDetected(barcodes barcodesArg: [Barcode?], completion: @escaping (Result<Void, PigeonError>) -> Void)
   /// Called when an error occurs
   func onError(errorCode errorCodeArg: String, errorMessage errorMessageArg: String, errorDetails errorDetailsArg: String?, completion: @escaping (Result<Void, PigeonError>) -> Void)
 }
@@ -814,7 +814,7 @@ class FastBarcodeScannerFlutterApi: FastBarcodeScannerFlutterApiProtocol {
     return BarcodeApiPigeonCodec.shared
   }
   /// Called when barcodes are detected
-  func onBarcodesDetected(barcodes barcodesArg: [BarcodeData?], completion: @escaping (Result<Void, PigeonError>) -> Void) {
+  func onBarcodesDetected(barcodes barcodesArg: [Barcode?], completion: @escaping (Result<Void, PigeonError>) -> Void) {
     let channelName: String = "dev.flutter.pigeon.fast_barcode_scanner_platform_interface.FastBarcodeScannerFlutterApi.onBarcodesDetected\(messageChannelSuffix)"
     let channel = FlutterBasicMessageChannel(name: channelName, binaryMessenger: binaryMessenger, codec: codec)
     channel.sendMessage([barcodesArg] as [Any?]) { response in

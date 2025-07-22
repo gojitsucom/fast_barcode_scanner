@@ -13,7 +13,7 @@ import 'package:pigeon/pigeon.dart';
 ))
 
 /// Enum representing different barcode types
-enum BarcodeTypeEnum {
+enum BarcodeType {
   aztec,
   code128,
   code39,
@@ -32,7 +32,7 @@ enum BarcodeTypeEnum {
 }
 
 /// Enum representing barcode value types (Android only)
-enum BarcodeValueTypeEnum {
+enum BarcodeValueType {
   unknown,
   contactInfo,
   email,
@@ -49,7 +49,7 @@ enum BarcodeValueTypeEnum {
 }
 
 /// Enum representing camera resolutions
-enum ResolutionEnum {
+enum Resolution {
   sd480,
   hd720,
   hd1080,
@@ -57,7 +57,7 @@ enum ResolutionEnum {
 }
 
 /// Enum representing camera framerates
-enum FramerateEnum {
+enum Framerate {
   fps30,
   fps60,
   fps120,
@@ -65,20 +65,20 @@ enum FramerateEnum {
 }
 
 /// Enum representing detection modes
-enum DetectionModeEnum {
+enum DetectionMode {
   pauseDetection,
   pauseVideo,
   continuous,
 }
 
 /// Enum representing camera positions
-enum CameraPositionEnum {
+enum CameraPosition {
   front,
   back,
 }
 
 /// Enum representing iOS API modes
-enum IOSApiModeEnum {
+enum IOSApiMode {
   avFoundation,
   vision,
 }
@@ -86,29 +86,29 @@ enum IOSApiModeEnum {
 /// Represents a point with x and y coordinates
 class PointData {
   PointData({required this.x, required this.y});
-  
+
   final int x;
   final int y;
 }
 
 /// Represents a detected barcode
-class BarcodeData {
-  BarcodeData({
+class Barcode {
+  Barcode({
     required this.type,
     required this.value,
     this.valueType,
     this.cornerPoints,
   });
 
-  final BarcodeTypeEnum type;
+  final BarcodeType type;
   final String value;
-  final BarcodeValueTypeEnum? valueType;
+  final BarcodeValueType? valueType;
   final List<PointData?>? cornerPoints;
 }
 
 /// Configuration for camera preview
-class PreviewConfigurationData {
-  PreviewConfigurationData({
+class PreviewConfiguration {
+  PreviewConfiguration({
     required this.textureId,
     required this.targetRotation,
     required this.height,
@@ -126,8 +126,8 @@ class PreviewConfigurationData {
 }
 
 /// Configuration for initializing the scanner
-class ScannerConfigurationData {
-  ScannerConfigurationData({
+class ScannerConfiguration {
+  ScannerConfiguration({
     required this.types,
     required this.mode,
     required this.resolution,
@@ -137,18 +137,18 @@ class ScannerConfigurationData {
     this.confidence,
   });
 
-  final List<BarcodeTypeEnum?> types;
-  final DetectionModeEnum mode;
-  final ResolutionEnum resolution;
-  final FramerateEnum framerate;
-  final CameraPositionEnum position;
-  final IOSApiModeEnum? apiMode;
+  final List<BarcodeType?> types;
+  final DetectionMode mode;
+  final Resolution resolution;
+  final Framerate framerate;
+  final CameraPosition position;
+  final IOSApiMode? apiMode;
   final double? confidence;
 }
 
 /// Configuration for updating scanner settings
-class UpdateConfigurationData {
-  UpdateConfigurationData({
+class UpdateConfiguration {
+  UpdateConfiguration({
     this.types,
     this.mode,
     this.resolution,
@@ -156,11 +156,11 @@ class UpdateConfigurationData {
     this.position,
   });
 
-  final List<BarcodeTypeEnum?>? types;
-  final DetectionModeEnum? mode;
-  final ResolutionEnum? resolution;
-  final FramerateEnum? framerate;
-  final CameraPositionEnum? position;
+  final List<BarcodeType?>? types;
+  final DetectionMode? mode;
+  final Resolution? resolution;
+  final Framerate? framerate;
+  final CameraPosition? position;
 }
 
 /// Data for image scanning
@@ -181,7 +181,7 @@ class ImageSourceData {
 abstract class FastBarcodeScannerHostApi {
   /// Initialize the camera and scanner with the given configuration
   @async
-  PreviewConfigurationData initialize(ScannerConfigurationData configuration);
+  PreviewConfiguration initialize(ScannerConfiguration configuration);
 
   /// Start the camera
   @async
@@ -209,11 +209,11 @@ abstract class FastBarcodeScannerHostApi {
 
   /// Update scanner configuration
   @async
-  PreviewConfigurationData changeConfiguration(UpdateConfigurationData configuration);
+  PreviewConfiguration changeConfiguration(UpdateConfiguration configuration);
 
   /// Scan barcode from image
   @async
-  List<BarcodeData?> scanImage(ImageSourceData imageSource);
+  List<Barcode?> scanImage(ImageSourceData imageSource);
 
   /// Retrieve cached image path for a barcode
   @async
@@ -228,7 +228,7 @@ abstract class FastBarcodeScannerHostApi {
 @FlutterApi()
 abstract class FastBarcodeScannerFlutterApi {
   /// Called when barcodes are detected
-  void onBarcodesDetected(List<BarcodeData?> barcodes);
+  void onBarcodesDetected(List<Barcode?> barcodes);
 
   /// Called when an error occurs
   void onError(String errorCode, String errorMessage, String? errorDetails);

@@ -1,10 +1,7 @@
-import 'package:fast_barcode_scanner_platform_interface/src/types/image_source.dart';
 import 'package:plugin_platform_interface/plugin_platform_interface.dart';
 
-import 'method_channel_fast_barcode_scanner.dart';
-import 'types/barcode.dart';
-import 'types/barcode_type.dart';
-import 'types/preview_configuration.dart';
+import 'pigeon_fast_barcode_scanner.dart';
+import 'pigeon_barcode_scanner.dart';
 
 /// Callback handler method for receiving scanned codes.
 typedef OnDetectionHandler = void Function(List<Barcode>);
@@ -21,11 +18,11 @@ abstract class FastBarcodeScannerPlatform extends PlatformInterface {
   static const Object _token = Object();
 
   static FastBarcodeScannerPlatform _instance =
-      MethodChannelFastBarcodeScanner();
+      PigeonFastBarcodeScanner();
 
   /// The default instance of [FastBarcodeScannerPlatform] to use.
   ///
-  /// Defaults to [MethodChannelFastBarcodeScanner].
+  /// Defaults to [PigeonFastBarcodeScanner].
   static FastBarcodeScannerPlatform get instance => _instance;
 
   /// Platform specific plugins should set this with their own platform-specific
@@ -94,7 +91,7 @@ abstract class FastBarcodeScannerPlatform extends PlatformInterface {
     throw UnimplementedError('setOnDetectHandler() has not been implemented');
   }
 
-  Future<List<Barcode>?> scanImage(ImageSource source) {
+  Future<List<Barcode>?> scanImage(ImageSourceData source) {
     throw UnimplementedError('scanImage() has not been implemented');
   }
 
