@@ -4,7 +4,7 @@ import 'pigeon_fast_barcode_scanner.dart';
 import 'pigeon_barcode_scanner.dart';
 
 /// Callback handler method for receiving scanned codes.
-typedef OnDetectionHandler = void Function(List<Barcode>);
+typedef OnDetectionHandler = void Function(List<BarcodeData>);
 
 /// The interface that implementations of fast_barcode_scanner must implement.
 ///
@@ -91,7 +91,7 @@ abstract class FastBarcodeScannerPlatform extends PlatformInterface {
     throw UnimplementedError('setOnDetectHandler() has not been implemented');
   }
 
-  Future<List<Barcode>?> scanImage(ImageSourceData source) {
+  Future<List<BarcodeData>?> scanImage(ImageSourceData source) {
     throw UnimplementedError('scanImage() has not been implemented');
   }
 

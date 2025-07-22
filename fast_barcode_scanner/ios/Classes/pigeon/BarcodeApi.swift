@@ -237,7 +237,7 @@ struct PointData: Hashable {
 /// Represents a detected barcode
 ///
 /// Generated class from Pigeon that represents data sent in messages.
-struct Barcode: Hashable {
+struct BarcodeData: Hashable {
   var type: BarcodeType
   var value: String
   var valueType: BarcodeValueType? = nil
@@ -245,13 +245,13 @@ struct Barcode: Hashable {
 
 
   // swift-format-ignore: AlwaysUseLowerCamelCase
-  static func fromList(_ pigeonVar_list: [Any?]) -> Barcode? {
+  static func fromList(_ pigeonVar_list: [Any?]) -> BarcodeData? {
     let type = pigeonVar_list[0] as! BarcodeType
     let value = pigeonVar_list[1] as! String
     let valueType: BarcodeValueType? = nilOrValue(pigeonVar_list[2])
     let cornerPoints: [PointData?]? = nilOrValue(pigeonVar_list[3])
 
-    return Barcode(
+    return BarcodeData(
       type: type,
       value: value,
       valueType: valueType,
@@ -266,7 +266,7 @@ struct Barcode: Hashable {
       cornerPoints,
     ]
   }
-  static func == (lhs: Barcode, rhs: Barcode) -> Bool {
+  static func == (lhs: BarcodeData, rhs: BarcodeData) -> Bool {
     return deepEqualsBarcodeApi(lhs.toList(), rhs.toList())  }
   func hash(into hasher: inout Hasher) {
     deepHashBarcodeApi(value: toList(), hasher: &hasher)
@@ -497,7 +497,7 @@ private class BarcodeApiPigeonCodecReader: FlutterStandardReader {
     case 136:
       return PointData.fromList(self.readValue() as! [Any?])
     case 137:
-      return Barcode.fromList(self.readValue() as! [Any?])
+      return BarcodeData.fromList(self.readValue() as! [Any?])
     case 138:
       return PreviewConfiguration.fromList(self.readValue() as! [Any?])
     case 139:
@@ -538,7 +538,7 @@ private class BarcodeApiPigeonCodecWriter: FlutterStandardWriter {
     } else if let value = value as? PointData {
       super.writeByte(136)
       super.writeValue(value.toList())
-    } else if let value = value as? Barcode {
+    } else if let value = value as? BarcodeData {
       super.writeByte(137)
       super.writeValue(value.toList())
     } else if let value = value as? PreviewConfiguration {
@@ -595,7 +595,7 @@ protocol FastBarcodeScannerHostApi {
   /// Update scanner configuration
   func changeConfiguration(configuration: UpdateConfiguration, completion: @escaping (Result<PreviewConfiguration, Error>) -> Void)
   /// Scan barcode from image
-  func scanImage(imageSource: ImageSourceData, completion: @escaping (Result<[Barcode?], Error>) -> Void)
+  func scanImage(imageSource: ImageSourceData, completion: @escaping (Result<[BarcodeData?], Error>) -> Void)
   /// Retrieve cached image path for a barcode
   func retrieveCachedImage(code: String, completion: @escaping (Result<String?, Error>) -> Void)
   /// Clear all cached images
@@ -799,7 +799,7 @@ class FastBarcodeScannerHostApiSetup {
 /// Generated protocol from Pigeon that represents Flutter messages that can be called from Swift.
 protocol FastBarcodeScannerFlutterApiProtocol {
   /// Called when barcodes are detected
-  func onBarcodesDetected(barcodes barcodesArg: [Barcode?], completion: @escaping (Result<Void, PigeonError>) -> Void)
+  func onBarcodesDetected(barcodes barcodesArg: [BarcodeData?], completion: @escaping (Result<Void, PigeonError>) -> Void)
   /// Called when an error occurs
   func onError(errorCode errorCodeArg: String, errorMessage errorMessageArg: String, errorDetails errorDetailsArg: String?, completion: @escaping (Result<Void, PigeonError>) -> Void)
 }
@@ -814,7 +814,7 @@ class FastBarcodeScannerFlutterApi: FastBarcodeScannerFlutterApiProtocol {
     return BarcodeApiPigeonCodec.shared
   }
   /// Called when barcodes are detected
-  func onBarcodesDetected(barcodes barcodesArg: [Barcode?], completion: @escaping (Result<Void, PigeonError>) -> Void) {
+  func onBarcodesDetected(barcodes barcodesArg: [BarcodeData?], completion: @escaping (Result<Void, PigeonError>) -> Void) {
     let channelName: String = "dev.flutter.pigeon.fast_barcode_scanner_platform_interface.FastBarcodeScannerFlutterApi.onBarcodesDetected\(messageChannelSuffix)"
     let channel = FlutterBasicMessageChannel(name: channelName, binaryMessenger: binaryMessenger, codec: codec)
     channel.sendMessage([barcodesArg] as [Any?]) { response in

@@ -88,7 +88,7 @@ class BarcodeCameraState extends State<BarcodeCamera> {
     cameraController.events.addListener(onScannerEvent);
   }
 
-  void onScan(List<Barcode> barcodes) {
+  void onScan(List<BarcodeData> barcodes) {
     widget.onScan?.call(barcodes);
   }
 

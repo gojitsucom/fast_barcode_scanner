@@ -97,9 +97,9 @@ class PigeonFastBarcodeScanner extends FastBarcodeScannerPlatform implements Fas
   }
 
   @override
-  Future<List<Barcode>?> scanImage(ImageSourceData source) async {
+  Future<List<BarcodeData>?> scanImage(ImageSourceData source) async {
     final result = await _hostApi.scanImage(source);
-    return result.whereType<Barcode>().toList();
+    return result.whereType<BarcodeData>().toList();
   }
 
   @override
@@ -114,9 +114,9 @@ class PigeonFastBarcodeScanner extends FastBarcodeScannerPlatform implements Fas
 
   // FastBarcodeScannerFlutterApi implementation
   @override
-  void onBarcodesDetected(List<Barcode?> barcodes) {
+  void onBarcodesDetected(List<BarcodeData?> barcodes) {
     if (_onDetectHandler != null) {
-      final validBarcodes = barcodes.whereType<Barcode>().toList();
+      final validBarcodes = barcodes.whereType<BarcodeData>().toList();
       _onDetectHandler!(validBarcodes);
     }
   }

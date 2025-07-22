@@ -158,8 +158,8 @@ class PointData {
 }
 
 /// Represents a detected barcode
-class Barcode {
-  Barcode({
+class BarcodeData {
+  BarcodeData({
     required this.type,
     required this.value,
     this.valueType,
@@ -186,9 +186,9 @@ class Barcode {
   Object encode() {
     return _toList();  }
 
-  static Barcode decode(Object result) {
+  static BarcodeData decode(Object result) {
     result as List<Object?>;
-    return Barcode(
+    return BarcodeData(
       type: result[0]! as BarcodeType,
       value: result[1]! as String,
       valueType: result[2] as BarcodeValueType?,
@@ -199,7 +199,7 @@ class Barcode {
   @override
   // ignore: avoid_equals_and_hash_code_on_mutable_classes
   bool operator ==(Object other) {
-    if (other is! Barcode || other.runtimeType != runtimeType) {
+    if (other is! BarcodeData || other.runtimeType != runtimeType) {
       return false;
     }
     if (identical(this, other)) {
@@ -499,7 +499,7 @@ class _PigeonCodec extends StandardMessageCodec {
     }    else if (value is PointData) {
       buffer.putUint8(136);
       writeValue(buffer, value.encode());
-    }    else if (value is Barcode) {
+    }    else if (value is BarcodeData) {
       buffer.putUint8(137);
       writeValue(buffer, value.encode());
     }    else if (value is PreviewConfiguration) {
@@ -546,7 +546,7 @@ class _PigeonCodec extends StandardMessageCodec {
       case 136: 
         return PointData.decode(readValue(buffer)!);
       case 137: 
-        return Barcode.decode(readValue(buffer)!);
+        return BarcodeData.decode(readValue(buffer)!);
       case 138: 
         return PreviewConfiguration.decode(readValue(buffer)!);
       case 139: 
@@ -783,7 +783,7 @@ class FastBarcodeScannerHostApi {
   }
 
   /// Scan barcode from image
-  Future<List<Barcode?>> scanImage(ImageSourceData imageSource) async {
+  Future<List<BarcodeData?>> scanImage(ImageSourceData imageSource) async {
     final String pigeonVar_channelName = 'dev.flutter.pigeon.fast_barcode_scanner_platform_interface.FastBarcodeScannerHostApi.scanImage$pigeonVar_messageChannelSuffix';
     final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
       pigeonVar_channelName,
@@ -807,7 +807,7 @@ class FastBarcodeScannerHostApi {
         message: 'Host platform returned null value for non-null return value.',
       );
     } else {
-      return (pigeonVar_replyList[0] as List<Object?>?)!.cast<Barcode?>();
+      return (pigeonVar_replyList[0] as List<Object?>?)!.cast<BarcodeData?>();
     }
   }
 
@@ -865,7 +865,7 @@ abstract class FastBarcodeScannerFlutterApi {
   static const MessageCodec<Object?> pigeonChannelCodec = _PigeonCodec();
 
   /// Called when barcodes are detected
-  void onBarcodesDetected(List<Barcode?> barcodes);
+  void onBarcodesDetected(List<BarcodeData?> barcodes);
 
   /// Called when an error occurs
   void onError(String errorCode, String errorMessage, String? errorDetails);
@@ -883,9 +883,9 @@ abstract class FastBarcodeScannerFlutterApi {
           assert(message != null,
           'Argument for dev.flutter.pigeon.fast_barcode_scanner_platform_interface.FastBarcodeScannerFlutterApi.onBarcodesDetected was null.');
           final List<Object?> args = (message as List<Object?>?)!;
-          final List<Barcode?>? arg_barcodes = (args[0] as List<Object?>?)?.cast<Barcode?>();
+          final List<BarcodeData?>? arg_barcodes = (args[0] as List<Object?>?)?.cast<BarcodeData?>();
           assert(arg_barcodes != null,
-              'Argument for dev.flutter.pigeon.fast_barcode_scanner_platform_interface.FastBarcodeScannerFlutterApi.onBarcodesDetected was null, expected non-null List<Barcode?>.');
+              'Argument for dev.flutter.pigeon.fast_barcode_scanner_platform_interface.FastBarcodeScannerFlutterApi.onBarcodesDetected was null, expected non-null List<BarcodeData?>.');
           try {
             api.onBarcodesDetected(arg_barcodes!);
             return wrapResponse(empty: true);

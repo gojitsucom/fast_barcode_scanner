@@ -234,7 +234,7 @@ data class PointData (
  *
  * Generated class from Pigeon that represents data sent in messages.
  */
-data class Barcode (
+data class BarcodeData (
   val type: BarcodeType,
   val value: String,
   val valueType: BarcodeValueType? = null,
@@ -242,12 +242,12 @@ data class Barcode (
 )
  {
   companion object {
-    fun fromList(pigeonVar_list: List<Any?>): Barcode {
+    fun fromList(pigeonVar_list: List<Any?>): BarcodeData {
       val type = pigeonVar_list[0] as BarcodeType
       val value = pigeonVar_list[1] as String
       val valueType = pigeonVar_list[2] as BarcodeValueType?
       val cornerPoints = pigeonVar_list[3] as List<PointData?>?
-      return Barcode(type, value, valueType, cornerPoints)
+      return BarcodeData(type, value, valueType, cornerPoints)
     }
   }
   fun toList(): List<Any?> {
@@ -259,7 +259,7 @@ data class Barcode (
     )
   }
   override fun equals(other: Any?): Boolean {
-    if (other !is Barcode) {
+    if (other !is BarcodeData) {
       return false
     }
     if (this === other) {
@@ -493,7 +493,7 @@ private open class BarcodeApiPigeonCodec : StandardMessageCodec() {
       }
       137.toByte() -> {
         return (readValue(buffer) as? List<Any?>)?.let {
-          Barcode.fromList(it)
+          BarcodeData.fromList(it)
         }
       }
       138.toByte() -> {
@@ -553,7 +553,7 @@ private open class BarcodeApiPigeonCodec : StandardMessageCodec() {
         stream.write(136)
         writeValue(stream, value.toList())
       }
-      is Barcode -> {
+      is BarcodeData -> {
         stream.write(137)
         writeValue(stream, value.toList())
       }
@@ -602,7 +602,7 @@ interface FastBarcodeScannerHostApi {
   /** Update scanner configuration */
   fun changeConfiguration(configuration: UpdateConfiguration, callback: (Result<PreviewConfiguration>) -> Unit)
   /** Scan barcode from image */
-  fun scanImage(imageSource: ImageSourceData, callback: (Result<List<Barcode?>>) -> Unit)
+  fun scanImage(imageSource: ImageSourceData, callback: (Result<List<BarcodeData?>>) -> Unit)
   /** Retrieve cached image path for a barcode */
   fun retrieveCachedImage(code: String, callback: (Result<String?>) -> Unit)
   /** Clear all cached images */
@@ -766,7 +766,7 @@ interface FastBarcodeScannerHostApi {
           channel.setMessageHandler { message, reply ->
             val args = message as List<Any?>
             val imageSourceArg = args[0] as ImageSourceData
-            api.scanImage(imageSourceArg) { result: Result<List<Barcode?>> ->
+            api.scanImage(imageSourceArg) { result: Result<List<BarcodeData?>> ->
               val error = result.exceptionOrNull()
               if (error != null) {
                 reply.reply(BarcodeApiPigeonUtils.wrapError(error))
@@ -833,7 +833,7 @@ class FastBarcodeScannerFlutterApi(private val binaryMessenger: BinaryMessenger,
     }
   }
   /** Called when barcodes are detected */
-  fun onBarcodesDetected(barcodesArg: List<Barcode?>, callback: (Result<Unit>) -> Unit)
+  fun onBarcodesDetected(barcodesArg: List<BarcodeData?>, callback: (Result<Unit>) -> Unit)
 {
     val separatedMessageChannelSuffix = if (messageChannelSuffix.isNotEmpty()) ".$messageChannelSuffix" else ""
     val channelName = "dev.flutter.pigeon.fast_barcode_scanner_platform_interface.FastBarcodeScannerFlutterApi.onBarcodesDetected$separatedMessageChannelSuffix"

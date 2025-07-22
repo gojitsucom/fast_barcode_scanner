@@ -118,15 +118,15 @@ fun createPreviewConfiguration(
 }
 
 // MARK: - MLKit Barcode to Pigeon Conversion
-fun Barcode.toPigeonBarcode(): BarcodeData? {
+fun Barcode.toPigeonBarcode(): com.jhoogstraat.fast_barcode_scanner.pigeon.BarcodeData? {
     val type = this.format.toBarcodeType() ?: return null
     val valueType = this.valueType.toBarcodeValueType()
     
     val cornerPoints = this.cornerPoints?.map { point ->
-        PointData(x = point.x.toLong(), y = point.y.toLong())
+        com.jhoogstraat.fast_barcode_scanner.pigeon.PointData(x = point.x.toLong(), y = point.y.toLong())
     }
     
-    return BarcodeData(
+    return com.jhoogstraat.fast_barcode_scanner.pigeon.BarcodeData(
         type = type,
         value = this.rawValue ?: "",
         valueType = valueType,
@@ -140,4 +140,150 @@ sealed class ScannerException(message: String) : Exception(message) {
     object CameraNotAvailable : ScannerException("Camera not available")
     object PermissionDenied : ScannerException("Camera permission denied")
     class Unknown(message: String) : ScannerException("Unknown error: $message")
+}
+
+// MARK: - Pigeon to Legacy Conversion
+fun ScannerConfiguration.toLegacyMap(): HashMap<String, Any> {
+    val map = HashMap<String, Any>()
+    
+    // Convert types
+    val typeStrings = types.mapNotNull { type ->
+        when (type) {
+            BarcodeTypeEnum.AZTEC -> "aztec"
+            BarcodeTypeEnum.CODE128 -> "code128"
+            BarcodeTypeEnum.CODE39 -> "code39"
+            BarcodeTypeEnum.CODE39MOD43 -> "code39mod43"
+            BarcodeTypeEnum.CODE93 -> "code93"
+            BarcodeTypeEnum.CODABAR -> "codabar"
+            BarcodeTypeEnum.DATAMATRIX -> "dataMatrix"
+            BarcodeTypeEnum.EAN13 -> "ean13"
+            BarcodeTypeEnum.EAN8 -> "ean8"
+            BarcodeTypeEnum.ITF -> "itf"
+            BarcodeTypeEnum.PDF417 -> "pdf417"
+            BarcodeTypeEnum.QR -> "qr"
+            BarcodeTypeEnum.UPCA -> "upcA"
+            BarcodeTypeEnum.UPCE -> "upcE"
+            BarcodeTypeEnum.INTERLEAVED -> "interleaved"
+            else -> null
+        }
+    }
+    map["types"] = typeStrings
+    
+    // Convert detection mode
+    val modeString = when (mode) {
+        DetectionModeEnum.PAUSEDETECTION -> "pauseDetection"
+        DetectionModeEnum.PAUSEVIDEO -> "pauseVideo"
+        DetectionModeEnum.CONTINUOUS -> "continuous"
+    }
+    map["detectionMode"] = modeString
+    
+    // Convert resolution
+    val resolutionString = when (resolution) {
+        ResolutionEnum.SD480 -> "sd480"
+        ResolutionEnum.HD720 -> "hd720"
+        ResolutionEnum.HD1080 -> "hd1080"
+        ResolutionEnum.HD4K -> "hd4k"
+    }
+    map["resolution"] = resolutionString
+    
+    // Convert framerate
+    val framerateString = when (framerate) {
+        FramerateEnum.FPS30 -> "fps30"
+        FramerateEnum.FPS60 -> "fps60"
+        FramerateEnum.FPS120 -> "fps120"
+        FramerateEnum.FPS240 -> "fps240"
+    }
+    map["framerate"] = framerateString
+    
+    // Convert camera position
+    val positionString = when (position) {
+        CameraPositionEnum.FRONT -> "front"
+        CameraPositionEnum.BACK -> "back"
+    }
+    map["position"] = positionString
+    
+    // Add confidence if present
+    confidence?.let { map["confidence"] = it }
+    
+    return map
+}
+
+fun UpdateConfiguration.toLegacyMap(): HashMap<String, Any> {
+    val map = HashMap<String, Any>()
+    
+    // Convert types if present
+    types?.let { typesList ->
+        val typeStrings = typesList.mapNotNull { type ->
+            when (type) {
+                BarcodeTypeEnum.AZTEC -> "aztec"
+                BarcodeTypeEnum.CODE128 -> "code128"
+                BarcodeTypeEnum.CODE39 -> "code39"
+                BarcodeTypeEnum.CODE39MOD43 -> "code39mod43"
+                BarcodeTypeEnum.CODE93 -> "code93"
+                BarcodeTypeEnum.CODABAR -> "codabar"
+                BarcodeTypeEnum.DATAMATRIX -> "dataMatrix"
+                BarcodeTypeEnum.EAN13 -> "ean13"
+                BarcodeTypeEnum.EAN8 -> "ean8"
+                BarcodeTypeEnum.ITF -> "itf"
+                BarcodeTypeEnum.PDF417 -> "pdf417"
+                BarcodeTypeEnum.QR -> "qr"
+                BarcodeTypeEnum.UPCA -> "upcA"
+                BarcodeTypeEnum.UPCE -> "upcE"
+                BarcodeTypeEnum.INTERLEAVED -> "interleaved"
+                else -> null
+            }
+        }
+        map["types"] = typeStrings
+    }
+    
+    // Convert detection mode if present
+    mode?.let { detectionMode ->
+        val modeString = when (detectionMode) {
+            DetectionModeEnum.PAUSEDETECTION -> "pauseDetection"
+            DetectionModeEnum.PAUSEVIDEO -> "pauseVideo"
+            DetectionModeEnum.CONTINUOUS -> "continuous"
+        }
+        map["detectionMode"] = modeString
+    }
+    
+    // Convert resolution if present
+    resolution?.let { res ->
+        val resolutionString = when (res) {
+            ResolutionEnum.SD480 -> "sd480"
+            ResolutionEnum.HD720 -> "hd720"
+            ResolutionEnum.HD1080 -> "hd1080"
+            ResolutionEnum.HD4K -> "hd4k"
+        }
+        map["resolution"] = resolutionString
+    }
+    
+    // Convert framerate if present
+    framerate?.let { fps ->
+        val framerateString = when (fps) {
+            FramerateEnum.FPS30 -> "fps30"
+            FramerateEnum.FPS60 -> "fps60"
+            FramerateEnum.FPS120 -> "fps120"
+            FramerateEnum.FPS240 -> "fps240"
+        }
+        map["framerate"] = framerateString
+    }
+    
+    // Convert camera position if present
+    position?.let { pos ->
+        val positionString = when (pos) {
+            CameraPositionEnum.FRONT -> "front"
+            CameraPositionEnum.BACK -> "back"
+        }
+        map["position"] = positionString
+    }
+    
+    return map
+}
+
+// MARK: - Additional Error Handling
+object ScannerException {
+    object NotInitialized : Exception("Scanner not initialized")
+    object ActivityNotConnected : Exception("Activity not connected") 
+    object AlreadyPicking : Exception("Already picking image")
+    class LoadingFailed(cause: Throwable) : Exception("Loading failed: ${cause.message}")
 }

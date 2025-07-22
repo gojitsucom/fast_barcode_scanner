@@ -92,8 +92,8 @@ class PointData {
 }
 
 /// Represents a detected barcode
-class Barcode {
-  Barcode({
+class BarcodeData {
+  BarcodeData({
     required this.type,
     required this.value,
     this.valueType,
@@ -213,7 +213,7 @@ abstract class FastBarcodeScannerHostApi {
 
   /// Scan barcode from image
   @async
-  List<Barcode?> scanImage(ImageSourceData imageSource);
+  List<BarcodeData?> scanImage(ImageSourceData imageSource);
 
   /// Retrieve cached image path for a barcode
   @async
@@ -228,7 +228,7 @@ abstract class FastBarcodeScannerHostApi {
 @FlutterApi()
 abstract class FastBarcodeScannerFlutterApi {
   /// Called when barcodes are detected
-  void onBarcodesDetected(List<Barcode?> barcodes);
+  void onBarcodesDetected(List<BarcodeData?> barcodes);
 
   /// Called when an error occurs
   void onError(String errorCode, String errorMessage, String? errorDetails);
