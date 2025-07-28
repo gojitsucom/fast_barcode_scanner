@@ -4,88 +4,88 @@ import com.google.mlkit.vision.barcode.common.Barcode
 import com.jhoogstraat.fast_barcode_scanner.pigeon.*
 
 // MARK: - Resolution Extensions
-val ResolutionEnum.width: Int
+val Resolution.width: Int
     get() = when (this) {
-        ResolutionEnum.SD480 -> 720
-        ResolutionEnum.HD720 -> 1280
-        ResolutionEnum.HD1080 -> 1920
-        ResolutionEnum.HD4K -> 3840
+        Resolution.SD480 -> 720
+        Resolution.HD720 -> 1280
+        Resolution.HD1080 -> 1920
+        Resolution.HD4K -> 3840
     }
 
-val ResolutionEnum.height: Int
+val Resolution.height: Int
     get() = when (this) {
-        ResolutionEnum.SD480 -> 480
-        ResolutionEnum.HD720 -> 720
-        ResolutionEnum.HD1080 -> 1080
-        ResolutionEnum.HD4K -> 2160
+        Resolution.SD480 -> 480
+        Resolution.HD720 -> 720
+        Resolution.HD1080 -> 1080
+        Resolution.HD4K -> 2160
     }
 
 // MARK: - Framerate Extensions
-val FramerateEnum.value: Double
+val Framerate.value: Double
     get() = when (this) {
-        FramerateEnum.FPS30 -> 30.0
-        FramerateEnum.FPS60 -> 60.0
-        FramerateEnum.FPS120 -> 120.0
-        FramerateEnum.FPS240 -> 240.0
+        Framerate.FPS30 -> 30.0
+        Framerate.FPS60 -> 60.0
+        Framerate.FPS120 -> 120.0
+        Framerate.FPS240 -> 240.0
     }
 
 // MARK: - BarcodeType Mappings
-val barcodeTypeToMLKit: Map<BarcodeTypeEnum, Int> = mapOf(
-    BarcodeTypeEnum.AZTEC to Barcode.FORMAT_AZTEC,
-    BarcodeTypeEnum.CODE128 to Barcode.FORMAT_CODE_128,
-    BarcodeTypeEnum.CODE39 to Barcode.FORMAT_CODE_39,
-    BarcodeTypeEnum.CODE93 to Barcode.FORMAT_CODE_93,
-    BarcodeTypeEnum.CODABAR to Barcode.FORMAT_CODABAR,
-    BarcodeTypeEnum.DATAMATRIX to Barcode.FORMAT_DATA_MATRIX,
-    BarcodeTypeEnum.EAN13 to Barcode.FORMAT_EAN_13,
-    BarcodeTypeEnum.EAN8 to Barcode.FORMAT_EAN_8,
-    BarcodeTypeEnum.ITF to Barcode.FORMAT_ITF,
-    BarcodeTypeEnum.PDF417 to Barcode.FORMAT_PDF417,
-    BarcodeTypeEnum.QR to Barcode.FORMAT_QR_CODE,
-    BarcodeTypeEnum.UPCA to Barcode.FORMAT_UPC_A,
-    BarcodeTypeEnum.UPCE to Barcode.FORMAT_UPC_E
+val barcodeTypeToMLKit: Map<BarcodeType, Int> = mapOf(
+    BarcodeType.AZTEC to Barcode.FORMAT_AZTEC,
+    BarcodeType.CODE128 to Barcode.FORMAT_CODE_128,
+    BarcodeType.CODE39 to Barcode.FORMAT_CODE_39,
+    BarcodeType.CODE93 to Barcode.FORMAT_CODE_93,
+    BarcodeType.CODABAR to Barcode.FORMAT_CODABAR,
+    BarcodeType.DATA_MATRIX to Barcode.FORMAT_DATA_MATRIX,
+    BarcodeType.EAN13 to Barcode.FORMAT_EAN_13,
+    BarcodeType.EAN8 to Barcode.FORMAT_EAN_8,
+    BarcodeType.ITF to Barcode.FORMAT_ITF,
+    BarcodeType.PDF417 to Barcode.FORMAT_PDF417,
+    BarcodeType.QR to Barcode.FORMAT_QR_CODE,
+    BarcodeType.UPC_A to Barcode.FORMAT_UPC_A,
+    BarcodeType.UPC_E to Barcode.FORMAT_UPC_E
 )
 
-val mlKitToBarcodeType: Map<Int, BarcodeTypeEnum> = barcodeTypeToMLKit.entries.associate { (k, v) -> v to k }
+val mlKitToBarcodeType: Map<Int, BarcodeType> = barcodeTypeToMLKit.entries.associate { (k, v) -> v to k }
 
 // MARK: - BarcodeType Extensions
-val BarcodeTypeEnum.mlKitFormat: Int?
+val BarcodeType.mlKitFormat: Int?
     get() = barcodeTypeToMLKit[this]
 
-fun Int.toBarcodeType(): BarcodeTypeEnum? = mlKitToBarcodeType[this]
+fun Int.toBarcodeType(): BarcodeType? = mlKitToBarcodeType[this]
 
 // MARK: - BarcodeValueType Mappings
-val barcodeValueTypeToMLKit: Map<BarcodeValueTypeEnum, Int> = mapOf(
-    BarcodeValueTypeEnum.UNKNOWN to Barcode.TYPE_UNKNOWN,
-    BarcodeValueTypeEnum.CONTACTINFO to Barcode.TYPE_CONTACT_INFO,
-    BarcodeValueTypeEnum.EMAIL to Barcode.TYPE_EMAIL,
-    BarcodeValueTypeEnum.ISBN to Barcode.TYPE_ISBN,
-    BarcodeValueTypeEnum.PHONE to Barcode.TYPE_PHONE,
-    BarcodeValueTypeEnum.PRODUCT to Barcode.TYPE_PRODUCT,
-    BarcodeValueTypeEnum.SMS to Barcode.TYPE_SMS,
-    BarcodeValueTypeEnum.TEXT to Barcode.TYPE_TEXT,
-    BarcodeValueTypeEnum.URL to Barcode.TYPE_URL,
-    BarcodeValueTypeEnum.WIFI to Barcode.TYPE_WIFI,
-    BarcodeValueTypeEnum.GEO to Barcode.TYPE_GEO,
-    BarcodeValueTypeEnum.CALENDER to Barcode.TYPE_CALENDAR_EVENT,
-    BarcodeValueTypeEnum.LICENSE to Barcode.TYPE_DRIVER_LICENSE
+val barcodeValueTypeToMLKit: Map<BarcodeValueType, Int> = mapOf(
+    BarcodeValueType.UNKNOWN to Barcode.TYPE_UNKNOWN,
+    BarcodeValueType.CONTACT_INFO to Barcode.TYPE_CONTACT_INFO,
+    BarcodeValueType.EMAIL to Barcode.TYPE_EMAIL,
+    BarcodeValueType.ISBN to Barcode.TYPE_ISBN,
+    BarcodeValueType.PHONE to Barcode.TYPE_PHONE,
+    BarcodeValueType.PRODUCT to Barcode.TYPE_PRODUCT,
+    BarcodeValueType.SMS to Barcode.TYPE_SMS,
+    BarcodeValueType.TEXT to Barcode.TYPE_TEXT,
+    BarcodeValueType.URL to Barcode.TYPE_URL,
+    BarcodeValueType.WIFI to Barcode.TYPE_WIFI,
+    BarcodeValueType.GEO to Barcode.TYPE_GEO,
+    BarcodeValueType.CALENDER to Barcode.TYPE_CALENDAR_EVENT,
+    BarcodeValueType.LICENSE to Barcode.TYPE_DRIVER_LICENSE
 )
 
-val mlKitToBarcodeValueType: Map<Int, BarcodeValueTypeEnum> = barcodeValueTypeToMLKit.entries.associate { (k, v) -> v to k }
+val mlKitToBarcodeValueType: Map<Int, BarcodeValueType> = barcodeValueTypeToMLKit.entries.associate { (k, v) -> v to k }
 
-fun Int.toBarcodeValueType(): BarcodeValueTypeEnum? = mlKitToBarcodeValueType[this]
+fun Int.toBarcodeValueType(): BarcodeValueType? = mlKitToBarcodeValueType[this]
 
 // MARK: - ScannerConfiguration Extensions
-fun ScannerConfigurationData.copy(
-    types: List<BarcodeTypeEnum?>? = null,
-    mode: DetectionModeEnum? = null,
-    resolution: ResolutionEnum? = null,
-    framerate: FramerateEnum? = null,
-    position: CameraPositionEnum? = null,
-    apiMode: IOSApiModeEnum? = null,
+fun ScannerConfiguration.copy(
+    types: List<BarcodeType?>? = null,
+    mode: DetectionMode? = null,
+    resolution: Resolution? = null,
+    framerate: Framerate? = null,
+    position: CameraPosition? = null,
+    apiMode: IOSApiMode? = null,
     confidence: Double? = null
-): ScannerConfigurationData {
-    return ScannerConfigurationData(
+): ScannerConfiguration {
+    return ScannerConfiguration(
         types = types ?: this.types,
         mode = mode ?: this.mode,
         resolution = resolution ?: this.resolution,
@@ -97,7 +97,7 @@ fun ScannerConfigurationData.copy(
 }
 
 // MARK: - PreviewConfiguration Extensions
-val PreviewConfigurationData.analysisResolution: String
+val PreviewConfiguration.analysisResolution: String
     get() = "${analysisWidth}x${analysisHeight}"
 
 // MARK: - Utility Functions
@@ -106,8 +106,8 @@ fun createPreviewConfiguration(
     targetRotation: Long,
     width: Long,
     height: Long
-): PreviewConfigurationData {
-    return PreviewConfigurationData(
+): PreviewConfiguration {
+    return PreviewConfiguration(
         textureId = textureId,
         targetRotation = targetRotation,
         height = height,
@@ -118,172 +118,21 @@ fun createPreviewConfiguration(
 }
 
 // MARK: - MLKit Barcode to Pigeon Conversion
-fun Barcode.toPigeonBarcode(): com.jhoogstraat.fast_barcode_scanner.pigeon.BarcodeData? {
+fun Barcode.toPigeonBarcode(): BarcodeData? {
     val type = this.format.toBarcodeType() ?: return null
     val valueType = this.valueType.toBarcodeValueType()
     
     val cornerPoints = this.cornerPoints?.map { point ->
-        com.jhoogstraat.fast_barcode_scanner.pigeon.PointData(x = point.x.toLong(), y = point.y.toLong())
+        PointData(x = point.x.toLong(), y = point.y.toLong())
     }
     
-    return com.jhoogstraat.fast_barcode_scanner.pigeon.BarcodeData(
+    return BarcodeData(
         type = type,
         value = this.rawValue ?: "",
         valueType = valueType,
         cornerPoints = cornerPoints
     )
 }
-
-// MARK: - Error Handling
-sealed class ScannerException(message: String) : Exception(message) {
-    object InvalidConfiguration : ScannerException("Invalid scanner configuration")
-    object CameraNotAvailable : ScannerException("Camera not available")
-    object PermissionDenied : ScannerException("Camera permission denied")
-    class Unknown(message: String) : ScannerException("Unknown error: $message")
-}
-
-// MARK: - Pigeon to Legacy Conversion
-fun ScannerConfiguration.toLegacyMap(): HashMap<String, Any> {
-    val map = HashMap<String, Any>()
-    
-    // Convert types
-    val typeStrings = types.mapNotNull { type ->
-        when (type) {
-            BarcodeTypeEnum.AZTEC -> "aztec"
-            BarcodeTypeEnum.CODE128 -> "code128"
-            BarcodeTypeEnum.CODE39 -> "code39"
-            BarcodeTypeEnum.CODE39MOD43 -> "code39mod43"
-            BarcodeTypeEnum.CODE93 -> "code93"
-            BarcodeTypeEnum.CODABAR -> "codabar"
-            BarcodeTypeEnum.DATAMATRIX -> "dataMatrix"
-            BarcodeTypeEnum.EAN13 -> "ean13"
-            BarcodeTypeEnum.EAN8 -> "ean8"
-            BarcodeTypeEnum.ITF -> "itf"
-            BarcodeTypeEnum.PDF417 -> "pdf417"
-            BarcodeTypeEnum.QR -> "qr"
-            BarcodeTypeEnum.UPCA -> "upcA"
-            BarcodeTypeEnum.UPCE -> "upcE"
-            BarcodeTypeEnum.INTERLEAVED -> "interleaved"
-            else -> null
-        }
-    }
-    map["types"] = typeStrings
-    
-    // Convert detection mode
-    val modeString = when (mode) {
-        DetectionModeEnum.PAUSEDETECTION -> "pauseDetection"
-        DetectionModeEnum.PAUSEVIDEO -> "pauseVideo"
-        DetectionModeEnum.CONTINUOUS -> "continuous"
-    }
-    map["detectionMode"] = modeString
-    
-    // Convert resolution
-    val resolutionString = when (resolution) {
-        ResolutionEnum.SD480 -> "sd480"
-        ResolutionEnum.HD720 -> "hd720"
-        ResolutionEnum.HD1080 -> "hd1080"
-        ResolutionEnum.HD4K -> "hd4k"
-    }
-    map["resolution"] = resolutionString
-    
-    // Convert framerate
-    val framerateString = when (framerate) {
-        FramerateEnum.FPS30 -> "fps30"
-        FramerateEnum.FPS60 -> "fps60"
-        FramerateEnum.FPS120 -> "fps120"
-        FramerateEnum.FPS240 -> "fps240"
-    }
-    map["framerate"] = framerateString
-    
-    // Convert camera position
-    val positionString = when (position) {
-        CameraPositionEnum.FRONT -> "front"
-        CameraPositionEnum.BACK -> "back"
-    }
-    map["position"] = positionString
-    
-    // Add confidence if present
-    confidence?.let { map["confidence"] = it }
-    
-    return map
-}
-
-fun UpdateConfiguration.toLegacyMap(): HashMap<String, Any> {
-    val map = HashMap<String, Any>()
-    
-    // Convert types if present
-    types?.let { typesList ->
-        val typeStrings = typesList.mapNotNull { type ->
-            when (type) {
-                BarcodeTypeEnum.AZTEC -> "aztec"
-                BarcodeTypeEnum.CODE128 -> "code128"
-                BarcodeTypeEnum.CODE39 -> "code39"
-                BarcodeTypeEnum.CODE39MOD43 -> "code39mod43"
-                BarcodeTypeEnum.CODE93 -> "code93"
-                BarcodeTypeEnum.CODABAR -> "codabar"
-                BarcodeTypeEnum.DATAMATRIX -> "dataMatrix"
-                BarcodeTypeEnum.EAN13 -> "ean13"
-                BarcodeTypeEnum.EAN8 -> "ean8"
-                BarcodeTypeEnum.ITF -> "itf"
-                BarcodeTypeEnum.PDF417 -> "pdf417"
-                BarcodeTypeEnum.QR -> "qr"
-                BarcodeTypeEnum.UPCA -> "upcA"
-                BarcodeTypeEnum.UPCE -> "upcE"
-                BarcodeTypeEnum.INTERLEAVED -> "interleaved"
-                else -> null
-            }
-        }
-        map["types"] = typeStrings
-    }
-    
-    // Convert detection mode if present
-    mode?.let { detectionMode ->
-        val modeString = when (detectionMode) {
-            DetectionModeEnum.PAUSEDETECTION -> "pauseDetection"
-            DetectionModeEnum.PAUSEVIDEO -> "pauseVideo"
-            DetectionModeEnum.CONTINUOUS -> "continuous"
-        }
-        map["detectionMode"] = modeString
-    }
-    
-    // Convert resolution if present
-    resolution?.let { res ->
-        val resolutionString = when (res) {
-            ResolutionEnum.SD480 -> "sd480"
-            ResolutionEnum.HD720 -> "hd720"
-            ResolutionEnum.HD1080 -> "hd1080"
-            ResolutionEnum.HD4K -> "hd4k"
-        }
-        map["resolution"] = resolutionString
-    }
-    
-    // Convert framerate if present
-    framerate?.let { fps ->
-        val framerateString = when (fps) {
-            FramerateEnum.FPS30 -> "fps30"
-            FramerateEnum.FPS60 -> "fps60"
-            FramerateEnum.FPS120 -> "fps120"
-            FramerateEnum.FPS240 -> "fps240"
-        }
-        map["framerate"] = framerateString
-    }
-    
-    // Convert camera position if present
-    position?.let { pos ->
-        val positionString = when (pos) {
-            CameraPositionEnum.FRONT -> "front"
-            CameraPositionEnum.BACK -> "back"
-        }
-        map["position"] = positionString
-    }
-    
-    return map
-}
-
-// MARK: - Additional Error Handling
-object ScannerException {
-    object NotInitialized : Exception("Scanner not initialized")
-    object ActivityNotConnected : Exception("Activity not connected") 
-    object AlreadyPicking : Exception("Already picking image")
-    class LoadingFailed(cause: Throwable) : Exception("Loading failed: ${cause.message}")
+fun Resolution.portrait(): android.util.Size {
+    return android.util.Size(height, width)
 }
