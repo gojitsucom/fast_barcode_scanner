@@ -25,7 +25,7 @@ import com.jhoogstraat.fast_barcode_scanner.pigeon.ScannerConfiguration
 import com.jhoogstraat.fast_barcode_scanner.pigeon.UpdateConfiguration
 import com.jhoogstraat.fast_barcode_scanner.scanner.MLKitBarcodeScanner
 import com.jhoogstraat.fast_barcode_scanner.scanner.OnDetectedListener
-import com.jhoogstraat.fast_barcode_scanner.types.*
+import com.jhoogstraat.fast_barcode_scanner.pigeon.*
 import io.flutter.plugin.common.PluginRegistry.RequestPermissionsResultListener
 import io.flutter.view.TextureRegistry
 import kotlinx.coroutines.CoroutineScope
