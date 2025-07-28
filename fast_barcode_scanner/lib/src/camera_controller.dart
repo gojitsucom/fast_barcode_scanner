@@ -219,6 +219,11 @@ class _CameraController implements CameraController {
   Future<void> dispose() async {
     try {
       await _platform.dispose();
+    } catch (error) {
+      // Ignore platform uninitialized errors
+    }
+
+    try {
       state._scannerConfig = null;
       state._previewConfig = null;
       state._torch = false;
