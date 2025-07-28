@@ -96,6 +96,64 @@ fun ScannerConfiguration.copy(
     )
 }
 
+fun ScannerConfiguration.toMap(): HashMap<String, Any> {
+    val map = HashMap<String, Any>()
+
+    val typeStrings = types.mapNotNull { type ->
+        when (type) {
+            BarcodeType.AZTEC -> "aztec"
+            BarcodeType.CODE128 -> "code128"
+            BarcodeType.CODE39 -> "code39"
+            BarcodeType.CODE93 -> "code93"
+            BarcodeType.CODABAR -> "codabar"
+            BarcodeType.DATA_MATRIX -> "dataMatrix"
+            BarcodeType.EAN13 -> "ean13"
+            BarcodeType.EAN8 -> "ean8"
+            BarcodeType.ITF -> "itf"
+            BarcodeType.PDF417 -> "pdf417"
+            BarcodeType.QR -> "qr"
+            BarcodeType.UPC_A -> "upcA"
+            BarcodeType.UPC_E -> "upcE"
+            BarcodeType.INTERLEAVED -> "interleaved"
+            else -> null
+        }
+    }
+    map["types"] = typeStrings
+
+    val modeString = when (mode) {
+        DetectionMode.PAUSE_DETECTION -> "pauseDetection"
+        DetectionMode.PAUSE_VIDEO -> "pauseVideo"
+        DetectionMode.CONTINUOUS -> "continuous"
+    }
+    map["detectionMode"] = modeString
+
+    val resolutionString = when (resolution) {
+        Resolution.SD480 -> "sd480"
+        Resolution.HD720 -> "hd720"
+        Resolution.HD1080 -> "hd1080"
+        Resolution.HD4K -> "hd4k"
+    }
+    map["resolution"] = resolutionString
+
+    val framerateString = when (framerate) {
+        Framerate.FPS30 -> "fps30"
+        Framerate.FPS60 -> "fps60"
+        Framerate.FPS120 -> "fps120"
+        Framerate.FPS240 -> "fps240"
+    }
+    map["framerate"] = framerateString
+
+    val positionString = when (position) {
+        CameraPosition.FRONT -> "front"
+        CameraPosition.BACK -> "back"
+    }
+    map["position"] = positionString
+
+    confidence?.let { map["confidence"] = it }
+
+    return map
+}
+
 // MARK: - PreviewConfiguration Extensions
 val PreviewConfiguration.analysisResolution: String
     get() = "${analysisWidth}x${analysisHeight}"
@@ -135,4 +193,69 @@ fun Barcode.toPigeonBarcode(): BarcodeData? {
 }
 fun Resolution.portrait(): android.util.Size {
     return android.util.Size(height, width)
+}
+
+fun UpdateConfiguration.toMap(): HashMap<String, Any> {
+    val map = HashMap<String, Any>()
+
+    types?.let { typesList ->
+        val typeStrings = typesList.mapNotNull { type ->
+            when (type) {
+                BarcodeType.AZTEC -> "aztec"
+                BarcodeType.CODE128 -> "code128"
+                BarcodeType.CODE39 -> "code39"
+                BarcodeType.CODE93 -> "code93"
+                BarcodeType.CODABAR -> "codabar"
+                BarcodeType.DATA_MATRIX -> "dataMatrix"
+                BarcodeType.EAN13 -> "ean13"
+                BarcodeType.EAN8 -> "ean8"
+                BarcodeType.ITF -> "itf"
+                BarcodeType.PDF417 -> "pdf417"
+                BarcodeType.QR -> "qr"
+                BarcodeType.UPC_A -> "upcA"
+                BarcodeType.UPC_E -> "upcE"
+                else -> null
+            }
+        }
+        map["types"] = typeStrings
+    }
+
+    mode?.let { detectionMode ->
+        val modeString = when (detectionMode) {
+            DetectionMode.PAUSE_DETECTION -> "pauseDetection"
+            DetectionMode.PAUSE_VIDEO -> "pauseVideo"
+            DetectionMode.CONTINUOUS -> "continuous"
+        }
+        map["detectionMode"] = modeString
+    }
+
+    resolution?.let { res ->
+        val resolutionString = when (res) {
+            Resolution.SD480 -> "sd480"
+            Resolution.HD720 -> "hd720"
+            Resolution.HD1080 -> "hd1080"
+            Resolution.HD4K -> "hd4k"
+        }
+        map["resolution"] = resolutionString
+    }
+
+    framerate?.let { fps ->
+        val framerateString = when (fps) {
+            Framerate.FPS30 -> "fps30"
+            Framerate.FPS60 -> "fps60"
+            Framerate.FPS120 -> "fps120"
+            Framerate.FPS240 -> "fps240"
+        }
+        map["framerate"] = framerateString
+    }
+
+    position?.let { pos ->
+        val positionString = when (pos) {
+            CameraPosition.FRONT -> "front"
+            CameraPosition.BACK -> "back"
+        }
+        map["position"] = positionString
+    }
+
+    return map
 }

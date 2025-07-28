@@ -113,7 +113,7 @@ class Camera(
             cameraExecutor = Executors.newSingleThreadExecutor()
 
         } catch (e: Exception) {
-            throw ScannerException.InvalidArguments(configuration.toString())
+            throw ScannerException.InvalidArguments(configuration.toMap())
         }
     }
 
@@ -278,7 +278,7 @@ class Camera(
                 position = updateConfig.position ?: scannerConfiguration.position
             )
         } catch (e: Exception) {
-            throw ScannerException.InvalidArguments(updateConfig.toString())
+            throw ScannerException.InvalidArguments(updateConfig.toMap())
         }
 
         bindCameraUseCases()
