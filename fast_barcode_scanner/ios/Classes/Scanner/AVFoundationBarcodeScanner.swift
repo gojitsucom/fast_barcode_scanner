@@ -41,8 +41,9 @@ class AVFoundationBarcodeScanner: NSObject, BarcodeScanner, AVCaptureMetadataOut
         set {
             _symbologies = newValue
 
-            // This will just ignore all unsupported types
-            output.metadataObjectTypes = newValue.compactMap { avMetadataObjectTypes[$0] }
+            // Convert string types to BarcodeType enums, then to AVMetadataObject.ObjectType
+            let barcodeTypes = newValue.compactMap { BarcodeType.fromString($0) }
+            output.metadataObjectTypes = barcodeTypes.compactMap { avMetadataObjectTypes[$0] }
 
             // UPC-A is reported as EAN-13
             if newValue.contains("upcA") && !output.metadataObjectTypes.contains(.ean13) {
@@ -51,7 +52,10 @@ class AVFoundationBarcodeScanner: NSObject, BarcodeScanner, AVCaptureMetadataOut
 
             // Report to the user if any types are not supported
             if output.metadataObjectTypes.count != newValue.count {
-                let unsupportedTypes = newValue.filter { avMetadataObjectTypes[$0] == nil }
+                let unsupportedTypes = newValue.filter { typeString in
+                    guard let barcodeType = BarcodeType.fromString(typeString) else { return true }
+                    return avMetadataObjectTypes[barcodeType] == nil
+                }
                 print("WARNING: Unsupported barcode types selected: \(unsupportedTypes)")
             }
         }
@@ -94,11 +98,11 @@ class AVFoundationBarcodeScanner: NSObject, BarcodeScanner, AVCaptureMetadataOut
                 if value.hasPrefix("0") {
                     // UPC-A
                     guard symbologies.contains("upcA") else { continue }
-                    type = "upcA"
+                    type = .upcA
                     value.removeFirst()
                 } else {
                     // EAN-13
-                    guard symbologies.contains(type) else { continue }
+                    guard symbologies.contains(type.toInternalBarcodeType()) else { continue }
                 }
             }
             scannedCodes.append([type, value, nil, transformedCode?.corners.pointList])

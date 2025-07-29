@@ -42,8 +42,9 @@ class VisionBarcodeScanner: NSObject, BarcodeScanner, AVCaptureVideoDataOutputSa
         set {
             _symbologies = newValue
 
-            // This will just ignore all unsupported types
-            visionBarcodesRequests.first!.symbologies = newValue.compactMap({ vnBarcodeSymbols[$0] })
+            // Convert string types to BarcodeType enums, then to VNBarcodeSymbology
+            let barcodeTypes = newValue.compactMap { BarcodeType.fromString($0) }
+            visionBarcodesRequests.first!.symbologies = barcodeTypes.compactMap({ vnBarcodeSymbols[$0] })
 
             // UPC-A is reported as EAN-13
             if newValue.contains("upcA") && !visionBarcodesRequests.first!.symbologies.contains(.EAN13) {
@@ -52,8 +53,9 @@ class VisionBarcodeScanner: NSObject, BarcodeScanner, AVCaptureVideoDataOutputSa
 
             // Report to the user if any types are not supported
             if visionBarcodesRequests.first!.symbologies.count != newValue.count {
-                let unsupportedTypes = newValue.filter {
-                    vnBarcodeSymbols[$0] == nil
+                let unsupportedTypes = newValue.filter { typeString in
+                    guard let barcodeType = BarcodeType.fromString(typeString) else { return true }
+                    return vnBarcodeSymbols[barcodeType] == nil
                 }
                 print("WARNING: Unsupported barcode types selected: \(unsupportedTypes)")
             }
@@ -90,7 +92,7 @@ class VisionBarcodeScanner: NSObject, BarcodeScanner, AVCaptureVideoDataOutputSa
     func stop() {
         output.setSampleBufferDelegate(nil, queue: nil)
     }
-    
+
     // MARK: Vision capture output
 
     func captureOutput(_ output: AVCaptureOutput, didOutput sampleBuffer: CMSampleBuffer, from connection: AVCaptureConnection) {
@@ -141,9 +143,9 @@ class VisionBarcodeScanner: NSObject, BarcodeScanner, AVCaptureVideoDataOutputSa
         // consolidate any duplicate scans. Code128 has been observed to produce multiple scans
         var barcodeDict = [String: [Any?]]()
         for barcode: [Any?] in barcodes {
-            let barcodeType = barcode[0] as! String
+            let barcodeType = barcode[0] as! BarcodeType
             let barcodeValue = barcode[1] as! String
-            let key = "\(barcodeType)|\(barcodeValue)"
+            let key = "\(barcodeType.toInternalBarcodeType())|\(barcodeValue)"
             let existingBarcodes = barcodeDict[key]
             if existingBarcodes == nil {
                 barcodeDict[key] = barcode
