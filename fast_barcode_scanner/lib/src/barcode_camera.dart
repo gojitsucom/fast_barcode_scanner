@@ -1,5 +1,4 @@
 import 'package:fast_barcode_scanner/fast_barcode_scanner.dart';
-import 'package:fast_barcode_scanner_platform_interface/fast_barcode_scanner_platform_interface.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -144,8 +143,8 @@ class BarcodeCameraState extends State<BarcodeCamera> {
     return FittedBox(
       fit: BoxFit.cover,
       child: SizedBox(
-        width: config.width.toDouble(),
-        height: config.height.toDouble(),
+        width: config.height.toDouble(),
+        height: config.width.toDouble(),
         child: Builder(
           builder: (_) {
             switch (defaultTargetPlatform) {

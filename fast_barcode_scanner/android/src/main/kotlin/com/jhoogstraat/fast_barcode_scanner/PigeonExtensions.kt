@@ -6,7 +6,7 @@ import com.jhoogstraat.fast_barcode_scanner.pigeon.*
 // MARK: - Resolution Extensions
 val Resolution.width: Int
     get() = when (this) {
-        Resolution.SD480 -> 720
+        Resolution.SD480 -> 640
         Resolution.HD720 -> 1280
         Resolution.HD1080 -> 1920
         Resolution.HD4K -> 3840
@@ -15,7 +15,7 @@ val Resolution.width: Int
 val Resolution.height: Int
     get() = when (this) {
         Resolution.SD480 -> 480
-        Resolution.HD720 -> 720
+        Resolution.HD720 -> 960
         Resolution.HD1080 -> 1080
         Resolution.HD4K -> 2160
     }

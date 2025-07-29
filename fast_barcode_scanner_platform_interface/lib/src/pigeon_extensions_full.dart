@@ -26,7 +26,7 @@ extension ResolutionExtension on Resolution {
       case Resolution.sd480:
         return 480;
       case Resolution.hd720:
-        return 720;
+        return 960;
       case Resolution.hd1080:
         return 1080;
       case Resolution.hd4k:

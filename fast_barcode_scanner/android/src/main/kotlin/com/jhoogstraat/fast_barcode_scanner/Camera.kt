@@ -178,12 +178,12 @@ class Camera(
         // TODO: Handle rotation properly
         preview = Preview.Builder()
             .setTargetRotation(Surface.ROTATION_0)
-            .setTargetResolution(android.util.Size(scannerConfiguration.resolution.width, scannerConfiguration.resolution.height))
+            .setTargetResolution(scannerConfiguration.resolution.portrait())
             .build()
 
         imageAnalysis = ImageAnalysis.Builder()
             .setTargetRotation(Surface.ROTATION_0)
-            .setTargetResolution(android.util.Size(scannerConfiguration.resolution.width, scannerConfiguration.resolution.height))
+            .setTargetResolution(scannerConfiguration.resolution.portrait())
             .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
             .build()
             .also { it.setAnalyzer(cameraExecutor, barcodeScanner) }
