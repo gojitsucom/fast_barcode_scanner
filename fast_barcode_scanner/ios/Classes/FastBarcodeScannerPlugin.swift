@@ -154,7 +154,11 @@ public class FastBarcodeScannerPlugin: NSObject, FlutterPlugin, FastBarcodeScann
         if configuration.apiMode == .avFoundation {
             print("🔧 initializeInternal: Using AVFoundation scanner")
             scanner = AVFoundationBarcodeScanner(barcodeObjectLayerConverter: { barcodes in
-                self.factory.preview?.videoPreviewLayer.transformedMetadataObject(for: barcodes) as? AVMetadataMachineReadableCodeObject
+                var transformedObject: AVMetadataMachineReadableCodeObject?
+                DispatchQueue.main.sync {
+                    transformedObject = self.factory.preview?.videoPreviewLayer.transformedMetadataObject(for: barcodes) as? AVMetadataMachineReadableCodeObject
+                }
+                return transformedObject
             }, onCacheImage: onCacheImage) { [weak self] barcodes in
                 // Convert to Pigeon barcodes and send via FlutterApi
                 guard let self = self, let flutterApi = self.flutterApi else { return }
