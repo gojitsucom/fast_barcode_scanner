@@ -278,20 +278,20 @@ data class BarcodeData (
 data class PreviewConfiguration (
   val textureId: Long,
   val targetRotation: Long,
-  val height: Long,
-  val width: Long,
-  val analysisWidth: Long,
-  val analysisHeight: Long
+  val height: Double,
+  val width: Double,
+  val analysisWidth: Double,
+  val analysisHeight: Double
 )
  {
   companion object {
     fun fromList(pigeonVar_list: List<Any?>): PreviewConfiguration {
       val textureId = pigeonVar_list[0] as Long
       val targetRotation = pigeonVar_list[1] as Long
-      val height = pigeonVar_list[2] as Long
-      val width = pigeonVar_list[3] as Long
-      val analysisWidth = pigeonVar_list[4] as Long
-      val analysisHeight = pigeonVar_list[5] as Long
+      val height = pigeonVar_list[2] as Double
+      val width = pigeonVar_list[3] as Double
+      val analysisWidth = pigeonVar_list[4] as Double
+      val analysisHeight = pigeonVar_list[5] as Double
       return PreviewConfiguration(textureId, targetRotation, height, width, analysisWidth, analysisHeight)
     }
   }

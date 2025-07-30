@@ -38,20 +38,20 @@ private func wrapError(_ error: Any) -> [Any?] {
     return [
       pigeonError.code,
       pigeonError.message,
-      pigeonError.details
+      pigeonError.details,
     ]
   }
   if let flutterError = error as? FlutterError {
     return [
       flutterError.code,
       flutterError.message,
-      flutterError.details
+      flutterError.details,
     ]
   }
   return [
     "\(error)",
     "\(type(of: error))",
-    "Stacktrace: \(Thread.callStackSymbols)"
+    "Stacktrace: \(Thread.callStackSymbols)",
   ]
 }
 
@@ -116,7 +116,7 @@ func deepHashBarcodeApi(value: Any?, hasher: inout Hasher) {
   }
 
   if let valueDict = value as? [AnyHashable: AnyHashable] {
-    for key in valueDict.keys {
+    for key in valueDict.keys { 
       hasher.combine(key)
       deepHashBarcodeApi(value: valueDict[key]!, hasher: &hasher)
     }
@@ -129,6 +129,8 @@ func deepHashBarcodeApi(value: Any?, hasher: inout Hasher) {
 
   return hasher.combine(String(describing: value))
 }
+
+    
 
 /// Enum representing different barcode types
 enum BarcodeType: Int {
@@ -208,6 +210,7 @@ struct PointData: Hashable {
   var x: Int64
   var y: Int64
 
+
   // swift-format-ignore: AlwaysUseLowerCamelCase
   static func fromList(_ pigeonVar_list: [Any?]) -> PointData? {
     let x = pigeonVar_list[0] as! Int64
@@ -221,7 +224,7 @@ struct PointData: Hashable {
   func toList() -> [Any?] {
     return [
       x,
-      y
+      y,
     ]
   }
   static func == (lhs: PointData, rhs: PointData) -> Bool {
@@ -237,8 +240,9 @@ struct PointData: Hashable {
 struct BarcodeData: Hashable {
   var type: BarcodeType
   var value: String
-  var valueType: BarcodeValueType?
-  var cornerPoints: [PointData?]?
+  var valueType: BarcodeValueType? = nil
+  var cornerPoints: [PointData?]? = nil
+
 
   // swift-format-ignore: AlwaysUseLowerCamelCase
   static func fromList(_ pigeonVar_list: [Any?]) -> BarcodeData? {
@@ -259,7 +263,7 @@ struct BarcodeData: Hashable {
       type,
       value,
       valueType,
-      cornerPoints
+      cornerPoints,
     ]
   }
   static func == (lhs: BarcodeData, rhs: BarcodeData) -> Bool {
@@ -275,19 +279,20 @@ struct BarcodeData: Hashable {
 struct PreviewConfiguration: Hashable {
   var textureId: Int64
   var targetRotation: Int64
-  var height: Int64
-  var width: Int64
-  var analysisWidth: Int64
-  var analysisHeight: Int64
+  var height: Double
+  var width: Double
+  var analysisWidth: Double
+  var analysisHeight: Double
+
 
   // swift-format-ignore: AlwaysUseLowerCamelCase
   static func fromList(_ pigeonVar_list: [Any?]) -> PreviewConfiguration? {
     let textureId = pigeonVar_list[0] as! Int64
     let targetRotation = pigeonVar_list[1] as! Int64
-    let height = pigeonVar_list[2] as! Int64
-    let width = pigeonVar_list[3] as! Int64
-    let analysisWidth = pigeonVar_list[4] as! Int64
-    let analysisHeight = pigeonVar_list[5] as! Int64
+    let height = pigeonVar_list[2] as! Double
+    let width = pigeonVar_list[3] as! Double
+    let analysisWidth = pigeonVar_list[4] as! Double
+    let analysisHeight = pigeonVar_list[5] as! Double
 
     return PreviewConfiguration(
       textureId: textureId,
@@ -305,7 +310,7 @@ struct PreviewConfiguration: Hashable {
       height,
       width,
       analysisWidth,
-      analysisHeight
+      analysisHeight,
     ]
   }
   static func == (lhs: PreviewConfiguration, rhs: PreviewConfiguration) -> Bool {
@@ -324,8 +329,9 @@ struct ScannerConfiguration: Hashable {
   var resolution: Resolution
   var framerate: Framerate
   var position: CameraPosition
-  var apiMode: IOSApiMode?
-  var confidence: Double?
+  var apiMode: IOSApiMode? = nil
+  var confidence: Double? = nil
+
 
   // swift-format-ignore: AlwaysUseLowerCamelCase
   static func fromList(_ pigeonVar_list: [Any?]) -> ScannerConfiguration? {
@@ -355,7 +361,7 @@ struct ScannerConfiguration: Hashable {
       framerate,
       position,
       apiMode,
-      confidence
+      confidence,
     ]
   }
   static func == (lhs: ScannerConfiguration, rhs: ScannerConfiguration) -> Bool {
@@ -369,11 +375,12 @@ struct ScannerConfiguration: Hashable {
 ///
 /// Generated class from Pigeon that represents data sent in messages.
 struct UpdateConfiguration: Hashable {
-  var types: [BarcodeType?]?
-  var mode: DetectionMode?
-  var resolution: Resolution?
-  var framerate: Framerate?
-  var position: CameraPosition?
+  var types: [BarcodeType?]? = nil
+  var mode: DetectionMode? = nil
+  var resolution: Resolution? = nil
+  var framerate: Framerate? = nil
+  var position: CameraPosition? = nil
+
 
   // swift-format-ignore: AlwaysUseLowerCamelCase
   static func fromList(_ pigeonVar_list: [Any?]) -> UpdateConfiguration? {
@@ -397,7 +404,7 @@ struct UpdateConfiguration: Hashable {
       mode,
       resolution,
       framerate,
-      position
+      position,
     ]
   }
   static func == (lhs: UpdateConfiguration, rhs: UpdateConfiguration) -> Bool {
@@ -411,9 +418,10 @@ struct UpdateConfiguration: Hashable {
 ///
 /// Generated class from Pigeon that represents data sent in messages.
 struct ImageSourceData: Hashable {
-  var imageBytes: FlutterStandardTypedData?
-  var rotation: Int64?
+  var imageBytes: FlutterStandardTypedData? = nil
+  var rotation: Int64? = nil
   var useImagePicker: Bool
+
 
   // swift-format-ignore: AlwaysUseLowerCamelCase
   static func fromList(_ pigeonVar_list: [Any?]) -> ImageSourceData? {
@@ -431,7 +439,7 @@ struct ImageSourceData: Hashable {
     return [
       imageBytes,
       rotation,
-      useImagePicker
+      useImagePicker,
     ]
   }
   static func == (lhs: ImageSourceData, rhs: ImageSourceData) -> Bool {
@@ -564,6 +572,7 @@ private class BarcodeApiPigeonCodecReaderWriter: FlutterStandardReaderWriter {
 class BarcodeApiPigeonCodec: FlutterStandardMessageCodec, @unchecked Sendable {
   static let shared = BarcodeApiPigeonCodec(readerWriter: BarcodeApiPigeonCodecReaderWriter())
 }
+
 
 /// Host API for communication from Dart to native platforms
 ///

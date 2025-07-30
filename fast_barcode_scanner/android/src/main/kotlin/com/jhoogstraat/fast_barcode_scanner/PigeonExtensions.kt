@@ -162,8 +162,8 @@ val PreviewConfiguration.analysisResolution: String
 fun createPreviewConfiguration(
     textureId: Long,
     targetRotation: Long,
-    width: Long,
-    height: Long
+    width: Double,
+    height: Double
 ): PreviewConfiguration {
     return PreviewConfiguration(
         textureId = textureId,
@@ -179,7 +179,7 @@ fun createPreviewConfiguration(
 fun Barcode.toPigeonBarcode(): BarcodeData? {
     val type = this.format.toBarcodeType() ?: return null
     val valueType = this.valueType.toBarcodeValueType()
-    
+
     val cornerPoints = this.cornerPoints?.map { point ->
         PointData(x = point.x.toLong(), y = point.y.toLong())
     }
