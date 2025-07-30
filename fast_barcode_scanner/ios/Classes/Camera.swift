@@ -130,8 +130,8 @@ class Camera: NSObject {
         self.configuration = configuration
 
         self.previewConfiguration = PreviewConfiguration(
-            textureId: 0,
-            targetRotation: 0,
+            textureId: Int64(0),
+            targetRotation: Int64(0),
             height: Int64(previewSize.height),
             width: Int64(previewSize.width),
             analysisWidth: Int64(previewSize.width),

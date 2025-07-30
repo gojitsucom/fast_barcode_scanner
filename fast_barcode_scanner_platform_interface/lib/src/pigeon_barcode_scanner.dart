@@ -229,13 +229,13 @@ class PreviewConfiguration {
 
   int targetRotation;
 
-  double height;
+  int height;
 
-  double width;
+  int width;
 
-  double analysisWidth;
+  int analysisWidth;
 
-  double analysisHeight;
+  int analysisHeight;
 
   List<Object?> _toList() {
     return <Object?>[
@@ -256,10 +256,10 @@ class PreviewConfiguration {
     return PreviewConfiguration(
       textureId: result[0]! as int,
       targetRotation: result[1]! as int,
-      height: result[2]! as double,
-      width: result[3]! as double,
-      analysisWidth: result[4]! as double,
-      analysisHeight: result[5]! as double,
+      height: result[2]! as int,
+      width: result[3]! as int,
+      analysisWidth: result[4]! as int,
+      analysisHeight: result[5]! as int,
     );
   }
 

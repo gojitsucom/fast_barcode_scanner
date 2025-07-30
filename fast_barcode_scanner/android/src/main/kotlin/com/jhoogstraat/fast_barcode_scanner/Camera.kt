@@ -312,10 +312,10 @@ class Camera(
         return PreviewConfiguration(
             flutterTextureEntry.id(),
             0,
-            height = if (isPortrait) previewRes.height.toDouble() else previewRes.width.toDouble(),
-            width = if (isPortrait) previewRes.width.toDouble() else previewRes.height.toDouble(),
-            analysisWidth = if (isPortrait) analysisRes.width.toDouble() else analysisRes.height.toDouble(),
-            analysisHeight = if (isPortrait) analysisRes.height.toDouble() else analysisRes.width.toDouble()
+            height = if (isPortrait) previewRes.height.toLong() else previewRes.width.toLong(),
+            width = if (isPortrait) previewRes.width.toLong() else previewRes.height.toLong(),
+            analysisWidth = if (isPortrait) analysisRes.width.toLong() else analysisRes.height.toLong(),
+            analysisHeight = if (isPortrait) analysisRes.height.toLong() else analysisRes.width.toLong()
         )
     }
 

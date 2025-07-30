@@ -305,10 +305,10 @@ extension PreviewConfigurationExtension on PreviewConfiguration {
   PreviewConfiguration copyWith({
     int? textureId,
     int? targetRotation,
-    double? height,
-    double? width,
-    double? analysisWidth,
-    double? analysisHeight,
+    int? height,
+    int? width,
+    int? analysisWidth,
+    int? analysisHeight,
   }) {
     return PreviewConfiguration(
       textureId: textureId ?? this.textureId,

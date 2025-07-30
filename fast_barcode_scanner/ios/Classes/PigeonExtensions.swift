@@ -180,23 +180,6 @@ extension PreviewConfiguration {
     }
 }
 
-// MARK: - Utility Functions
-func createPreviewConfiguration(
-    textureId: Int64,
-    targetRotation: Int64,
-    width: Int64,
-    height: Int64
-) -> PreviewConfiguration {
-    return PreviewConfiguration(
-        textureId: textureId,
-        targetRotation: targetRotation,
-        height: height,
-        width: width,
-        analysisWidth: width,
-        analysisHeight: height
-    )
-}
-
 // MARK: - Type Conversion Extensions
 
 extension ScannerConfiguration {

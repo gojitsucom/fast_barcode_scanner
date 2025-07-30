@@ -56,10 +56,10 @@ class MockFastBarcodeScannerHostApi extends FastBarcodeScannerHostApi {
         PreviewConfiguration(
           textureId: 1,
           targetRotation: 0,
-          height: 480.0,
-          width: 640.0,
-          analysisWidth: 320.0,
-          analysisHeight: 240.0,
+          height: 480,
+          width: 640,
+          analysisWidth: 320,
+          analysisHeight: 240,
         );
   }
 
@@ -102,10 +102,10 @@ class MockFastBarcodeScannerHostApi extends FastBarcodeScannerHostApi {
         PreviewConfiguration(
           textureId: 1,
           targetRotation: 0,
-          height: 720.0,
-          width: 1280.0,
-          analysisWidth: 640.0,
-          analysisHeight: 360.0,
+          height: 720,
+          width: 1280,
+          analysisWidth: 640,
+          analysisHeight: 360,
         );
   }
 
@@ -341,10 +341,10 @@ void main() {
       mockApi.mockPreviewConfig = PreviewConfiguration(
         textureId: 123,
         targetRotation: 90,
-        height: 1080.0,
-        width: 1920.0,
-        analysisWidth: 540.0,
-        analysisHeight: 960.0,
+        height: 1080,
+        width: 1920,
+        analysisWidth: 540,
+        analysisHeight: 960,
       );
 
       mockApi.mockScanResults = [

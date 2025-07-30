@@ -119,10 +119,10 @@ class PreviewConfiguration {
 
   final int textureId;
   final int targetRotation;
-  final double height;
-  final double width;
-  final double analysisWidth;
-  final double analysisHeight;
+  final int height;
+  final int width;
+  final int analysisWidth;
+  final int analysisHeight;
 }
 
 /// Configuration for initializing the scanner

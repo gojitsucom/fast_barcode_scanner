@@ -279,20 +279,20 @@ struct BarcodeData: Hashable {
 struct PreviewConfiguration: Hashable {
   var textureId: Int64
   var targetRotation: Int64
-  var height: Double
-  var width: Double
-  var analysisWidth: Double
-  var analysisHeight: Double
+  var height: Int64
+  var width: Int64
+  var analysisWidth: Int64
+  var analysisHeight: Int64
 
 
   // swift-format-ignore: AlwaysUseLowerCamelCase
   static func fromList(_ pigeonVar_list: [Any?]) -> PreviewConfiguration? {
     let textureId = pigeonVar_list[0] as! Int64
     let targetRotation = pigeonVar_list[1] as! Int64
-    let height = pigeonVar_list[2] as! Double
-    let width = pigeonVar_list[3] as! Double
-    let analysisWidth = pigeonVar_list[4] as! Double
-    let analysisHeight = pigeonVar_list[5] as! Double
+    let height = pigeonVar_list[2] as! Int64
+    let width = pigeonVar_list[3] as! Int64
+    let analysisWidth = pigeonVar_list[4] as! Int64
+    let analysisHeight = pigeonVar_list[5] as! Int64
 
     return PreviewConfiguration(
       textureId: textureId,
