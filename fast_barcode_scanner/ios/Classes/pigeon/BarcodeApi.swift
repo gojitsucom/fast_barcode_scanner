@@ -38,20 +38,20 @@ private func wrapError(_ error: Any) -> [Any?] {
     return [
       pigeonError.code,
       pigeonError.message,
-      pigeonError.details,
+      pigeonError.details
     ]
   }
   if let flutterError = error as? FlutterError {
     return [
       flutterError.code,
       flutterError.message,
-      flutterError.details,
+      flutterError.details
     ]
   }
   return [
     "\(error)",
     "\(type(of: error))",
-    "Stacktrace: \(Thread.callStackSymbols)",
+    "Stacktrace: \(Thread.callStackSymbols)"
   ]
 }
 
@@ -116,7 +116,7 @@ func deepHashBarcodeApi(value: Any?, hasher: inout Hasher) {
   }
 
   if let valueDict = value as? [AnyHashable: AnyHashable] {
-    for key in valueDict.keys { 
+    for key in valueDict.keys {
       hasher.combine(key)
       deepHashBarcodeApi(value: valueDict[key]!, hasher: &hasher)
     }
@@ -129,8 +129,6 @@ func deepHashBarcodeApi(value: Any?, hasher: inout Hasher) {
 
   return hasher.combine(String(describing: value))
 }
-
-    
 
 /// Enum representing different barcode types
 enum BarcodeType: Int {
@@ -210,7 +208,6 @@ struct PointData: Hashable {
   var x: Int64
   var y: Int64
 
-
   // swift-format-ignore: AlwaysUseLowerCamelCase
   static func fromList(_ pigeonVar_list: [Any?]) -> PointData? {
     let x = pigeonVar_list[0] as! Int64
@@ -224,7 +221,7 @@ struct PointData: Hashable {
   func toList() -> [Any?] {
     return [
       x,
-      y,
+      y
     ]
   }
   static func == (lhs: PointData, rhs: PointData) -> Bool {
@@ -240,9 +237,8 @@ struct PointData: Hashable {
 struct BarcodeData: Hashable {
   var type: BarcodeType
   var value: String
-  var valueType: BarcodeValueType? = nil
-  var cornerPoints: [PointData?]? = nil
-
+  var valueType: BarcodeValueType?
+  var cornerPoints: [PointData?]?
 
   // swift-format-ignore: AlwaysUseLowerCamelCase
   static func fromList(_ pigeonVar_list: [Any?]) -> BarcodeData? {
@@ -263,7 +259,7 @@ struct BarcodeData: Hashable {
       type,
       value,
       valueType,
-      cornerPoints,
+      cornerPoints
     ]
   }
   static func == (lhs: BarcodeData, rhs: BarcodeData) -> Bool {
@@ -283,7 +279,6 @@ struct PreviewConfiguration: Hashable {
   var width: Int64
   var analysisWidth: Int64
   var analysisHeight: Int64
-
 
   // swift-format-ignore: AlwaysUseLowerCamelCase
   static func fromList(_ pigeonVar_list: [Any?]) -> PreviewConfiguration? {
@@ -310,7 +305,7 @@ struct PreviewConfiguration: Hashable {
       height,
       width,
       analysisWidth,
-      analysisHeight,
+      analysisHeight
     ]
   }
   static func == (lhs: PreviewConfiguration, rhs: PreviewConfiguration) -> Bool {
@@ -329,9 +324,8 @@ struct ScannerConfiguration: Hashable {
   var resolution: Resolution
   var framerate: Framerate
   var position: CameraPosition
-  var apiMode: IOSApiMode? = nil
-  var confidence: Double? = nil
-
+  var apiMode: IOSApiMode?
+  var confidence: Double?
 
   // swift-format-ignore: AlwaysUseLowerCamelCase
   static func fromList(_ pigeonVar_list: [Any?]) -> ScannerConfiguration? {
@@ -361,7 +355,7 @@ struct ScannerConfiguration: Hashable {
       framerate,
       position,
       apiMode,
-      confidence,
+      confidence
     ]
   }
   static func == (lhs: ScannerConfiguration, rhs: ScannerConfiguration) -> Bool {
@@ -375,12 +369,11 @@ struct ScannerConfiguration: Hashable {
 ///
 /// Generated class from Pigeon that represents data sent in messages.
 struct UpdateConfiguration: Hashable {
-  var types: [BarcodeType?]? = nil
-  var mode: DetectionMode? = nil
-  var resolution: Resolution? = nil
-  var framerate: Framerate? = nil
-  var position: CameraPosition? = nil
-
+  var types: [BarcodeType?]?
+  var mode: DetectionMode?
+  var resolution: Resolution?
+  var framerate: Framerate?
+  var position: CameraPosition?
 
   // swift-format-ignore: AlwaysUseLowerCamelCase
   static func fromList(_ pigeonVar_list: [Any?]) -> UpdateConfiguration? {
@@ -404,7 +397,7 @@ struct UpdateConfiguration: Hashable {
       mode,
       resolution,
       framerate,
-      position,
+      position
     ]
   }
   static func == (lhs: UpdateConfiguration, rhs: UpdateConfiguration) -> Bool {
@@ -418,10 +411,9 @@ struct UpdateConfiguration: Hashable {
 ///
 /// Generated class from Pigeon that represents data sent in messages.
 struct ImageSourceData: Hashable {
-  var imageBytes: FlutterStandardTypedData? = nil
-  var rotation: Int64? = nil
+  var imageBytes: FlutterStandardTypedData?
+  var rotation: Int64?
   var useImagePicker: Bool
-
 
   // swift-format-ignore: AlwaysUseLowerCamelCase
   static func fromList(_ pigeonVar_list: [Any?]) -> ImageSourceData? {
@@ -439,7 +431,7 @@ struct ImageSourceData: Hashable {
     return [
       imageBytes,
       rotation,
-      useImagePicker,
+      useImagePicker
     ]
   }
   static func == (lhs: ImageSourceData, rhs: ImageSourceData) -> Bool {
@@ -572,7 +564,6 @@ private class BarcodeApiPigeonCodecReaderWriter: FlutterStandardReaderWriter {
 class BarcodeApiPigeonCodec: FlutterStandardMessageCodec, @unchecked Sendable {
   static let shared = BarcodeApiPigeonCodec(readerWriter: BarcodeApiPigeonCodecReaderWriter())
 }
-
 
 /// Host API for communication from Dart to native platforms
 ///

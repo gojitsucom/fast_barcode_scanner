@@ -20,6 +20,11 @@ extension Resolution {
         case .hd4k: return 2160
         }
     }
+
+    /// Returns portrait dimensions (height, width) for portrait mode
+    func portrait() -> (width: Int32, height: Int32) {
+        return (width: height, height: width)
+    }
 }
 
 // MARK: - Framerate Extensions
