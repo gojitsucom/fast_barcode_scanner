@@ -1,7 +1,7 @@
 import 'package:fast_barcode_scanner/fast_barcode_scanner.dart';
 import 'package:fast_barcode_scanner_example/configure_screen/overlay_selector.dart';
 import 'package:fast_barcode_scanner_example/scanning_screen/scanning_overlay_config.dart';
-import 'package:flutter/foundation.dart';
+
 import 'package:flutter/material.dart';
 
 import 'type_selector.dart';
@@ -54,18 +54,18 @@ class _ConfigureScreenState extends State<ConfigureScreen> {
               ),
             );
 
-            if (shouldReturn == true) {
+            if (shouldReturn == true && context.mounted) {
               Navigator.pop(context);
             }
           },
         ),
         actions: [
           TextButton(
+            onPressed: applyChanges,
             child: const Text(
               'Apply',
               style: TextStyle(color: Colors.white),
             ),
-            onPressed: applyChanges,
           )
         ],
       ),
@@ -134,7 +134,7 @@ class _ConfigureScreenState extends State<ConfigureScreen> {
             ListTile(
               title: const Text('Overlay'),
               subtitle: Text(_overlayConfig.enabledOverlays
-                  .map((e) => describeEnum(e))
+                  .map((e) => e.name)
                   .join(', ')),
               onTap: () async {
                 final overlays =
@@ -155,10 +155,10 @@ class _ConfigureScreenState extends State<ConfigureScreen> {
     );
   }
 
-  List<DropdownMenuItem<E>> buildDropdownItems<E extends Object>(
+  List<DropdownMenuItem<E>> buildDropdownItems<E extends Enum>(
           List<E> enumCases) =>
       enumCases
-          .map((v) => DropdownMenuItem(value: v, child: Text(describeEnum(v))))
+          .map((v) => DropdownMenuItem(value: v, child: Text(v.name)))
           .toList();
 
   Future<void> applyChanges() async {
@@ -171,17 +171,21 @@ class _ConfigureScreenState extends State<ConfigureScreen> {
         position: _config.position,
       );
     } catch (error) {
-      showDialog(
-        context: context,
-        builder: (_) => AlertDialog(
-          title: const Text('Fehler'),
-          content: Text(error.toString()),
-        ),
-      );
+      if (mounted) {
+        showDialog(
+          context: context,
+          builder: (_) => AlertDialog(
+            title: const Text('Fehler'),
+            content: Text(error.toString()),
+          ),
+        );
+      }
 
       return;
     }
 
-    Navigator.pop(context, _config);
+    if (mounted) {
+      Navigator.pop(context, _config);
+    }
   }
 }

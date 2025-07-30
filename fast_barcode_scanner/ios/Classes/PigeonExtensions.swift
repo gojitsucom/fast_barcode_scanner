@@ -255,12 +255,10 @@ func convertToPigeonBarcodeData(_ barcodeData: Any) -> BarcodeData? {
               let type = BarcodeType.fromString(typeString) {
         barcodeType = type
     } else {
-        print("❌ convertToPigeonBarcodeData: Could not convert type: \(String(describing: barcodeArray[0]))")
         return nil
     }
 
     guard let value = barcodeArray[1] as? String else {
-        print("❌ convertToPigeonBarcodeData: Could not convert value: \(String(describing: barcodeArray[1]))")
         return nil
     }
 

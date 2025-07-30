@@ -58,15 +58,17 @@ class _HomeScreenState extends State<HomeScreen> {
                               )) ??
                       IOSApiMode.avFoundation;
                 }
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (_) => ScanningScreen(
-                      dispose: _disposeCheckboxValue,
-                      apiMode: apiMode,
+                if (context.mounted) {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => ScanningScreen(
+                        dispose: _disposeCheckboxValue,
+                        apiMode: apiMode,
+                      ),
                     ),
-                  ),
-                );
+                  );
+                }
               },
             ),
             ElevatedButton(
@@ -102,8 +104,9 @@ class _HomeScreenState extends State<HomeScreen> {
                 try {
                   final barcodes = await cam.scanImage(source);
 
-                  showDialog(
-                    context: context,
+                  if (context.mounted) {
+                    showDialog(
+                      context: context,
                     builder: (_) {
                       final List<Widget> children;
 
@@ -124,9 +127,12 @@ class _HomeScreenState extends State<HomeScreen> {
                         children: children,
                       );
                     },
-                  );
+                    );
+                  }
                 } catch (error, stack) {
-                  presentErrorAlert(context, error, stack);
+                  if (context.mounted) {
+                    presentErrorAlert(context, error, stack);
+                  }
                 }
               },
               child: const Text('Scan image'),

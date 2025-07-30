@@ -17,36 +17,22 @@ public class FastBarcodeScannerPlugin: NSObject, FlutterPlugin, FastBarcodeScann
     }
 
     public static func register(with registrar: FlutterPluginRegistrar) {
-        print("🔧 FastBarcodeScannerPlugin: Starting registration")
         let instance = FastBarcodeScannerPlugin(factory: PreviewViewFactory())
 
         // Set up Pigeon APIs
-        print("🔧 FastBarcodeScannerPlugin: Setting up Pigeon Host API")
         FastBarcodeScannerHostApiSetup.setUp(binaryMessenger: registrar.messenger(), api: instance)
-
-        print("🔧 FastBarcodeScannerPlugin: Setting up Pigeon Flutter API")
         instance.flutterApi = FastBarcodeScannerFlutterApi(binaryMessenger: registrar.messenger())
 
-        print("🔧 FastBarcodeScannerPlugin: Registering preview factory")
         registrar.register(instance.factory, withId: "fast_barcode_scanner.preview")
-
-        print("🔧 FastBarcodeScannerPlugin: Registration completed successfully")
     }
 
     // MARK: - FastBarcodeScannerHostApi Implementation
 
     func initialize(configuration: ScannerConfiguration, completion: @escaping (Result<PreviewConfiguration, Error>) -> Void) {
-        print("🚀 FastBarcodeScannerPlugin: Initialize called")
-        print("🚀 Configuration: types=\(configuration.types), mode=\(configuration.mode), resolution=\(configuration.resolution)")
-        print("🚀 Configuration: framerate=\(configuration.framerate), position=\(configuration.position), apiMode=\(String(describing: configuration.apiMode))")
-
         do {
-            print("🚀 FastBarcodeScannerPlugin: Calling initializeInternal")
             let previewConfig = try initializeInternal(configuration: configuration)
-            print("🚀 FastBarcodeScannerPlugin: Initialize successful, preview config: \(previewConfig)")
             completion(.success(previewConfig))
         } catch {
-            print("❌ FastBarcodeScannerPlugin: Initialize failed with error: \(error)")
             completion(.failure(error))
         }
     }
@@ -142,17 +128,12 @@ public class FastBarcodeScannerPlugin: NSObject, FlutterPlugin, FastBarcodeScann
     // MARK: - Internal Implementation Methods
 
     func initializeInternal(configuration: ScannerConfiguration) throws -> PreviewConfiguration {
-        print("🔧 initializeInternal: Starting initialization")
-
         guard camera == nil else {
-            print("🔧 initializeInternal: Camera already exists, returning existing config")
             return camera!.previewConfiguration.toPigeonPreviewConfiguration()
         }
 
-        print("🔧 initializeInternal: Creating scanner with apiMode: \(String(describing: configuration.apiMode))")
         let scanner: BarcodeScanner
         if configuration.apiMode == .avFoundation {
-            print("🔧 initializeInternal: Using AVFoundation scanner")
             scanner = AVFoundationBarcodeScanner(barcodeObjectLayerConverter: { barcodes in
                 var transformedObject: AVMetadataMachineReadableCodeObject?
                 DispatchQueue.main.sync {
@@ -171,7 +152,6 @@ public class FastBarcodeScannerPlugin: NSObject, FlutterPlugin, FastBarcodeScann
                 }
             }
         } else {
-            print("🔧 initializeInternal: Using Vision scanner")
             scanner = VisionBarcodeScanner(cornerPointConverter: { observation in
                 var convertedPoints: [[Int]] = []
 
@@ -220,23 +200,15 @@ public class FastBarcodeScannerPlugin: NSObject, FlutterPlugin, FastBarcodeScann
         }
 
         // Convert Pigeon configuration to internal configuration
-        print("🔧 initializeInternal: Converting configuration")
         let internalConfig = configuration.toInternalScannerConfiguration()
-
-        print("🔧 initializeInternal: Creating Camera instance")
         let camera = try Camera(configuration: internalConfig, scanner: scanner)
 
-        print("🔧 initializeInternal: Setting factory session")
         // AVCaptureVideoPreviewLayer shows the current camera's session
         factory.session = camera.session
 
-        print("🔧 initializeInternal: Starting camera")
         try camera.start()
-
-        print("🔧 initializeInternal: Storing camera reference")
         self.camera = camera
 
-        print("🔧 initializeInternal: Returning preview configuration")
         return camera.previewConfiguration.toPigeonPreviewConfiguration()
     }
 
