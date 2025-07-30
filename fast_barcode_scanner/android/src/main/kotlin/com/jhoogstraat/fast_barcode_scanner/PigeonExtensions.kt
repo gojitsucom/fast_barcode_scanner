@@ -15,7 +15,7 @@ val Resolution.width: Int
 val Resolution.height: Int
     get() = when (this) {
         Resolution.SD480 -> 480
-        Resolution.HD720 -> 960
+        Resolution.HD720 -> 720
         Resolution.HD1080 -> 1080
         Resolution.HD4K -> 2160
     }
