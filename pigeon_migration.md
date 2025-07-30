@@ -23,8 +23,8 @@ This migration improves type safety, reduces boilerplate code, and provides bett
 /// Data classes
 class PointData {
   PointData({required this.x, required this.y});
-  final int x;      // Changed from double to int
-  final int y;      // Changed from double to int
+  final int x;     
+  final int y;    
 }
 
 class PreviewConfiguration {
@@ -80,31 +80,7 @@ This generates:
 - `../fast_barcode_scanner/android/.../BarcodeApi.kt` (Android)
 - `../fast_barcode_scanner/ios/Classes/pigeon/BarcodeApi.swift` (iOS)
 
-### 3. Update Data Types
-
-**Key Change: PointData coordinates from double to int**
-
-**Before (Method Channel):**
-```dart
-class PointData {
-  final double x;
-  final double y;
-}
-```
-
-**After (Pigeon):**
-```dart
-class PointData {
-  final int x;    // Integer coordinates
-  final int y;    // Integer coordinates
-}
-```
-
-**Impact on Native Platforms:**
-- **Android:** `Double` → `Long`
-- **iOS:** `Double` → `Int64`
-
-### 4. Implement Platform Interface
+### 3. Implement Platform Interface
 
 **File:** `fast_barcode_scanner_platform_interface/lib/src/pigeon_fast_barcode_scanner.dart`
 
@@ -144,7 +120,7 @@ class PigeonFastBarcodeScanner extends FastBarcodeScannerPlatform
 }
 ```
 
-### 5. Update Android Implementation
+### 4. Update Android Implementation
 
 **File:** `fast_barcode_scanner/android/src/main/kotlin/com/jhoogstraat/fast_barcode_scanner/FastBarcodeScannerPlugin.kt`
 
@@ -187,7 +163,7 @@ class FastBarcodeScannerPlugin : FlutterPlugin, FastBarcodeScannerHostApi {
 }
 ```
 
-### 6. Update iOS Implementation
+### 5. Update iOS Implementation
 
 **File:** `fast_barcode_scanner/ios/Classes/FastBarcodeScannerPlugin.swift`
 
@@ -234,7 +210,7 @@ public class FastBarcodeScannerPlugin: NSObject, FlutterPlugin, FastBarcodeScann
 }
 ```
 
-### 7. Update Extensions for Type Changes
+### 6. Update Extensions for Type Changes
 
 **File:** `fast_barcode_scanner_platform_interface/lib/src/pigeon_extensions_full.dart`
 
@@ -260,7 +236,7 @@ extension PointDataExtension on PointData {
 }
 ```
 
-### 8. Update Native Extensions
+### 7. Update Native Extensions
 
 **Android:** `fast_barcode_scanner/android/src/main/kotlin/com/jhoogstraat/fast_barcode_scanner/PigeonExtensions.kt`
 
@@ -279,31 +255,6 @@ cornerPoints = pointList.map { point in
     guard point.count >= 2 else { return nil }
     return PointData(x: Int64(point[0]), y: Int64(point[1]))
 }
-```
-
-## 🧪 Testing
-
-### Comprehensive Test Suite
-
-Created extensive tests covering:
-
-1. **Data Classes Tests** (`pigeon_data_classes_test.dart`)
-2. **Enum Tests** (`pigeon_enums_test.dart`) 
-3. **API Tests** (`pigeon_api_test.dart`)
-4. **Codec Tests** (`pigeon_codec_test.dart`)
-5. **Basic Functionality Tests** (`pigeon_basic_test.dart`)
-
-**Key Test Features:**
-- Type verification (int vs double)
-- Serialization/deserialization
-- Error callback handling
-- Mock implementations
-- Edge cases and null safety
-
-**Run Tests:**
-```bash
-cd fast_barcode_scanner_platform_interface
-fvm flutter test
 ```
 
 ## 🎯 Benefits of Migration
@@ -337,32 +288,12 @@ fvm flutter test
 
 | Aspect | Before (Method Channel) | After (Pigeon) |
 |--------|------------------------|----------------|
-| **Coordinates** | `double x, y` | `int x, y` |
 | **Type Safety** | Runtime casting | Compile-time types |
 | **Error Handling** | Manual error codes | Structured callbacks |
 | **Code Generation** | Manual implementation | Auto-generated |
 | **Serialization** | Manual JSON handling | Auto-generated codecs |
-| **Testing** | Basic method tests | Comprehensive test suite |
 
-## 📝 Migration Checklist
-
-- [x] Define Pigeon API schema
-- [x] Generate Pigeon code
-- [x] Update data types (double → int for coordinates)
-- [x] Implement platform interface
-- [x] Update Android implementation
-- [x] Update iOS implementation  
-- [x] Update extensions for type changes
-- [x] Create comprehensive test suite
-- [x] Verify all tests pass
-- [x] Update documentation
-
-## 🚀 Result
-
-- **93 passing tests** ✅
-- **Type-safe API** ✅
-- **Improved error handling** ✅
-- **Reduced boilerplate** ✅
-- **Better maintainability** ✅
-
-The migration successfully modernizes the plugin architecture while maintaining backward compatibility and improving developer experience.
+### Key Learnings
+- Threading wrappers can interfere with AVFoundation coordinate transformations
+- Portrait mode requires explicit dimension swapping for camera formats
+- Consistency between platforms is crucial for accurate point positioning
