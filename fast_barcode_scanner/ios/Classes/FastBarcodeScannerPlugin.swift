@@ -135,11 +135,7 @@ public class FastBarcodeScannerPlugin: NSObject, FlutterPlugin, FastBarcodeScann
         let scanner: BarcodeScanner
         if configuration.apiMode == .avFoundation {
             scanner = AVFoundationBarcodeScanner(barcodeObjectLayerConverter: { barcodes in
-                var transformedObject: AVMetadataMachineReadableCodeObject?
-                DispatchQueue.main.sync {
-                    transformedObject = self.factory.preview?.videoPreviewLayer.transformedMetadataObject(for: barcodes) as? AVMetadataMachineReadableCodeObject
-                }
-                return transformedObject
+                self.factory.preview?.videoPreviewLayer.transformedMetadataObject(for: barcodes) as? AVMetadataMachineReadableCodeObject
             }, onCacheImage: onCacheImage) { [weak self] barcodes in
                 // Convert to Pigeon barcodes and send via FlutterApi
                 guard let self = self, let flutterApi = self.flutterApi else { return }
@@ -153,29 +149,23 @@ public class FastBarcodeScannerPlugin: NSObject, FlutterPlugin, FastBarcodeScann
             }
         } else {
             scanner = VisionBarcodeScanner(cornerPointConverter: { observation in
-                var convertedPoints: [[Int]] = []
 
-                DispatchQueue.main.sync {
-                    func convert(point: CGPoint) -> CGPoint? {
-                        self.factory.preview?.videoPreviewLayer.layerPointConverted(fromCaptureDevicePoint: point)
-                    }
-
-                    guard let topLeft = convert(point: CGPoint(x: observation.topLeft.x, y: 1 - observation.topLeft.y)),
-                          let topRight = convert(point: CGPoint(x: observation.topRight.x, y: 1 - observation.topRight.y)),
-                          let bottomRight = convert(point: CGPoint(x: observation.bottomRight.x, y: 1 - observation.bottomRight.y)),
-                          let bottomLeft = convert(point: CGPoint(x: observation.bottomLeft.x, y: 1 - observation.bottomLeft.y)) else {
-                        convertedPoints = []
-                        return
-                    }
-                    convertedPoints = [
-                        [Int(topRight.x), Int(topRight.y)],
-                        [Int(topLeft.x), Int(topLeft.y)],
-                        [Int(bottomLeft.x), Int(bottomLeft.y)],
-                        [Int(bottomRight.x), Int(bottomRight.y)]
-                    ]
+                func convert(point: CGPoint) -> CGPoint? {
+                    self.factory.preview?.videoPreviewLayer.layerPointConverted(fromCaptureDevicePoint: point)
                 }
 
-                return convertedPoints
+                guard let topLeft = convert(point: CGPoint(x: observation.topLeft.x, y: 1 - observation.topLeft.y)),
+                      let topRight = convert(point: CGPoint(x: observation.topRight.x, y: 1 - observation.topRight.y)),
+                      let bottomRight = convert(point: CGPoint(x: observation.bottomRight.x, y: 1 - observation.bottomRight.y)),
+                      let bottomLeft = convert(point: CGPoint(x: observation.bottomLeft.x, y: 1 - observation.bottomLeft.y)) else {
+                    return []
+                }
+                return [
+                    [Int(topRight.x), Int(topRight.y)],
+                    [Int(topLeft.x), Int(topLeft.y)],
+                    [Int(bottomLeft.x), Int(bottomLeft.y)],
+                    [Int(bottomRight.x), Int(bottomRight.y)]
+                ]
             }, confidence: configuration.confidence ?? 0.6, onCacheImage: onCacheImage, resultHandler: { [weak self] barcodes in
                 // Convert to Pigeon barcodes and send via FlutterApi
                 guard let self = self, let flutterApi = self.flutterApi else { return }

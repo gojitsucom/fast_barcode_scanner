@@ -4,6 +4,7 @@ publish_to: 'none'
 
 environment:
   sdk: ^3.0.0
+  flutter: ">=3.32.0"
 
 dependency_overrides:
   fast_barcode_scanner_platform_interface:
