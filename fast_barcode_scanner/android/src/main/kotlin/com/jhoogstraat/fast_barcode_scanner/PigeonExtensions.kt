@@ -154,27 +154,6 @@ fun ScannerConfiguration.toMap(): HashMap<String, Any> {
     return map
 }
 
-// MARK: - PreviewConfiguration Extensions
-val PreviewConfiguration.analysisResolution: String
-    get() = "${analysisWidth}x${analysisHeight}"
-
-// MARK: - Utility Functions
-fun createPreviewConfiguration(
-    textureId: Long,
-    targetRotation: Long,
-    width: Double,
-    height: Double
-): PreviewConfiguration {
-    return PreviewConfiguration(
-        textureId = textureId,
-        targetRotation = targetRotation,
-        height = height,
-        width = width,
-        analysisWidth = width,
-        analysisHeight = height
-    )
-}
-
 // MARK: - MLKit Barcode to Pigeon Conversion
 fun Barcode.toPigeonBarcode(): BarcodeData? {
     val type = this.format.toBarcodeType() ?: return null
@@ -214,6 +193,7 @@ fun UpdateConfiguration.toMap(): HashMap<String, Any> {
                 BarcodeType.QR -> "qr"
                 BarcodeType.UPC_A -> "upcA"
                 BarcodeType.UPC_E -> "upcE"
+                BarcodeType.INTERLEAVED -> "interleaved"
                 else -> null
             }
         }
