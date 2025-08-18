@@ -131,18 +131,13 @@ class Camera: NSObject {
 
         self.configuration = configuration
 
-        // Convert to portrait dimensions to match Android behavior
-        // Camera format is typically landscape, so swap width/height for portrait
-        let portraitWidth = previewSize.height
-        let portraitHeight = previewSize.width
-
         self.previewConfiguration = PreviewConfiguration(
             textureId: Int64(0),
             targetRotation: Int64(0),
-            height: Int64(portraitHeight),
-            width: Int64(portraitWidth),
-            analysisWidth: Int64(portraitWidth),
-            analysisHeight: Int64(portraitHeight)
+            height: Int64(previewSize.height),
+            width: Int64(previewSize.width),
+            analysisWidth: Int64(previewSize.width),
+            analysisHeight: Int64(previewSize.height)
         )
     }
 
