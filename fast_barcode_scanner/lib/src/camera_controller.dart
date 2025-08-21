@@ -1,6 +1,5 @@
 import 'dart:async';
 
-import 'package:fast_barcode_scanner_platform_interface/fast_barcode_scanner_platform_interface.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 
@@ -40,7 +39,7 @@ abstract class CameraController {
   final state = ScannerState();
 
   /// reports most recently scanned codes
-  ValueNotifier<List<Barcode>> get scannedBarcodes;
+  ValueNotifier<List<BarcodeData>> get scannedBarcodes;
 
   /// the size of the image used by the native analysis system to scan the code
   /// scanned codes have coordinate information that is based on this image size
@@ -110,7 +109,7 @@ abstract class CameraController {
   /// Analyze a still image, which can be chosen from an image picker.
   ///
   /// It is recommended to pause the live scanner before calling this.
-  Future<List<Barcode>?> scanImage(ImageSource source);
+  Future<List<BarcodeData>?> scanImage(ImageSourceData source);
 
   Future<String?> retrieveCachedImage(String code);
 
@@ -134,7 +133,7 @@ class _CameraController implements CameraController {
   static const scannedCodeTimeout = Duration(milliseconds: 250);
   DateTime? _lastScanTime;
   @override
-  ValueNotifier<List<Barcode>> scannedBarcodes = ValueNotifier([]);
+  ValueNotifier<List<BarcodeData>> scannedBarcodes = ValueNotifier([]);
 
   @override
   Size? get analysisSize {
@@ -196,14 +195,20 @@ class _CameraController implements CameraController {
         if (scanTime != null &&
             DateTime.now().difference(scanTime) > scannedCodeTimeout) {
           // it's been too long since we've seen a scanned code, clear the list
-          scannedBarcodes.value = const <Barcode>[];
+          scannedBarcodes.value = const <BarcodeData>[];
         }
       });
 
       _platform.setOnDetectHandler(_onDetectHandler);
 
       state._scannerConfig = ScannerConfiguration(
-          types, resolution, framerate, position, detectionMode);
+        types: types,
+        resolution: resolution,
+        framerate: framerate,
+        position: position,
+        mode: detectionMode,
+        apiMode: apiMode,
+      );
 
       state._error = null;
 
@@ -328,7 +333,7 @@ class _CameraController implements CameraController {
           types: types,
           resolution: resolution,
           framerate: framerate,
-          detectionMode: detectionMode,
+          mode: detectionMode,
           position: position,
         );
 
@@ -344,7 +349,7 @@ class _CameraController implements CameraController {
   }
 
   @override
-  Future<List<Barcode>?> scanImage(ImageSource source) async {
+  Future<List<BarcodeData>?> scanImage(ImageSourceData source) async {
     try {
       return _platform.scanImage(source);
     } catch (error) {
@@ -372,14 +377,14 @@ class _CameraController implements CameraController {
     await _platform.dispose();
   }
 
-  void _onDetectHandler(List<Barcode> codes) {
+  void _onDetectHandler(List<BarcodeData> codes) {
     events.value = ScannerEvent.detected;
     _onScan?.call(codes);
   }
 }
 
 class ScannedBarcodes {
-  final List<Barcode> barcodes;
+  final List<BarcodeData> barcodes;
   final DateTime scannedAt;
 
   ScannedBarcodes(this.barcodes) : scannedAt = DateTime.now();

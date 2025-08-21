@@ -1,13 +1,16 @@
-package com.jhoogstraat.fast_barcode_scanner.types
+package com.jhoogstraat.fast_barcode_scanner
 
-import io.flutter.plugin.common.MethodChannel.Result
+import com.jhoogstraat.fast_barcode_scanner.pigeon.Framerate
+import com.jhoogstraat.fast_barcode_scanner.pigeon.Resolution
+import com.jhoogstraat.fast_barcode_scanner.pigeon.ScannerConfiguration
+import com.jhoogstraat.fast_barcode_scanner.pigeon.FlutterError
 import java.io.IOException
 
-fun Exception.asFlutterResult(result: Result) {
+fun Exception.asFlutterResult(callback: (Result<Unit>) -> Unit) {
     if (this is ScannerException) {
-        throwFlutterError(result)
+        callback(Result.failure(this.toFlutterError()))
     } else {
-        ScannerException.Unknown(this).throwFlutterError(result)
+        callback(Result.failure(ScannerException.Unknown(this).toFlutterError()))
     }
 }
 
@@ -31,63 +34,63 @@ sealed class ScannerException : Exception() {
     /* Android specific */
     class ActivityNotConnected : ScannerException()
 
-    fun throwFlutterError(result: Result) {
+    fun toFlutterError(): FlutterError {
         return when (this) {
-            is AlreadyInitialized -> result.error(
+            is AlreadyInitialized -> FlutterError(
                 "ALREADY_INITIALIZED",
                 "Camera is already initialized",
                 null
             )
-            is NotInitialized -> result.error(
+            is NotInitialized -> FlutterError(
                 "NOT_INITIALIZED",
                 "Camera has not been initialized",
                 null
             )
-            is NotRunning -> result.error("NOT_RUNNING", "Camera is not running", null)
-            is AlreadyRunning -> result.error("ALREADY_RUNNING", "Camera is already running", null)
-            is CameraNotSuitable -> result.error(
+            is NotRunning -> FlutterError("NOT_RUNNING", "Camera is not running", null)
+            is AlreadyRunning -> FlutterError("ALREADY_RUNNING", "Camera is already running", null)
+            is CameraNotSuitable -> FlutterError(
                 "CAMERA_NOT_SUITABLE",
                 "The camera does not support the requested resolution and framerate combination",
                 "$resolution $framerate"
             )
-            is ConfigurationException -> result.error(
+            is ConfigurationException -> FlutterError(
                 "CONFIGURATION_FAILED",
                 "The configuration could not be applied",
                 error.localizedMessage
             )
-            is NoInputDeviceForConfig -> result.error(
+            is NoInputDeviceForConfig -> FlutterError(
                 "NO_INPUT_DEVICE",
                 "No input device found for configuration. Are you using a simulator?",
                 "$configuration"
             )
-            is Unauthorized -> result.error(
+            is Unauthorized -> FlutterError(
                 "UNAUTHORIZED",
                 "The application is not authorized to use the camera device",
                 null
             )
-            is InvalidArguments -> result.error(
+            is InvalidArguments -> FlutterError(
                 "INVALID_ARGUMENT",
                 "Invalid arguments provided",
                 args
             )
-            is InvalidCodeType -> result.error("INVALID_CODE", "Invalid code type", type)
-            is ActivityNotConnected -> result.error("NO_ACTIVITY", "No activity is connected", null)
-            is LoadingFailed -> result.error(
+            is InvalidCodeType -> FlutterError("INVALID_CODE", "Invalid code type", type)
+            is ActivityNotConnected -> FlutterError("NO_ACTIVITY", "No activity is connected", null)
+            is LoadingFailed -> FlutterError(
                 "LOADING_FAILED",
                 "Could not load asset",
                 error.localizedMessage
             )
-            is AnalysisFailed -> result.error(
+            is AnalysisFailed -> FlutterError(
                 "ANALYSIS_FAILED",
                 "Could not analyse asset",
                 error.localizedMessage
             )
-            is AlreadyPicking -> result.error(
+            is AlreadyPicking -> FlutterError(
                 "ALREADY_PICKING",
                 "Already picking an image to analyze",
                 null
             )
-            is Unknown -> result.error(
+            is Unknown -> FlutterError(
                 "UNKNOWN",
                 "Unknown error occurred",
                 error.localizedMessage

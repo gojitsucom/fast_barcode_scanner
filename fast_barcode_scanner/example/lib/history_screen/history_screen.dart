@@ -1,4 +1,4 @@
-import 'package:flutter/foundation.dart';
+
 import 'package:flutter/material.dart';
 
 import '../scan_history.dart';
@@ -7,7 +7,7 @@ class HistoryScreen extends StatefulWidget {
   const HistoryScreen({Key? key}) : super(key: key);
 
   @override
-  _HistoryScreenState createState() => _HistoryScreenState();
+  State<HistoryScreen> createState() => _HistoryScreenState();
 }
 
 class _HistoryScreenState extends State<HistoryScreen> {
@@ -44,9 +44,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
           final scan = history.scans[history.scans.length - idx - 1];
           return ListTile(
             title: Text(scan.value),
-            subtitle: Text(describeEnum(scan.type) +
-                " - " +
-                (scan.valueType != null ? describeEnum(scan.valueType!) : "")),
+            subtitle: Text('${scan.type.name} - ${scan.valueType?.name ?? ""}'),
           );
         },
         separatorBuilder: (_, __) => const Divider(height: 1),

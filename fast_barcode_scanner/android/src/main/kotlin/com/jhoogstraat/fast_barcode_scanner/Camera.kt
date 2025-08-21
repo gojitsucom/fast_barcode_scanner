@@ -4,7 +4,6 @@ import ImageHelper
 import android.Manifest
 import android.app.Activity
 import android.content.pm.PackageManager
-import android.media.Image
 import android.util.Log
 import android.view.Surface
 import androidx.annotation.OptIn
@@ -19,9 +18,14 @@ import com.google.android.gms.tasks.TaskCompletionSource
 import com.google.common.util.concurrent.ListenableFuture
 import com.google.mlkit.vision.barcode.common.Barcode
 import com.google.mlkit.vision.barcode.BarcodeScannerOptions
+import com.jhoogstraat.fast_barcode_scanner.pigeon.CameraPosition
+import com.jhoogstraat.fast_barcode_scanner.pigeon.DetectionMode
+import com.jhoogstraat.fast_barcode_scanner.pigeon.PreviewConfiguration
+import com.jhoogstraat.fast_barcode_scanner.pigeon.ScannerConfiguration
+import com.jhoogstraat.fast_barcode_scanner.pigeon.UpdateConfiguration
 import com.jhoogstraat.fast_barcode_scanner.scanner.MLKitBarcodeScanner
 import com.jhoogstraat.fast_barcode_scanner.scanner.OnDetectedListener
-import com.jhoogstraat.fast_barcode_scanner.types.*
+import com.jhoogstraat.fast_barcode_scanner.pigeon.*
 import io.flutter.plugin.common.PluginRegistry.RequestPermissionsResultListener
 import io.flutter.view.TextureRegistry
 import kotlinx.coroutines.CoroutineScope
@@ -34,7 +38,7 @@ import java.util.concurrent.Executors
 class Camera(
     val activity: Activity,
     val flutterTextureEntry: TextureRegistry.SurfaceTextureEntry,
-    args: HashMap<String, Any>,
+    configuration: ScannerConfiguration,
     private val listener: (List<Barcode>) -> Unit
 ) : RequestPermissionsResultListener {
 
@@ -70,64 +74,47 @@ class Camera(
     }
 
     init {
-        val types = (args["types"] as ArrayList<String>)
-
         try {
-            scannerConfiguration = ScannerConfiguration(
-                types.mapNotNull { barcodeFormatMap[it] }
-                    .toIntArray(),
-                DetectionMode.valueOf(args["mode"] as String),
-                Resolution.valueOf(args["res"] as String),
-                Framerate.valueOf(args["fps"] as String),
-                CameraPosition.valueOf(args["pos"] as String)
-            )
+            scannerConfiguration = configuration
 
-            // Report to the user if any types are not supported
-            if (types.count() != scannerConfiguration.formats.count()) {
-                val unsupportedTypes = types.filter { !barcodeFormatMap.containsKey(it) }
-                Log.d(TAG, "WARNING: Unsupported barcode types selected: $unsupportedTypes")
+            val options = BarcodeScannerOptions.Builder()
+                .setBarcodeFormats(0, *scannerConfiguration.types.mapNotNull { it?.mlKitFormat }.toIntArray())
+                .build()
+
+            barcodeScanner = MLKitBarcodeScanner(options, object : OnDetectedListener<List<Barcode>> {
+                @OptIn(ExperimentalGetImage::class)
+                override fun onSuccess(codes: List<Barcode>, imageProxy: ImageProxy) {
+                    CoroutineScope(Dispatchers.Main).launch {
+                        if (codes.isNotEmpty()) {
+                            if (scannerConfiguration.mode == DetectionMode.PAUSE_DETECTION) {
+                                stopDetector()
+                            } else if (scannerConfiguration.mode == DetectionMode.PAUSE_VIDEO) {
+                                stopCamera()
+                            }
+                            val code = codes.first().displayValue
+                            if (code != null) {
+                                ImageHelper.getInstance()
+                                    .storeImageToCache(
+                                        imageProxy.image!!,
+                                        code,
+                                        activity.applicationContext
+                                    )
+                                listener(codes)
+                            }
+                        }
+                        imageProxy.close()
+                    }
+                }
+            }) {
+                Log.e(TAG, "Error in MLKit", it)
             }
+
+            // Create Camera Thread
+            cameraExecutor = Executors.newSingleThreadExecutor()
 
         } catch (e: Exception) {
-            throw ScannerException.InvalidArguments(args)
+            throw ScannerException.InvalidArguments(configuration.toMap())
         }
-
-        val options = BarcodeScannerOptions.Builder()
-            .setBarcodeFormats(0, *scannerConfiguration.formats)
-            .build()
-
-        barcodeScanner = MLKitBarcodeScanner(options, object : OnDetectedListener<List<Barcode>> {
-            @OptIn(ExperimentalGetImage::class)
-            override fun onSuccess(codes: List<Barcode>, imageProxy: ImageProxy) {
-                CoroutineScope(Dispatchers.Main).launch {
-                    if (codes.isNotEmpty()) {
-                        if (scannerConfiguration.mode == DetectionMode.pauseDetection) {
-                            stopDetector()
-                        } else if (scannerConfiguration.mode == DetectionMode.pauseVideo) {
-                            stopCamera()
-                        }
-                        val code = codes.first().displayValue
-                        if (code != null) {
-                            ImageHelper.getInstance()
-                                .storeImageToCache(
-                                    imageProxy.image!!,
-                                    code,
-                                    activity.applicationContext
-                                )
-                            listener(codes)
-                        }
-                    }
-                    imageProxy.close()
-                }
-
-
-            }
-        }) {
-            Log.e(TAG, "Error in MLKit", it)
-        }
-
-        // Create Camera Thread
-        cameraExecutor = Executors.newSingleThreadExecutor()
     }
 
     fun requestPermissions(): Task<Unit> {
@@ -181,7 +168,7 @@ class Camera(
     private fun buildSelectorAndUseCases() {
         cameraSelector = CameraSelector.Builder()
             .requireLensFacing(
-                if (scannerConfiguration.position == CameraPosition.back)
+                if (scannerConfiguration.position == CameraPosition.BACK)
                     CameraSelector.LENS_FACING_BACK
                 else
                     CameraSelector.LENS_FACING_FRONT
@@ -278,34 +265,20 @@ class Camera(
         return camera.cameraControl.enableTorch(!torchState)
     }
 
-    fun changeConfiguration(args: HashMap<String, Any>): PreviewConfiguration {
+    fun changeConfiguration(updateConfig: UpdateConfiguration): PreviewConfiguration {
         if (!isInitialized)
             throw ScannerException.NotInitialized()
 
         try {
-            val formats = if (args.containsKey("types")) (args["types"] as ArrayList<String>).map {
-                barcodeFormatMap[it] ?: throw ScannerException.InvalidCodeType(it)
-            }.toIntArray() else scannerConfiguration.formats
-            val detectionMode =
-                if (args.containsKey("mode")) DetectionMode.valueOf(args["mode"] as String) else scannerConfiguration.mode
-            val resolution =
-                if (args.containsKey("res")) Resolution.valueOf(args["res"] as String) else scannerConfiguration.resolution
-            val framerate =
-                if (args.containsKey("fps")) Framerate.valueOf(args["fps"] as String) else scannerConfiguration.framerate
-            val position =
-                if (args.containsKey("pos")) CameraPosition.valueOf(args["pos"] as String) else scannerConfiguration.position
-
             scannerConfiguration = scannerConfiguration.copy(
-                formats = formats,
-                mode = detectionMode,
-                resolution = resolution,
-                framerate = framerate,
-                position = position
+                types = updateConfig.types ?: scannerConfiguration.types,
+                mode = updateConfig.mode ?: scannerConfiguration.mode,
+                resolution = updateConfig.resolution ?: scannerConfiguration.resolution,
+                framerate = updateConfig.framerate ?: scannerConfiguration.framerate,
+                position = updateConfig.position ?: scannerConfiguration.position
             )
-        } catch (e: ScannerException) {
-            throw e
         } catch (e: Exception) {
-            throw ScannerException.InvalidArguments(args)
+            throw ScannerException.InvalidArguments(updateConfig.toMap())
         }
 
         bindCameraUseCases()
@@ -335,14 +308,14 @@ class Camera(
             preview.resolutionInfo?.resolution ?: throw ScannerException.NotInitialized()
         val analysisRes =
             imageAnalysis.resolutionInfo?.resolution ?: throw ScannerException.NotInitialized()
-
+        val isPortrait = previewRes.height > previewRes.width
         return PreviewConfiguration(
             flutterTextureEntry.id(),
             0,
-            previewRes.height,
-            previewRes.width,
-            analysisWidth = analysisRes.width,
-            analysisHeight = analysisRes.height
+            height = if (isPortrait) previewRes.height.toLong() else previewRes.width.toLong(),
+            width = if (isPortrait) previewRes.width.toLong() else previewRes.height.toLong(),
+            analysisWidth = if (isPortrait) analysisRes.width.toLong() else analysisRes.height.toLong(),
+            analysisHeight = if (isPortrait) analysisRes.height.toLong() else analysisRes.width.toLong()
         )
     }
 

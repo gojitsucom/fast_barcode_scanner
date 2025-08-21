@@ -2,11 +2,11 @@ name: fast_barcode_scanner_platform_interface
 description: A common platform interface for the fast_barcode_scanner plugin.
 homepage: https://github.com/jhoogstraat/fast_barcode_scanner/tree/master/fast_barcode_scanner_platform_interface
 repository: https://github.com/jhoogstraat/fast_barcode_scanner
-version: 2.2.0
+version: 3.0.0
 
 environment:
-  sdk: '>=2.12.0 <3.0.0'
-  flutter: ">=2.0.0"
+  sdk: ^3.0.0
+  flutter: ">=3.32.0"
 
 dependencies:
   flutter:
@@ -17,3 +17,4 @@ dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^2.0.1
+  pigeon: ^26.0.0

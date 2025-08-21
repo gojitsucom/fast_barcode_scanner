@@ -1,10 +1,12 @@
+import 'package:fast_barcode_scanner/fast_barcode_scanner.dart';
 import 'dart:ui';
 
 import 'package:fast_barcode_scanner_platform_interface/fast_barcode_scanner_platform_interface.dart';
 
+
 import '../../corner_point_utils.dart';
 
-typedef CodeFilter = bool Function(Barcode code);
+typedef CodeFilter = bool Function(BarcodeData code);
 
 /// A simple description of a rect of interest. The Rect will be located in the
 /// center of the screen and will fill the width minus horizontal padding.
@@ -30,7 +32,7 @@ abstract class RectOfInterest {
       if (cornerPoints != null) {
         for (final cornerPoint in cornerPoints) {
           final scaledCornerOffset = scaleCodeCornerPoint(
-            cornerPoint: cornerPoint.toOffset(),
+            cornerPoint: cornerPoint?.toOffset() ?? Offset.zero,
             analysisImageSize: analysisSize,
             widgetSize: previewSize,
           );
@@ -46,8 +48,8 @@ abstract class RectOfInterest {
     };
   }
 
-  List<Barcode> filterCodes({
-    required List<Barcode> codes,
+  List<BarcodeData> filterCodes({
+    required List<BarcodeData> codes,
     required Size analysisSize,
     required Size previewSize,
   }) {
@@ -56,7 +58,7 @@ abstract class RectOfInterest {
       if (cornerPoints != null) {
         for (final cornerPoint in cornerPoints) {
           final scaledCornerOffset = scaleCodeCornerPoint(
-            cornerPoint: cornerPoint.toOffset(),
+            cornerPoint: cornerPoint?.toOffset() ?? Offset.zero,
             analysisImageSize: analysisSize,
             widgetSize: previewSize,
           );

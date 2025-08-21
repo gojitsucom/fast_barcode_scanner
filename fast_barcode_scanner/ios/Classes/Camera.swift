@@ -22,7 +22,8 @@ class Camera: NSObject {
 
         var authorizationGranted = true
         switch AVCaptureDevice.authorizationStatus(for: .video) {
-        case .authorized: break
+        case .authorized:
+            break
         case .notDetermined:
             sessionQueue.suspend()
             AVCaptureDevice.requestAccess(for: .video) { granted in
@@ -49,18 +50,25 @@ class Camera: NSObject {
 
     func configureSession(configuration: ScannerConfiguration) throws {
         let requestedDevice: AVCaptureDevice?
+        let requestedPosition = configuration.cameraPosition
 
         // Grab the requested camera device, otherwise toggle the position and try again.
         if let device = AVCaptureDevice.default(.builtInWideAngleCamera,
                                                 for: .video,
-                                                position: configuration.position) {
+                                                position: requestedPosition) {
             requestedDevice = device
         } else if let device = AVCaptureDevice.default(.builtInWideAngleCamera,
                                                        for: .video,
-                                                       position: configuration.position == .back ? .front : .back) {
+                                                       position: requestedPosition == .back ? .front : .back) {
             requestedDevice = device
         } else {
-            requestedDevice = nil
+            // Try any available camera as fallback
+            let allDevices = AVCaptureDevice.DiscoverySession(
+                deviceTypes: [.builtInWideAngleCamera, .builtInDualCamera, .builtInTrueDepthCamera],
+                mediaType: .video,
+                position: .unspecified
+            ).devices
+            requestedDevice = allDevices.first
         }
 
         guard let device = requestedDevice else {
@@ -68,7 +76,6 @@ class Camera: NSObject {
         }
 
         session.beginConfiguration()
-
         session.inputs.forEach(session.removeInput)
 
         let deviceInput = try AVCaptureDeviceInput(device: device)
@@ -96,16 +103,18 @@ class Camera: NSObject {
         session.commitConfiguration()
 
         // Find the optimal settings for the requested resolution and frame rate.
+        // Use portrait dimensions to match Android behavior
+        let portraitDimensions = configuration.resolution.portrait()
         guard let optimalFormat = captureDevice.formats.first(where: {
             let dimensions = CMVideoFormatDescriptionGetDimensions($0.formatDescription)
             let mediaSubType = CMFormatDescriptionGetMediaSubType($0.formatDescription).toString()
 
             return $0.videoSupportedFrameRateRanges.first!.maxFrameRate >= configuration.framerate.doubleValue
-                && dimensions.height >= configuration.resolution.height
-                && dimensions.width >= configuration.resolution.width
+                && dimensions.height >= portraitDimensions.height
+                && dimensions.width >= portraitDimensions.width
                 && mediaSubType == "420f" // maybe 420v is also ok? Who knows...
         }) else {
-            throw ScannerError.cameraNotSuitable(configuration.resolution, configuration.framerate)
+            throw ScannerError.cameraNotSuitable
         }
 
         do {
@@ -122,10 +131,14 @@ class Camera: NSObject {
 
         self.configuration = configuration
 
-        self.previewConfiguration = PreviewConfiguration(width: previewSize.width,
-                             height: previewSize.height,
-                             targetRotation: 0,
-                             textureId: 0)
+        self.previewConfiguration = PreviewConfiguration(
+            textureId: Int64(0),
+            targetRotation: Int64(0),
+            height: Int64(previewSize.height),
+            width: Int64(previewSize.width),
+            analysisWidth: Int64(previewSize.width),
+            analysisHeight: Int64(previewSize.height)
+        )
     }
 
     func start() throws {

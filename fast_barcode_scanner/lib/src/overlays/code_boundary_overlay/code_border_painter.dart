@@ -15,21 +15,21 @@ class CodeBorderPainter extends CustomPainter {
   });
 
   final Size imageSize;
-  final List<Barcode> barcodes;
+  final List<BarcodeData> barcodes;
 
   static final _standardPaint = Paint()
     ..style = PaintingStyle.stroke
     ..strokeWidth = 2.0
     ..color = Colors.red;
 
-  Paint _getBarcodePaint(Barcode barcode) {
+  Paint _getBarcodeDataPaint(BarcodeData barcode) {
     if (barcodePaintSelector != null) {
       return barcodePaintSelector!(barcode);
     }
     return _standardPaint;
   }
 
-  CodeValueDisplay? _getTextDecoration(Barcode barcode) {
+  CodeValueDisplay? _getTextDecoration(BarcodeData barcode) {
     if (textDecorator != null) {
       return textDecorator!(barcode);
     }
@@ -38,13 +38,13 @@ class CodeBorderPainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    for (Barcode barcode in barcodes) {
+    for (BarcodeData barcode in barcodes) {
       final Path path = Path();
       final corners = barcode.cornerPoints;
       if (corners != null) {
         final offsets = corners
             .map((e) => scaleCodeCornerPoint(
-                cornerPoint: Offset(e.x.toDouble(), e.y.toDouble()),
+                cornerPoint: e?.toOffset() ?? Offset.zero,
                 analysisImageSize: imageSize,
                 widgetSize: size))
             .toList();
@@ -67,7 +67,7 @@ class CodeBorderPainter extends CustomPainter {
         }
         // print("minX: $minX, maxX: $maxX, minY: $minY, maxY: $maxY");
         path.close();
-        final barcodePaint = _getBarcodePaint(barcode);
+        final barcodePaint = _getBarcodeDataPaint(barcode);
         canvas.drawPath(path, barcodePaint);
 
         final textDecoration = _getTextDecoration(barcode);

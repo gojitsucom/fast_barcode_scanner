@@ -2,82 +2,150 @@ import Flutter
 import AVFoundation
 import UIKit
 import CryptoKit
+import Vision
 
 @available(iOS 11.0, *)
-public class FastBarcodeScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler {
-    let commandChannel: FlutterMethodChannel
-    let barcodeEventChannel: FlutterEventChannel
+public class FastBarcodeScannerPlugin: NSObject, FlutterPlugin, FastBarcodeScannerHostApi {
     let factory: PreviewViewFactory
-
     var camera: Camera?
     var picker: ImagePicker?
-    var detectionsSink: FlutterEventSink?
+    var flutterApi: FastBarcodeScannerFlutterApi?
 
-    init(commands: FlutterMethodChannel,
-         events: FlutterEventChannel,
-         factory: PreviewViewFactory
-    ) {
-        commandChannel = commands
-        barcodeEventChannel = events
+    init(factory: PreviewViewFactory) {
         self.factory = factory
+        super.init()
     }
 
     public static func register(with registrar: FlutterPluginRegistrar) {
-        let commandChannel = FlutterMethodChannel(name: "com.jhoogstraat/fast_barcode_scanner",
-                binaryMessenger: registrar.messenger())
+        let instance = FastBarcodeScannerPlugin(factory: PreviewViewFactory())
 
-        let barcodeEventChannel = FlutterEventChannel(name: "com.jhoogstraat/fast_barcode_scanner/detections",
-                binaryMessenger: registrar.messenger())
-
-        let instance = FastBarcodeScannerPlugin(commands: commandChannel,
-                events: barcodeEventChannel,
-                factory: PreviewViewFactory())
+        // Set up Pigeon APIs
+        FastBarcodeScannerHostApiSetup.setUp(binaryMessenger: registrar.messenger(), api: instance)
+        instance.flutterApi = FastBarcodeScannerFlutterApi(binaryMessenger: registrar.messenger())
 
         registrar.register(instance.factory, withId: "fast_barcode_scanner.preview")
-        registrar.addMethodCallDelegate(instance, channel: commandChannel)
-        barcodeEventChannel.setStreamHandler(instance)
     }
 
-    public func handle(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
+    // MARK: - FastBarcodeScannerHostApi Implementation
+
+    func initialize(configuration: ScannerConfiguration, completion: @escaping (Result<PreviewConfiguration, Error>) -> Void) {
         do {
-            var response: Any?
-
-            switch call.method {
-            case "init": response = try initialize(args: call.arguments).asDict
-            case "start": try start()
-            case "stop": try stop()
-            case "startDetector": try startDetector()
-            case "stopDetector": try stopDetector()
-            case "torch": response = try toggleTorch()
-            case "config": response = try updateConfiguration(call: call).asDict
-            case "scan": try analyzeImage(args: call.arguments, on: result); return
-            case "dispose": dispose()
-            case "retrieveCachedImage": response = try retrieveCachedImage(code: (call.arguments as! [String: String])["code"]!)
-            case "clearCachedImage": try clearCachedImage()
-            default: response = FlutterMethodNotImplemented
-            }
-
-            result(response)
+            let previewConfig = try initializeInternal(configuration: configuration)
+            completion(.success(previewConfig))
         } catch {
-            print(error)
-            result(error.flutterError)
+            completion(.failure(error))
         }
     }
 
-    func initialize(args: Any?) throws -> PreviewConfiguration {
+    func start(completion: @escaping (Result<Void, Error>) -> Void) {
+        do {
+            try startInternal()
+            completion(.success(()))
+        } catch {
+            completion(.failure(error))
+        }
+    }
+
+    func stop(completion: @escaping (Result<Void, Error>) -> Void) {
+        do {
+            try stopInternal()
+            completion(.success(()))
+        } catch {
+            completion(.failure(error))
+        }
+    }
+
+    func startDetector(completion: @escaping (Result<Void, Error>) -> Void) {
+        do {
+            try startDetectorInternal()
+            completion(.success(()))
+        } catch {
+            completion(.failure(error))
+        }
+    }
+
+    func stopDetector(completion: @escaping (Result<Void, Error>) -> Void) {
+        do {
+            try stopDetectorInternal()
+            completion(.success(()))
+        } catch {
+            completion(.failure(error))
+        }
+    }
+
+    func dispose(completion: @escaping (Result<Void, Error>) -> Void) {
+        disposeInternal()
+        completion(.success(()))
+    }
+
+    func toggleTorch(completion: @escaping (Result<Bool, Error>) -> Void) {
+        do {
+            let torchState = try toggleTorchInternal()
+            completion(.success(torchState))
+        } catch {
+            completion(.failure(error))
+        }
+    }
+
+    func changeConfiguration(configuration: UpdateConfiguration, completion: @escaping (Result<PreviewConfiguration, Error>) -> Void) {
+        do {
+            let previewConfig = try changeConfigurationInternal(configuration: configuration)
+            completion(.success(previewConfig))
+        } catch {
+            completion(.failure(error))
+        }
+    }
+
+    func scanImage(imageSource: ImageSourceData, completion: @escaping (Result<[BarcodeData?], Error>) -> Void) {
+        scanImageInternal(imageSource: imageSource) { result in
+            switch result {
+            case .success(let barcodes):
+                completion(.success(barcodes))
+            case .failure(let error):
+                completion(.failure(error))
+            }
+        }
+    }
+
+    func retrieveCachedImage(code: String, completion: @escaping (Result<String?, Error>) -> Void) {
+        do {
+            let imagePath = try retrieveCachedImageInternal(code: code)
+            completion(.success(imagePath))
+        } catch {
+            completion(.failure(error))
+        }
+    }
+
+    func clearCachedImage(completion: @escaping (Result<Void, Error>) -> Void) {
+        do {
+            try clearCachedImageInternal()
+            completion(.success(()))
+        } catch {
+            completion(.failure(error))
+        }
+    }
+
+    // MARK: - Internal Implementation Methods
+
+    func initializeInternal(configuration: ScannerConfiguration) throws -> PreviewConfiguration {
         guard camera == nil else {
-            return camera!.previewConfiguration
+            return camera!.previewConfiguration.toPigeonPreviewConfiguration()
         }
 
-        guard let configuration = ScannerConfiguration(args) else {
-            throw ScannerError.invalidArguments(args)
-        }
         let scanner: BarcodeScanner
-        if configuration.apiMode == ApiMode.avFoundation {
+        if configuration.apiMode == .avFoundation {
             scanner = AVFoundationBarcodeScanner(barcodeObjectLayerConverter: { barcodes in
                 self.factory.preview?.videoPreviewLayer.transformedMetadataObject(for: barcodes) as? AVMetadataMachineReadableCodeObject
-            }, onCacheImage: onCacheImage) { [unowned self] barcodes in
-                self.detectionsSink?(barcodes)
+            }, onCacheImage: onCacheImage) { [weak self] barcodes in
+                // Convert to Pigeon barcodes and send via FlutterApi
+                guard let self = self, let flutterApi = self.flutterApi else { return }
+                if let barcodesArray = barcodes as? [Any] {
+                    var pigeonBarcodes: [BarcodeData?] = []
+                    for barcode in barcodesArray {
+                        pigeonBarcodes.append(convertToPigeonBarcodeData(barcode))
+                    }
+                    flutterApi.onBarcodesDetected(barcodes: pigeonBarcodes) { _ in }
+                }
             }
         } else {
             scanner = VisionBarcodeScanner(cornerPointConverter: { observation in
@@ -98,129 +166,152 @@ public class FastBarcodeScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHan
                     [Int(bottomLeft.x), Int(bottomLeft.y)],
                     [Int(bottomRight.x), Int(bottomRight.y)]
                 ]
-            }, confidence: configuration.confidence, onCacheImage: onCacheImage, resultHandler: { [unowned self] barcodes in
-                self.detectionsSink?(barcodes)
+            }, confidence: configuration.confidence ?? 0.6, onCacheImage: onCacheImage, resultHandler: { [weak self] barcodes in
+                // Convert to Pigeon barcodes and send via FlutterApi
+                guard let self = self, let flutterApi = self.flutterApi else { return }
+                if let barcodesArray = barcodes as? [Any] {
+                    var pigeonBarcodes: [BarcodeData?] = []
+                    for barcode in barcodesArray {
+                        pigeonBarcodes.append(convertToPigeonBarcodeData(barcode))
+                    }
+                    flutterApi.onBarcodesDetected(barcodes: pigeonBarcodes) { _ in }
+                }
             },
-errorHandler: { [unowned self] error in
-                self.detectionsSink?(error)
+            errorHandler: { [weak self] error in
+                guard let self = self, let flutterApi = self.flutterApi else { return }
+                let errorMessage = error?.message ?? "Unknown scanner error"
+                flutterApi.onError(
+                    errorCode: "SCANNER_ERROR",
+                    errorMessage: errorMessage,
+                    errorDetails: nil
+                ) { _ in }
             }
             )
         }
 
-        let camera = try Camera(configuration: configuration, scanner: scanner)
+        // Convert Pigeon configuration to internal configuration
+        let internalConfig = configuration.toInternalScannerConfiguration()
+        let camera = try Camera(configuration: internalConfig, scanner: scanner)
 
         // AVCaptureVideoPreviewLayer shows the current camera's session
         factory.session = camera.session
 
         try camera.start()
-
         self.camera = camera
 
-        return camera.previewConfiguration
+        return camera.previewConfiguration.toPigeonPreviewConfiguration()
     }
 
-    func start() throws {
+    func startInternal() throws {
         guard let camera = camera else {
             throw ScannerError.notInitialized
         }
         try camera.start()
     }
 
-    func stop() throws {
+    func stopInternal() throws {
         guard let camera = camera else {
             return
         }
         camera.stop()
     }
 
-    func dispose() {
+    func disposeInternal() {
         camera?.stop()
         camera = nil
     }
 
-    func startDetector() throws {
+    func startDetectorInternal() throws {
         guard let camera = camera else {
             throw ScannerError.notInitialized
         }
         camera.startDetector()
     }
 
-    func stopDetector() throws {
+    func stopDetectorInternal() throws {
         guard let camera = camera else {
             throw ScannerError.notInitialized
         }
         camera.stopDetector()
     }
 
-    func toggleTorch() throws -> Bool {
+    func toggleTorchInternal() throws -> Bool {
         guard let camera = camera else {
             throw ScannerError.notInitialized
         }
         return try camera.toggleTorch()
     }
 
-    func updateConfiguration(call: FlutterMethodCall) throws -> PreviewConfiguration {
+    func changeConfigurationInternal(configuration: UpdateConfiguration) throws -> PreviewConfiguration {
         guard let camera = camera else {
             throw ScannerError.notInitialized
         }
 
-        guard let config = camera.configuration.copy(with: call.arguments) else {
-            throw ScannerError.invalidArguments(call.arguments)
-        }
+        // Convert Pigeon UpdateConfiguration to internal configuration
+        let config = camera.configuration.copy(with: configuration)
 
         try camera.configureSession(configuration: config)
 
-        return camera.previewConfiguration
+        return camera.previewConfiguration.toPigeonPreviewConfiguration()
     }
 
-    func retrieveCachedImage(code: String) throws -> String? {
+    func retrieveCachedImageInternal(code: String) throws -> String? {
         if let imagePath = ImageHelper.shared.retrieveImagePath(code: code) {
             return imagePath
         }
         return nil
     }
 
-    func clearCachedImage() throws {
+    func clearCachedImageInternal() throws {
         ImageHelper.shared.clearCache()
     }
 
-    func analyzeImage(args: Any?, on resultHandler: @escaping (Any?) -> Void) throws {
-        let visionResultHandler: BarcodeScanner.ResultHandler = { result in
-                resultHandler(result)
+    func scanImageInternal(imageSource: ImageSourceData, completion: @escaping (Result<[BarcodeData?], Error>) -> Void) {
+        let visionResultHandler: (Any?) -> Void = { result in
+            if let barcodes = result as? [Any] {
+                var pigeonBarcodes: [BarcodeData?] = []
+                for barcode in barcodes {
+                    pigeonBarcodes.append(convertToPigeonBarcodeData(barcode))
+                }
+                completion(.success(pigeonBarcodes))
+            } else {
+                completion(.success([]))
+            }
         }
 
-        let visionErrorHandler: VisionBarcodeScanner.ErrorHandler = { error in
-                resultHandler(error)
+        let visionErrorHandler: (FlutterError?) -> Void = { (error: FlutterError?) in
+            if let flutterError = error {
+                let scannerError = ScannerError.unknown(flutterError.message ?? "Unknown error")
+                completion(.failure(scannerError))
+            } else {
+                completion(.failure(ScannerError.unknown("Unknown error")))
+            }
         }
 
-        if let container = args as? [Any] {
-            guard
-                    let byteBuffer = container[0] as? FlutterStandardTypedData,
-                    let image = UIImage(data: byteBuffer.data),
-                    let cgImage = image.cgImage
-                    else {
-                throw ScannerError.loadingDataFailed
+        if let imageBytes = imageSource.imageBytes {
+            guard let image = UIImage(data: imageBytes.data),
+                  let cgImage = image.cgImage else {
+                completion(.failure(ScannerError.loadingDataFailed))
+                return
             }
 
-            let scanner = VisionBarcodeScanner(cornerPointConverter: { _ in [] }, confidence: 0.6, onCacheImage: onCacheImage, resultHandler: visionResultHandler, errorHandler: visionErrorHandler)
+            let scanner = VisionBarcodeScanner(cornerPointConverter: { (_: VNBarcodeObservation) -> [[Int]]? in return [] }, confidence: 0.6, onCacheImage: onCacheImage, resultHandler: visionResultHandler, errorHandler: visionErrorHandler)
             scanner.process(cgImage)
-        } else {
-            guard
-
-                    let root = UIApplication.shared.delegate?.window??.rootViewController
-                    else {
-                return resultHandler(nil)
+        } else if imageSource.useImagePicker {
+            guard let root = UIApplication.shared.delegate?.window??.rootViewController else {
+                completion(.success([]))
+                return
             }
 
             let imagePickerResultHandler: ImagePicker.ResultHandler = { [weak self] image in
                 guard let uiImage = image,
-                      let cgImage = uiImage.cgImage
-                        else {
-                    return resultHandler(nil)
+                      let cgImage = uiImage.cgImage else {
+                    completion(.success([]))
+                    return
                 }
 
                 self?.picker = nil
-                let scanner = VisionBarcodeScanner(cornerPointConverter: { _ in [] }, confidence: 0.6, onCacheImage: self!.onCacheImage, resultHandler: visionResultHandler, errorHandler: visionErrorHandler)
+                let scanner = VisionBarcodeScanner(cornerPointConverter: { (_: VNBarcodeObservation) -> [[Int]]? in return [] }, confidence: 0.6, onCacheImage: self!.onCacheImage, resultHandler: visionResultHandler, errorHandler: visionErrorHandler)
                 scanner.process(cgImage)
             }
 
@@ -231,22 +322,13 @@ errorHandler: { [unowned self] error in
             }
 
             picker!.show(over: root)
+        } else {
+            completion(.success([]))
         }
-
     }
 
     func onCacheImage(code: String, scanImage: UIImage) {
         ImageHelper.shared.storeImageToCache(image: scanImage, code: code)
-    }
-
-    public func onListen(withArguments arguments: Any?, eventSink events: @escaping FlutterEventSink) -> FlutterError? {
-        detectionsSink = events
-        return nil
-    }
-
-    public func onCancel(withArguments arguments: Any?) -> FlutterError? {
-        detectionsSink = nil
-        return nil
     }
 }
 

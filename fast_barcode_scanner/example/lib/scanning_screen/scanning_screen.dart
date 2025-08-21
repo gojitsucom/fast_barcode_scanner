@@ -20,7 +20,7 @@ class ScanningScreen extends StatefulWidget {
   final IOSApiMode? apiMode;
 
   @override
-  _ScanningScreenState createState() => _ScanningScreenState();
+  State<ScanningScreen> createState() => _ScanningScreenState();
 }
 
 class _ScanningScreenState extends State<ScanningScreen> {
@@ -79,7 +79,7 @@ class _ScanningScreenState extends State<ScanningScreen> {
                         Text("Texture Id: ${preview.textureId}"),
                         Text(
                             "Preview (WxH): ${preview.width}x${preview.height}"),
-                        Text("Analysis (WxH): ${preview.analysisResolution}"),
+                        Text("Analysis (WxH): ${"${preview.analysisWidth}x${preview.analysisHeight}"}"),
                         Text(
                             "Target Rotation (unused): ${preview.targetRotation}"),
                       ],
@@ -107,6 +107,7 @@ class _ScanningScreenState extends State<ScanningScreen> {
           history.addAll(code);
           currentCode = code.first.value;
         },
+        dispose: widget.dispose,
         children: [
           if (_scanningOverlayConfig.enabledOverlays
               .contains(ScanningOverlayType.materialOverlay))
@@ -146,7 +147,6 @@ class _ScanningScreenState extends State<ScanningScreen> {
               .contains(ScanningOverlayType.blurPreview))
             const BlurPreviewOverlay()
         ],
-        dispose: widget.dispose,
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
@@ -186,8 +186,11 @@ class _ScanningScreenState extends State<ScanningScreen> {
                                           .then((_) =>
                                               _cameraRunning.value = !isRunning)
                                           .catchError((error, stack) {
-                                        presentErrorAlert(
-                                            context, error, stack);
+                                        if (context.mounted) {
+                                          presentErrorAlert(
+                                              context, error, stack);
+                                        }
+                                        return false;
                                       });
                                     },
                                     child: Text(isRunning
@@ -208,8 +211,11 @@ class _ScanningScreenState extends State<ScanningScreen> {
                                           .then((_) => _scannerRunning.value =
                                               !isRunning)
                                           .catchError((error, stackTrace) {
-                                        presentErrorAlert(
-                                            context, error, stackTrace);
+                                        if (context.mounted) {
+                                          presentErrorAlert(
+                                              context, error, stackTrace);
+                                        }
+                                        return false;
                                       });
                                     },
                                     child: Text(isRunning
@@ -227,8 +233,11 @@ class _ScanningScreenState extends State<ScanningScreen> {
                                       .then((torchState) =>
                                           _torchIconState.value = torchState)
                                       .catchError((error, stackTrace) {
-                                    presentErrorAlert(
-                                        context, error, stackTrace);
+                                    if (context.mounted) {
+                                      presentErrorAlert(
+                                          context, error, stackTrace);
+                                    }
+                                    return false;
                                   });
                                 },
                                 child: Text(
@@ -286,8 +295,11 @@ class _ScanningScreenState extends State<ScanningScreen> {
                                   );
 
                                   cam.resumeCamera().catchError((error,
-                                          stack) =>
-                                      presentErrorAlert(context, error, stack));
+                                          stack) {
+                                    if (context.mounted) {
+                                      presentErrorAlert(context, error, stack);
+                                    }
+                                  });
                                 }
                               },
                               child: const Text('Update Configuration'),
