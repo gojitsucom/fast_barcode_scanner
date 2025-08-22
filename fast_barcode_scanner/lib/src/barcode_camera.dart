@@ -143,8 +143,8 @@ class BarcodeCameraState extends State<BarcodeCamera> {
     return FittedBox(
       fit: BoxFit.cover,
       child: SizedBox(
-        width: config.width.toDouble(),
-        height: config.height.toDouble(),
+        width: config.height.toDouble(),
+        height: config.width.toDouble(),
         child: Builder(
           builder: (_) {
             switch (defaultTargetPlatform) {

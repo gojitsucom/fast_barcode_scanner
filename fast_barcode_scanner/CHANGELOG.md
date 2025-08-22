@@ -1,3 +1,9 @@
+## 3.0.1
+- Fix camera preview
+
+## 3.0.0
+- Migrate to Pigeon for platform communication
+
 ## 2.6.1
 - Use `context` directly from `pluginBinding` instead of `camera`'s context in `clearCachedImage`
 
