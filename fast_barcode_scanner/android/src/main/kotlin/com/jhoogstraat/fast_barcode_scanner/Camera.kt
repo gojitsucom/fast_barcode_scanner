@@ -308,14 +308,13 @@ class Camera(
             preview.resolutionInfo?.resolution ?: throw ScannerException.NotInitialized()
         val analysisRes =
             imageAnalysis.resolutionInfo?.resolution ?: throw ScannerException.NotInitialized()
-        val isPortrait = previewRes.height > previewRes.width
         return PreviewConfiguration(
             flutterTextureEntry.id(),
             0,
-            height = if (isPortrait) previewRes.height.toLong() else previewRes.width.toLong(),
-            width = if (isPortrait) previewRes.width.toLong() else previewRes.height.toLong(),
-            analysisWidth = if (isPortrait) analysisRes.width.toLong() else analysisRes.height.toLong(),
-            analysisHeight = if (isPortrait) analysisRes.height.toLong() else analysisRes.width.toLong()
+            height = previewRes.height.toLong(),
+            width = previewRes.width.toLong(),
+            analysisWidth = analysisRes.width.toLong(),
+            analysisHeight = analysisRes.height.toLong()
         )
     }
 

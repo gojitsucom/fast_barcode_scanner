@@ -1,5 +1,6 @@
+## 3.0.2
 ## 3.0.1
-- Fix camera preview
+- Fix camera preview ios
 
 ## 3.0.0
 - Migrate to Pigeon for platform communication
