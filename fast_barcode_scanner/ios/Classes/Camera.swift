@@ -102,20 +102,19 @@ class Camera: NSObject {
 
         session.commitConfiguration()
 
-        // Find the optimal settings for the requested resolution and frame rate.
-        // Use portrait dimensions to match Android behavior
-        let portraitDimensions = configuration.resolution.portrait()
-        guard let optimalFormat = captureDevice.formats.first(where: {
-            let dimensions = CMVideoFormatDescriptionGetDimensions($0.formatDescription)
-            let mediaSubType = CMFormatDescriptionGetMediaSubType($0.formatDescription).toString()
+         // Find the optimal settings for the requested resolution and frame rate.
+                guard let optimalFormat = captureDevice.formats.first(where: {
+                    let dimensions = CMVideoFormatDescriptionGetDimensions($0.formatDescription)
+                    let mediaSubType = CMFormatDescriptionGetMediaSubType($0.formatDescription).toString()
 
-            return $0.videoSupportedFrameRateRanges.first!.maxFrameRate >= configuration.framerate.doubleValue
-                && dimensions.height >= portraitDimensions.height
-                && dimensions.width >= portraitDimensions.width
-                && mediaSubType == "420f" // maybe 420v is also ok? Who knows...
-        }) else {
-            throw ScannerError.cameraNotSuitable
-        }
+                    return $0.videoSupportedFrameRateRanges.first!.maxFrameRate >= configuration.framerate.doubleValue
+                        && dimensions.height >= configuration.resolution.height
+                        && dimensions.width >= configuration.resolution.width
+                        && mediaSubType == "420f" // maybe 420v is also ok? Who knows...
+                }) else {
+                    throw ScannerError.cameraNotSuitable
+                }
+
 
         do {
             try captureDevice.lockForConfiguration()
