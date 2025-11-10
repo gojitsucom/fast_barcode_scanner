@@ -6,7 +6,7 @@ import 'package:fast_barcode_scanner_platform_interface/fast_barcode_scanner_pla
 
 import '../../corner_point_utils.dart';
 
-typedef CodeFilter = bool Function(BarcodeData code);
+typedef CodeFilter = bool Function(ScannedItem code);
 
 /// A simple description of a rect of interest. The Rect will be located in the
 /// center of the screen and will fill the width minus horizontal padding.

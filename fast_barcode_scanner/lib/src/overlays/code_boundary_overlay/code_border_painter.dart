@@ -9,27 +9,27 @@ class CodeBorderPainter extends CustomPainter {
 
   CodeBorderPainter({
     required this.imageSize,
-    required this.barcodes,
+    required this.scannedItems,
     this.barcodePaintSelector,
     this.textDecorator,
   });
 
   final Size imageSize;
-  final List<BarcodeData> barcodes;
+  final List<ScannedItem> scannedItems;
 
   static final _standardPaint = Paint()
     ..style = PaintingStyle.stroke
     ..strokeWidth = 2.0
     ..color = Colors.red;
 
-  Paint _getBarcodeDataPaint(BarcodeData barcode) {
+  Paint _getBarcodeDataPaint(ScannedItem barcode) {
     if (barcodePaintSelector != null) {
       return barcodePaintSelector!(barcode);
     }
     return _standardPaint;
   }
 
-  CodeValueDisplay? _getTextDecoration(BarcodeData barcode) {
+  CodeValueDisplay? _getTextDecoration(ScannedItem barcode) {
     if (textDecorator != null) {
       return textDecorator!(barcode);
     }
@@ -38,7 +38,7 @@ class CodeBorderPainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    for (BarcodeData barcode in barcodes) {
+    for (ScannedItem barcode in scannedItems) {
       final Path path = Path();
       final corners = barcode.cornerPoints;
       if (corners != null) {
@@ -102,6 +102,6 @@ class CodeBorderPainter extends CustomPainter {
   @override
   bool shouldRepaint(CodeBorderPainter oldDelegate) {
     return oldDelegate.imageSize != imageSize ||
-        oldDelegate.barcodes != barcodes;
+        oldDelegate.scannedItems != scannedItems;
   }
 }

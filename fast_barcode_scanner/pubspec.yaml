@@ -18,6 +18,10 @@ dependencies:
       url: http://nexus.gojitsu.com:7777
     version: ^3.0.0
 
+dependency_overrides:
+  fast_barcode_scanner_platform_interface:
+    path: ../fast_barcode_scanner_platform_interface
+
 dev_dependencies:
   flutter_test:
     sdk: flutter

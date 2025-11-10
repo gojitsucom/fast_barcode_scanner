@@ -108,6 +108,8 @@ class _ScanningScreenState extends State<ScanningScreen> {
           currentCode = code.first.value;
         },
         dispose: widget.dispose,
+        enableOcr: true,
+        // confidence: widget.confidence,
         children: [
           if (_scanningOverlayConfig.enabledOverlays
               .contains(ScanningOverlayType.materialOverlay))

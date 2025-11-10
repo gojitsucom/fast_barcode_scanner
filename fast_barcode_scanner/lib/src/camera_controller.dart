@@ -39,7 +39,7 @@ abstract class CameraController {
   final state = ScannerState();
 
   /// reports most recently scanned codes
-  ValueNotifier<List<BarcodeData>> get scannedBarcodes;
+  ValueNotifier<List<ScannedItem>> get scannedItems;
 
   /// the size of the image used by the native analysis system to scan the code
   /// scanned codes have coordinate information that is based on this image size
@@ -61,7 +61,9 @@ abstract class CameraController {
     required CameraPosition position,
     required DetectionMode detectionMode,
     IOSApiMode? apiMode,
-    OnDetectionHandler? onScan,
+    OnScanDetectedHandler? onBarcodeScan,
+    bool enableOcr = false,
+    double? confidence,
   });
 
   /// Stops the camera and disposes all associated resources.
@@ -103,13 +105,13 @@ abstract class CameraController {
     Framerate? framerate,
     DetectionMode? detectionMode,
     CameraPosition? position,
-    OnDetectionHandler? onScan,
+    OnScanDetectedHandler? onScan,
   });
 
   /// Analyze a still image, which can be chosen from an image picker.
   ///
   /// It is recommended to pause the live scanner before calling this.
-  Future<List<BarcodeData>?> scanImage(ImageSourceData source);
+  Future<List<ScannedItem>?> scanImage(ImageSourceData source);
 
   Future<String?> retrieveCachedImage(String code);
 
@@ -132,8 +134,9 @@ class _CameraController implements CameraController {
 
   static const scannedCodeTimeout = Duration(milliseconds: 250);
   DateTime? _lastScanTime;
+
   @override
-  ValueNotifier<List<BarcodeData>> scannedBarcodes = ValueNotifier([]);
+  ValueNotifier<List<ScannedItem>> scannedItems = ValueNotifier([]);
 
   @override
   Size? get analysisSize {
@@ -156,14 +159,15 @@ class _CameraController implements CameraController {
   bool _configuring = false;
 
   /// User-defined handler, called when a barcode is detected
-  OnDetectionHandler? _onScan;
+  OnScanDetectedHandler? onItemsScanned;
 
-  /// Curried function for [_onScan]. This ensures that each scan receipt is done
-  /// consistently. We log [_lastScanTime] and update the [scannedBarcodes] ValueNotifier
-  OnDetectionHandler _buildScanHandler(OnDetectionHandler? onScan) {
+  /// Curried function for [onItemsScanned]. This ensures that each scan receipt is done
+  /// consistently. We log [_lastScanTime] and update the [scannedItems] ValueNotifier
+  OnScanDetectedHandler _buildBarcodeScanHandler(
+      OnScanDetectedHandler? onScan) {
     return (barcodes) {
       _lastScanTime = DateTime.now();
-      scannedBarcodes.value = barcodes;
+      scannedItems.value = barcodes;
       onScan?.call(barcodes);
     };
   }
@@ -176,7 +180,9 @@ class _CameraController implements CameraController {
     required CameraPosition position,
     required DetectionMode detectionMode,
     IOSApiMode? apiMode,
-    OnDetectionHandler? onScan,
+    OnScanDetectedHandler? onBarcodeScan,
+    bool enableOcr = false,
+    double? confidence,
   }) async {
     try {
       state._previewConfig = await _platform.init(
@@ -186,20 +192,22 @@ class _CameraController implements CameraController {
         detectionMode,
         position,
         apiMode: apiMode,
+        enableOcr: enableOcr,
+        confidence: confidence,
       );
 
-      _onScan = _buildScanHandler(onScan);
+      onItemsScanned = _buildBarcodeScanHandler(onBarcodeScan);
       _scanSilencerSubscription =
           Stream.periodic(scannedCodeTimeout).listen((event) {
         final scanTime = _lastScanTime;
         if (scanTime != null &&
             DateTime.now().difference(scanTime) > scannedCodeTimeout) {
-          // it's been too long since we've seen a scanned code, clear the list
-          scannedBarcodes.value = const <BarcodeData>[];
+          // it's been too long since we've seen a scanned code, clear the lists
+          scannedItems.value = const <ScannedItem>[];
         }
       });
 
-      _platform.setOnDetectHandler(_onDetectHandler);
+      _platform.setOnScannedItemDetectedHandler(_onScannedItemsDetectedHandler);
 
       state._scannerConfig = ScannerConfiguration(
         types: types,
@@ -208,6 +216,8 @@ class _CameraController implements CameraController {
         position: position,
         mode: detectionMode,
         apiMode: apiMode,
+        enableOcr: enableOcr,
+        confidence: confidence,
       );
 
       state._error = null;
@@ -314,7 +324,9 @@ class _CameraController implements CameraController {
     Framerate? framerate,
     DetectionMode? detectionMode,
     CameraPosition? position,
-    OnDetectionHandler? onScan,
+    OnScanDetectedHandler? onScan,
+    bool? enableOcr,
+    double? confidence,
   }) async {
     if (state.isInitialized && !_configuring) {
       final scannerConfig = state._scannerConfig!;
@@ -327,6 +339,7 @@ class _CameraController implements CameraController {
           framerate: framerate,
           detectionMode: detectionMode,
           position: position,
+          enableOcr: enableOcr,
         );
 
         state._scannerConfig = scannerConfig.copyWith(
@@ -335,9 +348,11 @@ class _CameraController implements CameraController {
           framerate: framerate,
           mode: detectionMode,
           position: position,
+          enableOcr: enableOcr,
+          confidence: confidence,
         );
 
-        _onScan = _buildScanHandler(onScan);
+        onItemsScanned = _buildBarcodeScanHandler(onScan);
       } catch (error) {
         state._error = error;
         events.value = ScannerEvent.error;
@@ -349,7 +364,7 @@ class _CameraController implements CameraController {
   }
 
   @override
-  Future<List<BarcodeData>?> scanImage(ImageSourceData source) async {
+  Future<List<ScannedItem>?> scanImage(ImageSourceData source) async {
     try {
       return _platform.scanImage(source);
     } catch (error) {
@@ -377,28 +392,28 @@ class _CameraController implements CameraController {
     await _platform.dispose();
   }
 
-  void _onDetectHandler(List<BarcodeData> codes) {
+  void _onScannedItemsDetectedHandler(List<ScannedItem> codes) {
     events.value = ScannerEvent.detected;
-    _onScan?.call(codes);
+    onItemsScanned?.call(codes);
   }
 }
 
 class ScannedBarcodes {
-  final List<BarcodeData> barcodes;
+  final ScanData? scanData;
   final DateTime scannedAt;
 
-  ScannedBarcodes(this.barcodes) : scannedAt = DateTime.now();
+  ScannedBarcodes(this.scanData) : scannedAt = DateTime.now();
 
-  ScannedBarcodes.none() : this([]);
+  ScannedBarcodes.none() : this(null);
 
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
       other is ScannedBarcodes &&
           runtimeType == other.runtimeType &&
-          barcodes == other.barcodes &&
+          scanData == other.scanData &&
           scannedAt == other.scannedAt;
 
   @override
-  int get hashCode => barcodes.hashCode ^ scannedAt.hashCode;
+  int get hashCode => scanData.hashCode ^ scannedAt.hashCode;
 }

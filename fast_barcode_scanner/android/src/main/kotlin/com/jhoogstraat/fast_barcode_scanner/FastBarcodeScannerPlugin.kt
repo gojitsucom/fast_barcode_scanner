@@ -84,10 +84,9 @@ class FastBarcodeScannerPlugin : FlutterPlugin, ActivityAware,
                 activityBinding.activity,
                 pluginBinding.textureRegistry.createSurfaceTexture(),
                 configuration
-            ) { barcodes ->
-                // Convert MLKit barcodes to Pigeon barcodes and send via FlutterApi
-                val pigeonBarcodes = barcodes.mapNotNull { it.toPigeonBarcode() }
-                flutterApi?.onBarcodesDetected(pigeonBarcodes) { }
+            ) { scanData ->
+                // ScanData is already in Pigeon format, send directly via FlutterApi
+                flutterApi?.onScanDataDetected(scanData) { }
             }
 
             this.camera = camera
@@ -181,12 +180,16 @@ class FastBarcodeScannerPlugin : FlutterPlugin, ActivityAware,
         }
     }
 
-    override fun scanImage(imageSource: ImageSourceData, callback: (Result<List<BarcodeData?>>) -> Unit) {
+    override fun scanImage(imageSource: ImageSourceData, callback: (Result<ScanData>) -> Unit) {
         try {
             scanImageInternal(imageSource)
                 .addOnSuccessListener { barcodes ->
                     val pigeonBarcodes = barcodes?.mapNotNull { it.toPigeonBarcode() } ?: emptyList()
-                    callback(Result.success(pigeonBarcodes))
+                    val scanData = ScanData(
+                        barcodes = if (pigeonBarcodes.isNotEmpty()) pigeonBarcodes else null,
+                        ocrData = null  // scanImage currently only supports barcodes, not OCR
+                    )
+                    callback(Result.success(scanData))
                 }
                 .addOnFailureListener { callback(Result.failure(it)) }
         } catch (e: Exception) {

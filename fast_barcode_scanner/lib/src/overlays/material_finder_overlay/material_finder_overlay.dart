@@ -5,9 +5,11 @@ import '../../camera_controller.dart';
 import '../rect_of_interest/rect_of_interest.dart';
 import 'material_finder_painter.dart';
 
+typedef OnScannedItemDetectedHandler = void Function(List<ScannedItem> items);
+
 /// returns a color for the finder boundary when codes are found inside
 typedef OnScannedBoundaryColorSelector = Color? Function(
-    List<BarcodeData> scannedCodes);
+    List<ScannedItem> scannedCodes);
 
 /// Mimics the official Material Design Barcode Scanner
 /// (https://material.io/design/machine-learning/barcode-scanning.html)
@@ -39,7 +41,7 @@ class MaterialPreviewOverlay extends StatefulWidget {
   final RectOfInterest rectOfInterest;
 
   /// This callback returns only the codes that are scanned within the boundary of the cutout
-  final OnDetectionHandler? onScan;
+  final OnScannedItemDetectedHandler? onScan;
 
   @override
   MaterialPreviewOverlayState createState() => MaterialPreviewOverlayState();
@@ -95,18 +97,18 @@ class MaterialPreviewOverlayState extends State<MaterialPreviewOverlay>
 
       _controller!.forward();
     }
-    cameraController.scannedBarcodes.addListener(_onCodesScanned);
+    cameraController.scannedItems.addListener(_onCodesScanned);
   }
 
   @override
   void dispose() {
     var cameraController = CameraController();
-    cameraController.scannedBarcodes.removeListener(_onCodesScanned);
+    cameraController.scannedItems.removeListener(_onCodesScanned);
     _controller?.dispose();
     super.dispose();
   }
 
-  List<BarcodeData> _filteredCodes = [];
+  List<ScannedItem> _filteredCodes = [];
 
   /// Note: Not safe to call from build()
   void _filterCodes() {
@@ -115,7 +117,7 @@ class MaterialPreviewOverlayState extends State<MaterialPreviewOverlay>
       final analysisSize = cameraController.analysisSize;
       final previewSize = context.size;
       if (analysisSize != null && previewSize != null) {
-        _filteredCodes = cameraController.scannedBarcodes.value
+        _filteredCodes = cameraController.scannedItems.value
             .where(widget.rectOfInterest.buildCodeFilter(
               analysisSize: analysisSize,
               previewSize: previewSize,

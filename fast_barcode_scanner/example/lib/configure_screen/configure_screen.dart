@@ -75,8 +75,10 @@ class _ConfigureScreenState extends State<ConfigureScreen> {
           tiles: [
             ListTile(
               title: const Text('Active code types'),
-              subtitle:
-                  Text(_config.types.whereType<BarcodeType>().map((e) => e.name).join(', ')),
+              subtitle: Text(_config.types
+                  .whereType<BarcodeType>()
+                  .map((e) => e.name)
+                  .join(', ')),
               onTap: () async {
                 final types = await Navigator.push<List<BarcodeType>>(context,
                     MaterialPageRoute(builder: (_) {
@@ -133,9 +135,8 @@ class _ConfigureScreenState extends State<ConfigureScreen> {
             ),
             ListTile(
               title: const Text('Overlay'),
-              subtitle: Text(_overlayConfig.enabledOverlays
-                  .map((e) => e.name)
-                  .join(', ')),
+              subtitle: Text(
+                  _overlayConfig.enabledOverlays.map((e) => e.name).join(', ')),
               onTap: () async {
                 final overlays =
                     await Navigator.push<List<ScanningOverlayType>>(context,
@@ -149,6 +150,15 @@ class _ConfigureScreenState extends State<ConfigureScreen> {
                 });
               },
             ),
+            CheckboxListTile(
+              title: const Text("Enable OCR"),
+              value: _config.enableOcr,
+              onChanged: (value) {
+                setState(() {
+                  _config = _config.copyWith(enableOcr: value);
+                });
+              },
+            )
           ],
         ).toList(),
       ),

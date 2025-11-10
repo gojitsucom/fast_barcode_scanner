@@ -34,6 +34,8 @@ class BarcodeCamera extends StatefulWidget {
     this.children = const [],
     this.dispose = true,
     ErrorCallback? onError,
+    this.enableOcr = false,
+    this.confidence,
   })  : onError = onError ?? _defaultOnError,
         super(key: key);
 
@@ -43,10 +45,12 @@ class BarcodeCamera extends StatefulWidget {
   final DetectionMode mode;
   final CameraPosition position;
   final IOSApiMode? apiMode;
-  final OnDetectionHandler? onScan;
+  final OnScanDetectedHandler? onScan;
   final List<Widget> children;
   final ErrorCallback onError;
   final bool dispose;
+  final bool enableOcr;
+  final double? confidence;
 
   @override
   BarcodeCameraState createState() => BarcodeCameraState();
@@ -68,7 +72,7 @@ class BarcodeCameraState extends State<BarcodeCamera> {
             resolution: widget.resolution,
             framerate: widget.framerate,
             position: widget.position,
-            onScan: onScan,
+            onScan: onBarcodeScan,
           )
         : cameraController.initialize(
             types: widget.types,
@@ -76,8 +80,10 @@ class BarcodeCameraState extends State<BarcodeCamera> {
             framerate: widget.framerate,
             position: widget.position,
             detectionMode: widget.mode,
-            onScan: onScan,
+            onBarcodeScan: onBarcodeScan,
             apiMode: widget.apiMode,
+            enableOcr: widget.enableOcr,
+            confidence: widget.confidence,
           );
 
     configurationFuture
@@ -87,7 +93,7 @@ class BarcodeCameraState extends State<BarcodeCamera> {
     cameraController.events.addListener(onScannerEvent);
   }
 
-  void onScan(List<BarcodeData> barcodes) {
+  void onBarcodeScan(List<ScannedItem> barcodes) {
     widget.onScan?.call(barcodes);
   }
 

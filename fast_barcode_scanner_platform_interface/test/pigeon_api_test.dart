@@ -1,3 +1,4 @@
+import 'package:fast_barcode_scanner_platform_interface/fast_barcode_scanner_platform_interface.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:fast_barcode_scanner_platform_interface/src/pigeon_barcode_scanner.dart';
@@ -110,9 +111,9 @@ class MockFastBarcodeScannerHostApi extends FastBarcodeScannerHostApi {
   }
 
   @override
-  Future<List<BarcodeData?>> scanImage(ImageSourceData imageSource) async {
+  Future<ScanData> scanImage(ImageSourceData imageSource) async {
     methodCalls.add(MethodCall('scanImage', imageSource));
-    return mockScanResults;
+    return ScanData(barcodes: mockScanResults);
   }
 
   @override
@@ -230,8 +231,8 @@ void main() {
       expect(mockApi.methodCalls.length, equals(1));
       expect(mockApi.methodCalls[0].method, equals('scanImage'));
       expect(mockApi.methodCalls[0].arguments, equals(imageData));
-      expect(result.length, equals(1));
-      expect(result[0]?.value, equals('test-qr'));
+      expect(result.barcodes?.length, equals(1));
+      expect(result.barcodes?[0]?.value, equals('test-qr'));
     });
 
     test('should call retrieveCachedImage with code', () async {
@@ -256,7 +257,7 @@ void main() {
 
   group('PigeonFastBarcodeScanner', () {
     late TestPigeonFastBarcodeScanner scanner;
-    final List<List<BarcodeData>> detectedBarcodes = [];
+    final List<List<ScannedItem>> detectedBarcodes = [];
 
     setUp(() {
       scanner = TestPigeonFastBarcodeScanner();
@@ -264,15 +265,15 @@ void main() {
     });
 
     test('should set detection handler', () {
-      scanner.setOnDetectHandler((barcodes) {
+      scanner.setOnScannedItemDetectedHandler((barcodes) {
         detectedBarcodes.add(barcodes);
       });
 
       // Simulate barcode detection from native
-      scanner.onBarcodesDetected([
+      scanner.onScanDataDetected(ScanData(barcodes: [
         BarcodeData(type: BarcodeType.qr, value: 'test1'),
         BarcodeData(type: BarcodeType.code128, value: 'test2'),
-      ]);
+      ]));
 
       expect(detectedBarcodes.length, equals(1));
       expect(detectedBarcodes[0].length, equals(2));
@@ -281,17 +282,17 @@ void main() {
     });
 
     test('should filter out null barcodes in detection handler', () {
-      scanner.setOnDetectHandler((barcodes) {
+      scanner.setOnScannedItemDetectedHandler((barcodes) {
         detectedBarcodes.add(barcodes);
       });
 
       // Simulate barcode detection with null values
-      scanner.onBarcodesDetected([
+      scanner.onScanDataDetected(ScanData(barcodes: [
         BarcodeData(type: BarcodeType.qr, value: 'valid'),
         null,
         BarcodeData(type: BarcodeType.code128, value: 'also-valid'),
         null,
-      ]);
+      ]));
 
       expect(detectedBarcodes.length, equals(1));
       expect(detectedBarcodes[0].length, equals(2));
@@ -313,11 +314,11 @@ void main() {
     });
 
     test('should handle empty barcode detection', () {
-      scanner.setOnDetectHandler((barcodes) {
+      scanner.setOnScannedItemDetectedHandler((barcodes) {
         detectedBarcodes.add(barcodes);
       });
 
-      scanner.onBarcodesDetected([]);
+      scanner.onScanDataDetected(ScanData(barcodes: []));
 
       expect(detectedBarcodes.length, equals(1));
       expect(detectedBarcodes[0], isEmpty);
@@ -326,9 +327,9 @@ void main() {
     test('should handle null detection handler gracefully', () {
       // Don't set a handler
       expect(() {
-        scanner.onBarcodesDetected([
+        scanner.onScanDataDetected(ScanData(barcodes: [
           BarcodeData(type: BarcodeType.qr, value: 'test'),
-        ]);
+        ]));
       }, returnsNormally);
     });
   });
@@ -382,7 +383,7 @@ void main() {
         useImagePicker: false,
       );
 
-      final scanResults = await mockApi.scanImage(imageData);
+      final scanData = await mockApi.scanImage(imageData);
 
       await mockApi.stopDetector();
       await mockApi.stop();
@@ -390,10 +391,10 @@ void main() {
 
       // Verify results
       expect(previewConfig.textureId, equals(123));
-      expect(scanResults.length, equals(1));
-      expect(scanResults[0]?.type, equals(BarcodeType.qr));
-      expect(scanResults[0]?.value, equals('https://example.com'));
-      expect(scanResults[0]?.cornerPoints?.length, equals(4));
+      expect(scanData.barcodes?.length, equals(1));
+      expect(scanData.barcodes?[0]?.type, equals(BarcodeType.qr));
+      expect(scanData.barcodes?[0]?.value, equals('https://example.com'));
+      expect(scanData.barcodes?[0]?.cornerPoints?.length, equals(4));
 
       // Verify all methods were called
       expect(mockApi.methodCalls.length, equals(7));

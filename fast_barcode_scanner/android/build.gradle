@@ -51,10 +51,12 @@ dependencies {
 
     def camerax_version = "1.1.0"
     def mlkit_version = "17.3.0"
+    def mlkit_text_version = "19.0.1"
     def coroutines_version = "1.6.4"
     implementation "androidx.camera:camera-camera2:$camerax_version"
     implementation "androidx.camera:camera-lifecycle:$camerax_version"
     implementation "com.google.mlkit:barcode-scanning:$mlkit_version"
+    implementation "com.google.android.gms:play-services-mlkit-text-recognition:$mlkit_text_version"
     implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:$coroutines_version"
     implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:$coroutines_version"
 }

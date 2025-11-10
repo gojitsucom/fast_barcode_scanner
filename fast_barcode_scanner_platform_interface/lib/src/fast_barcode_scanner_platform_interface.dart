@@ -1,10 +1,11 @@
 import 'package:plugin_platform_interface/plugin_platform_interface.dart';
 
+import '../fast_barcode_scanner_platform_interface.dart';
 import 'pigeon_fast_barcode_scanner.dart';
 import 'pigeon_barcode_scanner.dart';
 
 /// Callback handler method for receiving scanned codes.
-typedef OnDetectionHandler = void Function(List<BarcodeData>);
+typedef OnScanDetectedHandler = void Function(List<ScannedItem>);
 
 /// The interface that implementations of fast_barcode_scanner must implement.
 ///
@@ -17,8 +18,7 @@ abstract class FastBarcodeScannerPlatform extends PlatformInterface {
 
   static const Object _token = Object();
 
-  static FastBarcodeScannerPlatform _instance =
-      PigeonFastBarcodeScanner();
+  static FastBarcodeScannerPlatform _instance = PigeonFastBarcodeScanner();
 
   /// The default instance of [FastBarcodeScannerPlatform] to use.
   ///
@@ -35,12 +35,15 @@ abstract class FastBarcodeScannerPlatform extends PlatformInterface {
   /// Initializes and starts the native camera interface.
   /// Returns a [PreviewConfiguration] the camera is setup with.
   Future<PreviewConfiguration> init(
-      List<BarcodeType> types,
-      Resolution resolution,
-      Framerate framerate,
-      DetectionMode detectionMode,
-      CameraPosition position,
-      {IOSApiMode? apiMode}) {
+    List<BarcodeType> types,
+    Resolution resolution,
+    Framerate framerate,
+    DetectionMode detectionMode,
+    CameraPosition position, {
+    IOSApiMode? apiMode,
+    bool enableOcr = false,
+    double? confidence,
+  }) {
     throw UnimplementedError('init() has not been implemented');
   }
 
@@ -82,16 +85,17 @@ abstract class FastBarcodeScannerPlatform extends PlatformInterface {
     Framerate? framerate,
     DetectionMode? detectionMode,
     CameraPosition? position,
+    bool? enableOcr,
   }) {
     throw UnimplementedError('changeConfiguration() has not been implemented');
   }
 
   /// Set the method to be called when a barcode is detected
-  void setOnDetectHandler(OnDetectionHandler handler) {
+  void setOnScannedItemDetectedHandler(OnScanDetectedHandler handler) {
     throw UnimplementedError('setOnDetectHandler() has not been implemented');
   }
 
-  Future<List<BarcodeData>?> scanImage(ImageSourceData source) {
+  Future<List<ScannedItem>?> scanImage(ImageSourceData source) {
     throw UnimplementedError('scanImage() has not been implemented');
   }
 

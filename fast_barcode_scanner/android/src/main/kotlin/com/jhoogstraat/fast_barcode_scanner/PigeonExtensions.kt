@@ -83,7 +83,8 @@ fun ScannerConfiguration.copy(
     framerate: Framerate? = null,
     position: CameraPosition? = null,
     apiMode: IOSApiMode? = null,
-    confidence: Double? = null
+    confidence: Double? = null,
+    enableOcr: Boolean? = null
 ): ScannerConfiguration {
     return ScannerConfiguration(
         types = types ?: this.types,
@@ -92,7 +93,8 @@ fun ScannerConfiguration.copy(
         framerate = framerate ?: this.framerate,
         position = position ?: this.position,
         apiMode = apiMode ?: this.apiMode,
-        confidence = confidence ?: this.confidence
+        confidence = confidence ?: this.confidence,
+        enableOcr = enableOcr ?: this.enableOcr
     )
 }
 
@@ -119,6 +121,7 @@ fun ScannerConfiguration.toMap(): HashMap<String, Any> {
         }
     }
     map["types"] = typeStrings
+    map["enableOcr"] = enableOcr
 
     val modeString = when (mode) {
         DetectionMode.PAUSE_DETECTION -> "pauseDetection"
@@ -162,12 +165,25 @@ fun Barcode.toPigeonBarcode(): BarcodeData? {
     val cornerPoints = this.cornerPoints?.map { point ->
         PointData(x = point.x.toLong(), y = point.y.toLong())
     }
-    
+
     return BarcodeData(
         type = type,
         value = this.rawValue ?: "",
         valueType = valueType,
         cornerPoints = cornerPoints
+    )
+}
+
+// MARK: - MLKit Text to Pigeon OCR Conversion
+fun com.google.mlkit.vision.text.Text.Element.toOCRData(imageWidth: Int, imageHeight: Int): OCRData {
+    val cornerPoints = this.cornerPoints?.map { point ->
+        PointData(x = (imageHeight - point.y).toLong(), y = point.x.toLong())
+    }
+
+    return OCRData(
+        text = this.text,
+        cornerPoints = cornerPoints,
+        confidence = this.confidence.toDouble()
     )
 }
 fun Resolution.portrait(): android.util.Size {
@@ -199,6 +215,8 @@ fun UpdateConfiguration.toMap(): HashMap<String, Any> {
         }
         map["types"] = typeStrings
     }
+
+    enableOcr?.let { map["enableOcr"] = it }
 
     mode?.let { detectionMode ->
         val modeString = when (detectionMode) {

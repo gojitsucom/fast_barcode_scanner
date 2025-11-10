@@ -57,7 +57,7 @@ class _ScansCounterState extends State<ScansCounter> {
           Expanded(
             child: barcode != null
                 ? Text(
-                    "${history.count(barcode)}x\n${barcode.type.name} - ${barcode.valueType?.name ?? ""}: ${barcode.value}")
+                    "${history.count(barcode)}x\n${barcode.type} - ${barcode.value}: ${barcode.value}")
                 : const SizedBox.shrink(),
           ),
         ],

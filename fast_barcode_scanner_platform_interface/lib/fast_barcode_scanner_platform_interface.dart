@@ -2,3 +2,4 @@ export 'package:fast_barcode_scanner_platform_interface/src/fast_barcode_scanner
 export 'package:fast_barcode_scanner_platform_interface/src/pigeon_barcode_scanner.dart';
 export 'package:fast_barcode_scanner_platform_interface/src/pigeon_fast_barcode_scanner.dart';
 export 'package:fast_barcode_scanner_platform_interface/src/pigeon_extensions.dart';
+export 'package:fast_barcode_scanner_platform_interface/src/scanned_item.dart';

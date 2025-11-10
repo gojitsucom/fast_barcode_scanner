@@ -16,14 +16,14 @@ import androidx.lifecycle.LifecycleOwner
 import com.google.android.gms.tasks.Task
 import com.google.android.gms.tasks.TaskCompletionSource
 import com.google.common.util.concurrent.ListenableFuture
-import com.google.mlkit.vision.barcode.common.Barcode
 import com.google.mlkit.vision.barcode.BarcodeScannerOptions
 import com.jhoogstraat.fast_barcode_scanner.pigeon.CameraPosition
 import com.jhoogstraat.fast_barcode_scanner.pigeon.DetectionMode
 import com.jhoogstraat.fast_barcode_scanner.pigeon.PreviewConfiguration
 import com.jhoogstraat.fast_barcode_scanner.pigeon.ScannerConfiguration
 import com.jhoogstraat.fast_barcode_scanner.pigeon.UpdateConfiguration
-import com.jhoogstraat.fast_barcode_scanner.scanner.MLKitBarcodeScanner
+import com.jhoogstraat.fast_barcode_scanner.scanner.CombinedScanner
+import com.jhoogstraat.fast_barcode_scanner.scanner.CombinedResult
 import com.jhoogstraat.fast_barcode_scanner.scanner.OnDetectedListener
 import com.jhoogstraat.fast_barcode_scanner.pigeon.*
 import io.flutter.plugin.common.PluginRegistry.RequestPermissionsResultListener
@@ -31,7 +31,6 @@ import io.flutter.view.TextureRegistry
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import java.util.*
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 
@@ -39,7 +38,7 @@ class Camera(
     val activity: Activity,
     val flutterTextureEntry: TextureRegistry.SurfaceTextureEntry,
     configuration: ScannerConfiguration,
-    private val listener: (List<Barcode>) -> Unit
+    private val listener: (ScanData) -> Unit
 ) : RequestPermissionsResultListener {
 
     /* Scanner configuration */
@@ -55,7 +54,7 @@ class Camera(
     private lateinit var imageAnalysis: ImageAnalysis
 
     /* ML Kit */
-    private var barcodeScanner: MLKitBarcodeScanner
+    private var combinedScanner: CombinedScanner
 
     /* State */
     private var isInitialized = false
@@ -76,38 +75,7 @@ class Camera(
     init {
         try {
             scannerConfiguration = configuration
-
-            val options = BarcodeScannerOptions.Builder()
-                .setBarcodeFormats(0, *scannerConfiguration.types.mapNotNull { it?.mlKitFormat }.toIntArray())
-                .build()
-
-            barcodeScanner = MLKitBarcodeScanner(options, object : OnDetectedListener<List<Barcode>> {
-                @OptIn(ExperimentalGetImage::class)
-                override fun onSuccess(codes: List<Barcode>, imageProxy: ImageProxy) {
-                    CoroutineScope(Dispatchers.Main).launch {
-                        if (codes.isNotEmpty()) {
-                            if (scannerConfiguration.mode == DetectionMode.PAUSE_DETECTION) {
-                                stopDetector()
-                            } else if (scannerConfiguration.mode == DetectionMode.PAUSE_VIDEO) {
-                                stopCamera()
-                            }
-                            val code = codes.first().displayValue
-                            if (code != null) {
-                                ImageHelper.getInstance()
-                                    .storeImageToCache(
-                                        imageProxy.image!!,
-                                        code,
-                                        activity.applicationContext
-                                    )
-                                listener(codes)
-                            }
-                        }
-                        imageProxy.close()
-                    }
-                }
-            }) {
-                Log.e(TAG, "Error in MLKit", it)
-            }
+            combinedScanner = createCombinedScanner()
 
             // Create Camera Thread
             cameraExecutor = Executors.newSingleThreadExecutor()
@@ -186,7 +154,7 @@ class Camera(
             .setTargetResolution(scannerConfiguration.resolution.portrait())
             .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
             .build()
-            .also { it.setAnalyzer(cameraExecutor, barcodeScanner) }
+            .also { it.setAnalyzer(cameraExecutor, combinedScanner) }
     }
 
     private fun bindCameraUseCases() {
@@ -242,7 +210,7 @@ class Camera(
         else if (!cameraProvider.isBound(imageAnalysis))
             throw ScannerException.NotInitialized()
 
-        imageAnalysis.setAnalyzer(cameraExecutor, barcodeScanner)
+        imageAnalysis.setAnalyzer(cameraExecutor, combinedScanner)
     }
 
     fun stopDetector() {
@@ -270,19 +238,95 @@ class Camera(
             throw ScannerException.NotInitialized()
 
         try {
+            val oldTypes = scannerConfiguration.types
+            val oldEnableOcr = scannerConfiguration.enableOcr
             scannerConfiguration = scannerConfiguration.copy(
                 types = updateConfig.types ?: scannerConfiguration.types,
                 mode = updateConfig.mode ?: scannerConfiguration.mode,
                 resolution = updateConfig.resolution ?: scannerConfiguration.resolution,
                 framerate = updateConfig.framerate ?: scannerConfiguration.framerate,
-                position = updateConfig.position ?: scannerConfiguration.position
+                position = updateConfig.position ?: scannerConfiguration.position,
+                enableOcr = updateConfig.enableOcr ?: scannerConfiguration.enableOcr
             )
+
+            // Rebuild scanner if types or enableOcr changed
+            if ((updateConfig.types != null && updateConfig.types != oldTypes) ||
+                (updateConfig.enableOcr != null && updateConfig.enableOcr != oldEnableOcr)) {
+                rebuildScanner()
+            }
         } catch (e: Exception) {
             throw ScannerException.InvalidArguments(updateConfig.toMap())
         }
 
         bindCameraUseCases()
         return getPreviewConfiguration()
+    }
+
+    private fun createCombinedScanner(): CombinedScanner {
+        // Check if OCR is requested
+        val includeOcr = scannerConfiguration.enableOcr
+
+        // Build barcode scanner options if there are barcode types
+        val options = if (scannerConfiguration.types.isNotEmpty()) {
+            BarcodeScannerOptions.Builder()
+                .setBarcodeFormats(0, *scannerConfiguration.types.mapNotNull { it?.mlKitFormat }.toIntArray())
+                .build()
+        } else {
+            null
+        }
+
+        return CombinedScanner(options, includeOcr, object : OnDetectedListener<CombinedResult> {
+            @OptIn(ExperimentalGetImage::class)
+            override fun onSuccess(result: CombinedResult, imageProxy: ImageProxy) {
+                CoroutineScope(Dispatchers.Main).launch {
+                    // Convert barcodes to BarcodeData
+                    val barcodeDataList = result.barcodes.mapNotNull { it.toPigeonBarcode() }
+
+                    // Convert OCR text elements to OCRData
+                    val ocrDataList = mutableListOf<OCRData>()
+                    result.text?.textBlocks?.forEach { block ->
+                        block.lines.forEach { line ->
+                            line.elements.forEach { element ->
+                                ocrDataList.add(element.toOCRData(imageProxy.width, imageProxy.height))
+                            }
+                        }
+                    }
+
+                    if (barcodeDataList.isNotEmpty() || ocrDataList.isNotEmpty()) {
+                        if (scannerConfiguration.mode == DetectionMode.PAUSE_DETECTION) {
+                            stopDetector()
+                        } else if (scannerConfiguration.mode == DetectionMode.PAUSE_VIDEO) {
+                            stopCamera()
+                        }
+
+                        // Store image for first barcode if available
+                        val firstCode = barcodeDataList.firstOrNull()?.value
+                        if (firstCode != null) {
+                            ImageHelper.getInstance()
+                                .storeImageToCache(
+                                    imageProxy.image!!,
+                                    firstCode,
+                                    activity.applicationContext
+                                )
+                        }
+
+                        // Create ScanData with both barcode and OCR results
+                        val scanData = ScanData(
+                            barcodes = if (barcodeDataList.isNotEmpty()) barcodeDataList else null,
+                            ocrData = if (ocrDataList.isNotEmpty()) ocrDataList else null
+                        )
+                        listener(scanData)
+                    }
+                    imageProxy.close()
+                }
+            }
+        }) {
+            Log.e(TAG, "Error in MLKit", it)
+        }
+    }
+
+    private fun rebuildScanner() {
+        combinedScanner = createCombinedScanner()
     }
 
     override fun onRequestPermissionsResult(

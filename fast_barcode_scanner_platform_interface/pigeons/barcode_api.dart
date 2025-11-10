@@ -106,6 +106,30 @@ class BarcodeData {
   final List<PointData?>? cornerPoints;
 }
 
+/// Represents detected OCR text
+class OCRData {
+  OCRData({
+    required this.text,
+    this.cornerPoints,
+    this.confidence,
+  });
+
+  final String text;
+  final List<PointData?>? cornerPoints;
+  final double? confidence;
+}
+
+/// Wrapper for scan results containing both barcodes and OCR data
+class ScanData {
+  ScanData({
+    this.barcodes,
+    this.ocrData,
+  });
+
+  final List<BarcodeData?>? barcodes;
+  final List<OCRData?>? ocrData;
+}
+
 /// Configuration for camera preview
 class PreviewConfiguration {
   PreviewConfiguration({
@@ -135,6 +159,7 @@ class ScannerConfiguration {
     required this.position,
     this.apiMode,
     this.confidence,
+    this.enableOcr = false,
   });
 
   final List<BarcodeType?> types;
@@ -144,6 +169,7 @@ class ScannerConfiguration {
   final CameraPosition position;
   final IOSApiMode? apiMode;
   final double? confidence;
+  final bool enableOcr;
 }
 
 /// Configuration for updating scanner settings
@@ -154,6 +180,7 @@ class UpdateConfiguration {
     this.resolution,
     this.framerate,
     this.position,
+    this.enableOcr,
   });
 
   final List<BarcodeType?>? types;
@@ -161,6 +188,7 @@ class UpdateConfiguration {
   final Resolution? resolution;
   final Framerate? framerate;
   final CameraPosition? position;
+  final bool? enableOcr;
 }
 
 /// Data for image scanning
@@ -211,9 +239,9 @@ abstract class FastBarcodeScannerHostApi {
   @async
   PreviewConfiguration changeConfiguration(UpdateConfiguration configuration);
 
-  /// Scan barcode from image
+  /// Scan barcode and OCR from image
   @async
-  List<BarcodeData?> scanImage(ImageSourceData imageSource);
+  ScanData scanImage(ImageSourceData imageSource);
 
   /// Retrieve cached image path for a barcode
   @async
@@ -227,8 +255,8 @@ abstract class FastBarcodeScannerHostApi {
 /// Flutter API for communication from native platforms to Dart
 @FlutterApi()
 abstract class FastBarcodeScannerFlutterApi {
-  /// Called when barcodes are detected
-  void onBarcodesDetected(List<BarcodeData?> barcodes);
+  /// Called when scan data (barcodes and/or OCR) is detected
+  void onScanDataDetected(ScanData scanData);
 
   /// Called when an error occurs
   void onError(String errorCode, String errorMessage, String? errorDetails);

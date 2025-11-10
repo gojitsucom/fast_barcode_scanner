@@ -263,6 +263,7 @@ extension ScannerConfigurationExtension on ScannerConfiguration {
     CameraPosition? position,
     IOSApiMode? apiMode,
     double? confidence,
+    bool? enableOcr,
   }) {
     return ScannerConfiguration(
       types: types ?? this.types,
@@ -272,6 +273,7 @@ extension ScannerConfigurationExtension on ScannerConfiguration {
       position: position ?? this.position,
       apiMode: apiMode ?? this.apiMode,
       confidence: confidence ?? this.confidence,
+      enableOcr: enableOcr ?? this.enableOcr,
     );
   }
 }
@@ -285,6 +287,7 @@ extension UpdateConfigurationExtension on UpdateConfiguration {
     Resolution? resolution,
     Framerate? framerate,
     CameraPosition? position,
+    bool? enableOcr,
   }) {
     return UpdateConfiguration(
       types: types ?? this.types,
@@ -292,6 +295,7 @@ extension UpdateConfigurationExtension on UpdateConfiguration {
       resolution: resolution ?? this.resolution,
       framerate: framerate ?? this.framerate,
       position: position ?? this.position,
+      enableOcr: enableOcr ?? this.enableOcr,
     );
   }
 }
