@@ -1,4 +1,14 @@
 import AVFoundation
+import UIKit
+
+/// Error codes forwarded to Dart for session lifecycle failures.
+/// Must stay in sync with `ScannerErrorCodes` in
+/// fast_barcode_scanner_platform_interface.
+enum SessionErrorCode {
+    static let interrupted = "SESSION_INTERRUPTED"
+    static let interruptionEnded = "SESSION_INTERRUPTION_ENDED"
+    static let startFailed = "SESSION_START_FAILED"
+}
 
 class Camera: NSObject {
 
@@ -14,6 +24,15 @@ class Camera: NSObject {
     private(set) var previewConfiguration: PreviewConfiguration!
     private var torchState = false
     private var isSessionRunning = false
+
+    /// Whether `start()` has been requested without a matching `stop()`.
+    /// Used to decide if the session should be revived after interruptions
+    /// and foreground transitions.
+    private var shouldBeRunning = false
+
+    /// Reports session lifecycle failures (see `SessionErrorCode`) so the
+    /// Dart side can show a recoverable error instead of a black preview.
+    var onSessionError: ((_ code: String, _ message: String, _ details: String?) -> Void)?
 
     init(configuration: ScannerConfiguration, scanner: BarcodeScanner) throws {
         self.scanner = scanner
@@ -115,7 +134,6 @@ class Camera: NSObject {
                     throw ScannerError.cameraNotSuitable
                 }
 
-
         do {
             try captureDevice.lockForConfiguration()
             captureDevice.activeFormat = optimalFormat
@@ -142,9 +160,17 @@ class Camera: NSObject {
 
     func start() throws {
         scanner.start()
-        DispatchQueue.global(qos: .background).async {
+        shouldBeRunning = true
+        sessionQueue.async {
             self.session.startRunning()
             self.isSessionRunning = self.session.isRunning
+            if !self.session.isRunning {
+                self.onSessionError?(
+                    SessionErrorCode.startFailed,
+                    "The capture session did not start running",
+                    nil
+                )
+            }
         }
 
         if torchState {
@@ -154,7 +180,8 @@ class Camera: NSObject {
 
     func stop() {
         torchState = captureDevice.isTorchActive
-        DispatchQueue.global(qos: .background).async {
+        shouldBeRunning = false
+        sessionQueue.async {
             self.session.stopRunning()
             self.isSessionRunning = self.session.isRunning
         }
@@ -182,10 +209,13 @@ class Camera: NSObject {
     // MARK: KVO and Notifications
     func addObservers() {
         NotificationCenter.default.addObserver(self, selector: #selector(sessionRuntimeError), name: .AVCaptureSessionRuntimeError, object: session)
+        NotificationCenter.default.addObserver(self, selector: #selector(sessionWasInterrupted), name: .AVCaptureSessionWasInterrupted, object: session)
+        NotificationCenter.default.addObserver(self, selector: #selector(sessionInterruptionEnded), name: .AVCaptureSessionInterruptionEnded, object: session)
+        NotificationCenter.default.addObserver(self, selector: #selector(appWillEnterForeground), name: UIApplication.willEnterForegroundNotification, object: nil)
     }
 
     func removeObservers() {
-        NotificationCenter.default.removeObserver(self, name: .AVCaptureSessionRuntimeError, object: session)
+        NotificationCenter.default.removeObserver(self)
     }
 
     // MARK: AVError handling
@@ -199,6 +229,68 @@ class Camera: NSObject {
             sessionQueue.async {
                 self.session.startRunning()
                 self.isSessionRunning = self.session.isRunning
+                if !self.session.isRunning {
+                    self.onSessionError?(
+                        SessionErrorCode.startFailed,
+                        "The capture session did not recover from a runtime error",
+                        error.localizedDescription
+                    )
+                }
+            }
+        }
+    }
+
+    // MARK: Interruption handling
+
+    @objc
+    func sessionWasInterrupted(notification: NSNotification) {
+        var reasonDescription: String?
+        if let userInfo = notification.userInfo,
+           let reasonValue = userInfo[AVCaptureSessionInterruptionReasonKey] as? Int,
+           let reason = AVCaptureSession.InterruptionReason(rawValue: reasonValue) {
+            reasonDescription = String(describing: reason)
+        }
+
+        onSessionError?(
+            SessionErrorCode.interrupted,
+            "The camera session was interrupted",
+            reasonDescription
+        )
+    }
+
+    @objc
+    func sessionInterruptionEnded(notification: NSNotification) {
+        // AVFoundation resumes the session automatically after most
+        // interruptions, but not all — verify and revive if needed.
+        reviveSessionIfNeeded(context: "after an interruption")
+    }
+
+    @objc
+    func appWillEnterForeground(notification: NSNotification) {
+        reviveSessionIfNeeded(context: "after returning to the foreground")
+    }
+
+    private func reviveSessionIfNeeded(context: String) {
+        sessionQueue.async {
+            guard self.shouldBeRunning else { return }
+
+            if !self.session.isRunning {
+                self.session.startRunning()
+                self.isSessionRunning = self.session.isRunning
+            }
+
+            if self.session.isRunning && !self.session.isInterrupted {
+                self.onSessionError?(
+                    SessionErrorCode.interruptionEnded,
+                    "The camera session resumed",
+                    nil
+                )
+            } else if !self.session.isRunning {
+                self.onSessionError?(
+                    SessionErrorCode.startFailed,
+                    "The capture session did not resume \(context)",
+                    nil
+                )
             }
         }
     }

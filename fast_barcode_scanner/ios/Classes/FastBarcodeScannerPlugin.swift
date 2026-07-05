@@ -129,6 +129,11 @@ public class FastBarcodeScannerPlugin: NSObject, FlutterPlugin, FastBarcodeScann
 
     func initializeInternal(configuration: ScannerConfiguration) throws -> PreviewConfiguration {
         guard camera == nil else {
+            // A camera already exists (e.g. re-initialize without dispose).
+            // Make sure its session is actually running — start() is
+            // idempotent and reports failures — instead of silently
+            // returning a config for a stopped session (black preview).
+            try camera!.start()
             return camera!.previewConfiguration.toPigeonPreviewConfiguration()
         }
 
@@ -192,6 +197,18 @@ public class FastBarcodeScannerPlugin: NSObject, FlutterPlugin, FastBarcodeScann
         // Convert Pigeon configuration to internal configuration
         let internalConfig = configuration.toInternalScannerConfiguration()
         let camera = try Camera(configuration: internalConfig, scanner: scanner)
+
+        // Surface session lifecycle failures (interruptions, failed starts)
+        // to Dart, so the UI can react instead of showing a black preview.
+        camera.onSessionError = { [weak self] code, message, details in
+            DispatchQueue.main.async {
+                self?.flutterApi?.onError(
+                    errorCode: code,
+                    errorMessage: message,
+                    errorDetails: details
+                ) { _ in }
+            }
+        }
 
         // AVCaptureVideoPreviewLayer shows the current camera's session
         factory.session = camera.session

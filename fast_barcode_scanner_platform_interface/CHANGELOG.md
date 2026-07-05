@@ -1,3 +1,7 @@
+## 3.1.0
+- Add `FastBarcodeScannerPlatform.setOnErrorHandler` so consumers can receive errors reported by the native side (previously only debug-printed).
+- Add `ScannerErrorCodes` with the camera session lifecycle codes `SESSION_INTERRUPTED`, `SESSION_INTERRUPTION_ENDED` and `SESSION_START_FAILED`.
+
 ## 2.2.0
 ## 2.1.0
 

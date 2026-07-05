@@ -6,6 +6,29 @@ import 'pigeon_barcode_scanner.dart';
 /// Callback handler method for receiving scanned codes.
 typedef OnDetectionHandler = void Function(List<BarcodeData>);
 
+/// Callback handler method for receiving errors reported by the native side.
+typedef OnErrorHandler = void Function(
+  String errorCode,
+  String errorMessage,
+  String? errorDetails,
+);
+
+/// Error codes reported by the native side for camera session lifecycle
+/// failures. Must stay in sync with the platform implementations.
+abstract class ScannerErrorCodes {
+  /// The capture session was interrupted (e.g. the camera device is in use
+  /// by another session, or the app moved to a multitasking mode that
+  /// revoked camera access). The preview is not delivering frames.
+  static const sessionInterrupted = 'SESSION_INTERRUPTED';
+
+  /// A previously reported interruption has ended and the session resumed.
+  static const sessionInterruptionEnded = 'SESSION_INTERRUPTION_ENDED';
+
+  /// The capture session did not enter the running state after start was
+  /// requested, and no interruption was reported.
+  static const sessionStartFailed = 'SESSION_START_FAILED';
+}
+
 /// The interface that implementations of fast_barcode_scanner must implement.
 ///
 /// Platform implementations should extend this class rather than implement it as `fast_barcode_scanner`
@@ -90,6 +113,13 @@ abstract class FastBarcodeScannerPlatform extends PlatformInterface {
   void setOnDetectHandler(OnDetectionHandler handler) {
     throw UnimplementedError('setOnDetectHandler() has not been implemented');
   }
+
+  /// Set the method to be called when the native side reports an error,
+  /// including camera session lifecycle failures (see [ScannerErrorCodes]).
+  ///
+  /// Pass null to stop receiving errors. Defaults to a no-op so existing
+  /// platform implementations remain compatible.
+  void setOnErrorHandler(OnErrorHandler? handler) {}
 
   Future<List<BarcodeData>?> scanImage(ImageSourceData source) {
     throw UnimplementedError('scanImage() has not been implemented');

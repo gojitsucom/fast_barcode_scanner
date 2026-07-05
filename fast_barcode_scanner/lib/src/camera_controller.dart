@@ -200,6 +200,7 @@ class _CameraController implements CameraController {
       });
 
       _platform.setOnDetectHandler(_onDetectHandler);
+      _platform.setOnErrorHandler(_onSessionError);
 
       state._scannerConfig = ScannerConfiguration(
         types: types,
@@ -220,8 +221,34 @@ class _CameraController implements CameraController {
     }
   }
 
+  /// Maps session lifecycle failures reported by the native side onto the
+  /// scanner state, so the UI can react instead of showing a frozen or black
+  /// preview. Non-session error codes are already logged by the platform
+  /// layer and must not tear down a healthy live preview.
+  void _onSessionError(
+    String errorCode,
+    String errorMessage,
+    String? errorDetails,
+  ) {
+    switch (errorCode) {
+      case ScannerErrorCodes.sessionInterrupted:
+      case ScannerErrorCodes.sessionStartFailed:
+        state._error =
+            errorDetails == null ? errorMessage : '$errorMessage ($errorDetails)';
+        events.value = ScannerEvent.error;
+        break;
+      case ScannerErrorCodes.sessionInterruptionEnded:
+        state._error = null;
+        events.value = ScannerEvent.resumed;
+        break;
+      default:
+        break;
+    }
+  }
+
   @override
   Future<void> dispose() async {
+    _platform.setOnErrorHandler(null);
     try {
       await _platform.dispose();
     } catch (error) {
