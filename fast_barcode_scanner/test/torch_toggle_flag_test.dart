@@ -14,15 +14,22 @@ class _FlakyTorchPlatform extends FastBarcodeScannerPlatform {
 }
 
 void main() {
+  late _FlakyTorchPlatform platform;
+
+  // The controller is a lazy singleton that captures the platform at its first
+  // construction, so the fake is installed once, before any test constructs
+  // it, and every test starts the fail-then-succeed sequence over.
+  setUpAll(() {
+    platform = _FlakyTorchPlatform();
+    FastBarcodeScannerPlatform.instance = platform;
+  });
+
+  setUp(() => platform.toggleCalls = 0);
+
   test(
     'a failed torch toggle does not disable the torch for the rest of the '
     'process: the next toggle reaches the platform again',
     () async {
-      final platform = _FlakyTorchPlatform();
-      // The controller is a lazy singleton that captures the platform at its
-      // first construction, so the fake must be installed before the first
-      // CameraController() in this file — keep it that way in any new test.
-      FastBarcodeScannerPlatform.instance = platform;
       final controller = CameraController();
 
       await expectLater(controller.toggleTorch(), throwsA(isA<StateError>()));
@@ -41,11 +48,6 @@ void main() {
     'failed toggle put it in, so the preview returns while the torch is on',
     () async {
       final controller = CameraController();
-      // Same singleton and fake as above: this file's first test already
-      // consumed the throwing call, so start the sequence again.
-      final platform =
-          FastBarcodeScannerPlatform.instance as _FlakyTorchPlatform;
-      platform.toggleCalls = 0;
 
       await expectLater(controller.toggleTorch(), throwsA(isA<StateError>()));
       expect(controller.events.value, ScannerEvent.error);
