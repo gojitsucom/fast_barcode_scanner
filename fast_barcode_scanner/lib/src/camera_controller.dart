@@ -299,9 +299,13 @@ class _CameraController implements CameraController {
         state._error = error;
         events.value = ScannerEvent.error;
         rethrow;
+      } finally {
+        // Reset on the error path too. Before, a thrown toggle left this flag
+        // set for the life of the (singleton) controller, so every later
+        // toggle returned the cached state without reaching the platform:
+        // one failure disabled the torch for the whole process.
+        _togglingTorch = false;
       }
-
-      _togglingTorch = false;
     }
 
     return state._torch;

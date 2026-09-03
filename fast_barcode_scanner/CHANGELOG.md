@@ -1,3 +1,6 @@
+## 3.0.3
+- `toggleTorch` resets its in-flight guard when the platform call throws, so one failed toggle no longer disables the torch for the rest of the process
+
 ## 3.0.2
 ## 3.0.1
 - Fix camera preview ios
