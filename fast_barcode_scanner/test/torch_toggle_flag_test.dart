@@ -19,6 +19,9 @@ void main() {
     'process: the next toggle reaches the platform again',
     () async {
       final platform = _FlakyTorchPlatform();
+      // The controller is a lazy singleton that captures the platform at its
+      // first construction, so the fake must be installed before the first
+      // CameraController() in this file — keep it that way in any new test.
       FastBarcodeScannerPlatform.instance = platform;
       final controller = CameraController();
 
