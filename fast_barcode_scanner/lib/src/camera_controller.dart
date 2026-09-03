@@ -295,6 +295,14 @@ class _CameraController implements CameraController {
 
       try {
         state._torch = await _platform.toggleTorch();
+        // A failed toggle parks the scanner in the error state (below), and
+        // nothing else clears it short of re-initialising. Now that a retry
+        // can succeed, take the scanner back out of the error state so the
+        // preview is not replaced by the error view while the torch is on.
+        if (events.value == ScannerEvent.error) {
+          state._error = null;
+          events.value = ScannerEvent.resumed;
+        }
       } catch (error) {
         state._error = error;
         events.value = ScannerEvent.error;

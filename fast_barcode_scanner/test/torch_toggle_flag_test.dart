@@ -35,4 +35,26 @@ void main() {
       expect(torchOn, isTrue);
     },
   );
+
+  test(
+    'a successful retry takes the scanner back out of the error state the '
+    'failed toggle put it in, so the preview returns while the torch is on',
+    () async {
+      final controller = CameraController();
+      // Same singleton and fake as above: this file's first test already
+      // consumed the throwing call, so start the sequence again.
+      final platform =
+          FastBarcodeScannerPlatform.instance as _FlakyTorchPlatform;
+      platform.toggleCalls = 0;
+
+      await expectLater(controller.toggleTorch(), throwsA(isA<StateError>()));
+      expect(controller.events.value, ScannerEvent.error);
+      expect(controller.state.hasError, isTrue);
+
+      await controller.toggleTorch();
+
+      expect(controller.events.value, ScannerEvent.resumed);
+      expect(controller.state.hasError, isFalse);
+    },
+  );
 }
