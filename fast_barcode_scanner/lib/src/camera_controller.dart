@@ -150,6 +150,11 @@ class _CameraController implements CameraController {
   /// Used to prevent command-spamming.
   bool _togglingTorch = false;
 
+  /// The error a failed [toggleTorch] parked the scanner in, so a later
+  /// successful toggle clears only its own failure and never one raised by
+  /// another operation (a stopped detector, a paused camera).
+  Object? _torchError;
+
   /// Indicates if the camera is currently configuring itself.
   ///
   /// Used to prevent command-spamming.
@@ -302,11 +307,16 @@ class _CameraController implements CameraController {
         // `resumed` is the best available restore: the pre-error event is not
         // kept, so a scanner that was paused when the toggle failed reports
         // resumed here (in-repo consumers only check for error).
-        if (events.value == ScannerEvent.error) {
+        // Only the torch's own failure is cleared: an error another operation
+        // raised (a stopped detector, a paused camera) is still unresolved and
+        // must keep the error view up.
+        if (_torchError != null && identical(state._error, _torchError)) {
           state._error = null;
           events.value = ScannerEvent.resumed;
         }
+        _torchError = null;
       } catch (error) {
+        _torchError = error;
         state._error = error;
         events.value = ScannerEvent.error;
         rethrow;
