@@ -233,8 +233,9 @@ class _CameraController implements CameraController {
     switch (errorCode) {
       case ScannerErrorCodes.sessionInterrupted:
       case ScannerErrorCodes.sessionStartFailed:
-        state._error =
-            errorDetails == null ? errorMessage : '$errorMessage ($errorDetails)';
+        state._error = errorDetails == null
+            ? errorMessage
+            : '$errorMessage ($errorDetails)';
         events.value = ScannerEvent.error;
         break;
       case ScannerErrorCodes.sessionInterruptionEnded:
@@ -378,7 +379,7 @@ class _CameraController implements CameraController {
   @override
   Future<List<BarcodeData>?> scanImage(ImageSourceData source) async {
     try {
-      return _platform.scanImage(source);
+      return await _platform.scanImage(source);
     } catch (error) {
       state._error = error;
       events.value = ScannerEvent.error;
