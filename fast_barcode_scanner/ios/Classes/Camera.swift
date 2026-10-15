@@ -23,11 +23,10 @@ class Camera: NSObject {
     private(set) var configuration: ScannerConfiguration
     private(set) var previewConfiguration: PreviewConfiguration!
     private var torchState = false
-    private var isSessionRunning = false
 
     /// Whether `start()` has been requested without a matching `stop()`.
     /// Used to decide if the session should be revived after interruptions
-    /// and foreground transitions.
+    /// and foreground transitions. Only accessed on `sessionQueue`.
     private var shouldBeRunning = false
 
     /// Reports session lifecycle failures (see `SessionErrorCode`) so the
@@ -170,10 +169,9 @@ class Camera: NSObject {
 
     func start() throws {
         scanner.start()
-        shouldBeRunning = true
         sessionQueue.async {
+            self.shouldBeRunning = true
             self.session.startRunning()
-            self.isSessionRunning = self.session.isRunning
             if !self.session.isRunning {
                 self.onSessionError?(
                     SessionErrorCode.startFailed,
@@ -190,10 +188,9 @@ class Camera: NSObject {
 
     func stop() {
         torchState = captureDevice.isTorchActive
-        shouldBeRunning = false
         sessionQueue.async {
+            self.shouldBeRunning = false
             self.session.stopRunning()
-            self.isSessionRunning = self.session.isRunning
         }
     }
 
@@ -234,18 +231,18 @@ class Camera: NSObject {
     func sessionRuntimeError(notification: NSNotification) {
         guard let error = notification.userInfo?[AVCaptureSessionErrorKey] as? AVError else { return }
 
-        // Try to restart, if session was running
-        if error.code == .mediaServicesWereReset && isSessionRunning {
-            sessionQueue.async {
-                self.session.startRunning()
-                self.isSessionRunning = self.session.isRunning
-                if !self.session.isRunning {
-                    self.onSessionError?(
-                        SessionErrorCode.startFailed,
-                        "The capture session did not recover from a runtime error",
-                        error.localizedDescription
-                    )
-                }
+        guard error.code == .mediaServicesWereReset else { return }
+
+        sessionQueue.async {
+            guard self.shouldBeRunning else { return }
+
+            self.session.startRunning()
+            if !self.session.isRunning {
+                self.onSessionError?(
+                    SessionErrorCode.startFailed,
+                    "The capture session did not recover from a runtime error",
+                    error.localizedDescription
+                )
             }
         }
     }
@@ -286,7 +283,6 @@ class Camera: NSObject {
 
             if !self.session.isRunning {
                 self.session.startRunning()
-                self.isSessionRunning = self.session.isRunning
             }
 
             if self.session.isRunning && !self.session.isInterrupted {
