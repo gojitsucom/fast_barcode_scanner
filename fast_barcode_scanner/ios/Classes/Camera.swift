@@ -55,7 +55,7 @@ class Camera: NSObject {
 
         try sessionQueue.sync {
             if authorizationGranted {
-                try self.configureSession(configuration: configuration)
+                try self.applyConfiguration(configuration)
                 self.addObservers()
             } else {
                 throw ScannerError.unauthorized
@@ -67,7 +67,16 @@ class Camera: NSObject {
         removeObservers()
     }
 
+    /// Session changes must be serialized with startRunning/stopRunning on
+    /// `sessionQueue`; calling startRunning between begin/commitConfiguration
+    /// throws an NSGenericException.
     func configureSession(configuration: ScannerConfiguration) throws {
+        try sessionQueue.sync {
+            try applyConfiguration(configuration)
+        }
+    }
+
+    private func applyConfiguration(_ configuration: ScannerConfiguration) throws {
         let requestedDevice: AVCaptureDevice?
         let requestedPosition = configuration.cameraPosition
 
@@ -95,6 +104,7 @@ class Camera: NSObject {
         }
 
         session.beginConfiguration()
+        defer { session.commitConfiguration() }
         session.inputs.forEach(session.removeInput)
 
         let deviceInput = try AVCaptureDeviceInput(device: device)
@@ -118,8 +128,6 @@ class Camera: NSObject {
             case .continuous: break
             }
         }
-
-        session.commitConfiguration()
 
          // Find the optimal settings for the requested resolution and frame rate.
                 guard let optimalFormat = captureDevice.formats.first(where: {

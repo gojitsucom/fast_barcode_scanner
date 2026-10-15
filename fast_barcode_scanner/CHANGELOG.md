@@ -1,3 +1,6 @@
+## 3.2.0
+- iOS: fix the `NSGenericException` crash "startRunning may not be called between calls to beginConfiguration and commitConfiguration". `changeConfiguration` now runs on the serial session queue so it cannot overlap a session start, and the configuration is always committed, even when adding the camera input fails.
+
 ## 3.1.0
 - iOS: detect and recover from capture session interruptions instead of showing a silent black preview. The camera now observes `AVCaptureSessionWasInterrupted`/`InterruptionEnded`, verifies that `startRunning` actually took effect, revives the session on foreground, and reports failures to Dart as `ScannerEvent.error` (rendered via `BarcodeCamera.onError`), clearing the error automatically when the session resumes.
 - iOS: run session start/stop on the serial session queue instead of the global concurrent queue.
