@@ -6,9 +6,10 @@ import 'fast_barcode_scanner_platform_interface.dart';
 import 'pigeon_barcode_scanner.dart';
 
 /// Implementation of [FastBarcodeScannerPlatform] using Pigeon.
-class PigeonFastBarcodeScanner extends FastBarcodeScannerPlatform implements FastBarcodeScannerFlutterApi {
+class PigeonFastBarcodeScanner extends FastBarcodeScannerPlatform
+    implements FastBarcodeScannerFlutterApi {
   static final FastBarcodeScannerHostApi _hostApi = FastBarcodeScannerHostApi();
-  
+
   OnDetectionHandler? _onDetectHandler;
   OnErrorHandler? _onErrorHandler;
 

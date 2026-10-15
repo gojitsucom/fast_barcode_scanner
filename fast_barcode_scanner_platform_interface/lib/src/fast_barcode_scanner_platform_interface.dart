@@ -40,8 +40,7 @@ abstract class FastBarcodeScannerPlatform extends PlatformInterface {
 
   static const Object _token = Object();
 
-  static FastBarcodeScannerPlatform _instance =
-      PigeonFastBarcodeScanner();
+  static FastBarcodeScannerPlatform _instance = PigeonFastBarcodeScanner();
 
   /// The default instance of [FastBarcodeScannerPlatform] to use.
   ///
