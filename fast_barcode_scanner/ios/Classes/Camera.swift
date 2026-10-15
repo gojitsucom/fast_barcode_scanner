@@ -103,11 +103,26 @@ class Camera: NSObject {
             throw ScannerError.noInputDeviceForConfig(configuration)
         }
 
+        // Everything that can throw runs before the session is touched, so a
+        // failure leaves the current input in place instead of committing an
+        // input-less session.
+        guard let optimalFormat = device.formats.first(where: {
+            let dimensions = CMVideoFormatDescriptionGetDimensions($0.formatDescription)
+            let mediaSubType = CMFormatDescriptionGetMediaSubType($0.formatDescription).toString()
+
+            return $0.videoSupportedFrameRateRanges.first!.maxFrameRate >= configuration.framerate.doubleValue
+                && dimensions.height >= configuration.resolution.height
+                && dimensions.width >= configuration.resolution.width
+                && mediaSubType == "420f" // maybe 420v is also ok? Who knows...
+        }) else {
+            throw ScannerError.cameraNotSuitable
+        }
+
+        let deviceInput = try AVCaptureDeviceInput(device: device)
+
         session.beginConfiguration()
         defer { session.commitConfiguration() }
         session.inputs.forEach(session.removeInput)
-
-        let deviceInput = try AVCaptureDeviceInput(device: device)
 
         if session.canAddInput(deviceInput) {
             session.addInput(deviceInput)
@@ -128,19 +143,6 @@ class Camera: NSObject {
             case .continuous: break
             }
         }
-
-         // Find the optimal settings for the requested resolution and frame rate.
-                guard let optimalFormat = captureDevice.formats.first(where: {
-                    let dimensions = CMVideoFormatDescriptionGetDimensions($0.formatDescription)
-                    let mediaSubType = CMFormatDescriptionGetMediaSubType($0.formatDescription).toString()
-
-                    return $0.videoSupportedFrameRateRanges.first!.maxFrameRate >= configuration.framerate.doubleValue
-                        && dimensions.height >= configuration.resolution.height
-                        && dimensions.width >= configuration.resolution.width
-                        && mediaSubType == "420f" // maybe 420v is also ok? Who knows...
-                }) else {
-                    throw ScannerError.cameraNotSuitable
-                }
 
         do {
             try captureDevice.lockForConfiguration()
