@@ -5,3 +5,6 @@
 .pub/
 
 build/
+
+# Local path override to the platform interface; never commit it
+pubspec_overrides.yaml
