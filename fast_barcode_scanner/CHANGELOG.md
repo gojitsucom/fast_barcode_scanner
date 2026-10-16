@@ -1,3 +1,6 @@
+## 3.2.1
+- `CameraController.clearCachedImage()` no longer disposes the camera. It only clears the cached images. Previously it also called the platform `dispose()`, which stopped whichever camera was open at the time while the Dart state still reported it initialized, leaving a frozen preview. Callers that relied on it to shut the camera down must call `dispose()` instead.
+
 ## 3.2.0
 - iOS: fix the `NSGenericException` crash "startRunning may not be called between calls to beginConfiguration and commitConfiguration". `changeConfiguration` now runs on the serial session queue so it cannot overlap a session start, and the configuration is always committed, even when adding the camera input fails.
 
