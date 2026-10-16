@@ -223,9 +223,10 @@ class _CameraController implements CameraController {
 
   /// Maps session lifecycle failures reported by the native side onto the
   /// scanner state, so the UI can react instead of showing a frozen or black
-  /// preview. Interruptions (backgrounding, calls, Siri, Split View) end on
-  /// their own and the native side reports a start failure if they don't, so
-  /// they are not treated as errors. Non-session error codes are already
+  /// preview. Interruptions (backgrounding, calls, Siri, Split View) usually
+  /// end on their own, so they are not treated as errors. On iOS, an
+  /// interruption still active after a few seconds while in the foreground is
+  /// reported as a start failure. Non-session error codes are already
   /// logged by the platform layer and must not tear down a healthy preview.
   void _onSessionError(
     String errorCode,

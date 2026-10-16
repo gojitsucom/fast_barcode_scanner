@@ -35,6 +35,8 @@ class Camera: NSObject {
     /// `SessionErrorCode.interruptionEnded`. Only accessed on `sessionQueue`.
     private var hasReportedStartFailure = false
 
+    private static let interruptionTimeout: TimeInterval = 3
+
     /// Reports session lifecycle failures (see `SessionErrorCode`) so the
     /// Dart side can show a recoverable error instead of a black preview.
     var onSessionError: ((_ code: String, _ message: String, _ details: String?) -> Void)?
@@ -187,6 +189,7 @@ class Camera: NSObject {
                 self.reportStartFailure("The capture session did not start running")
                 return
             }
+            self.reportResumedIfFailureReported()
 
             // The torch only stays on once the session is running.
             if self.torchState {
@@ -268,18 +271,37 @@ class Camera: NSObject {
 
     @objc
     func sessionWasInterrupted(notification: NSNotification) {
-        var reasonDescription: String?
-        if let userInfo = notification.userInfo,
-           let reasonValue = userInfo[AVCaptureSessionInterruptionReasonKey] as? Int,
-           let reason = AVCaptureSession.InterruptionReason(rawValue: reasonValue) {
-            reasonDescription = String(describing: reason)
+        var reason: AVCaptureSession.InterruptionReason?
+        if let reasonValue = notification.userInfo?[AVCaptureSessionInterruptionReasonKey] as? Int {
+            reason = AVCaptureSession.InterruptionReason(rawValue: reasonValue)
         }
+        let reasonDescription = reason.map { String(describing: $0) }
 
         onSessionError?(
             SessionErrorCode.interrupted,
             "The camera session was interrupted",
             reasonDescription
         )
+
+        // Nothing can be shown while backgrounded; the foreground revive
+        // handles that case.
+        guard reason != .videoDeviceNotAvailableInBackground else { return }
+
+        // Most interruptions end on their own. One that doesn't (e.g. another
+        // app holding the camera in Split View) would otherwise leave a
+        // frozen preview with no error.
+        sessionQueue.asyncAfter(deadline: .now() + Self.interruptionTimeout) {
+            guard self.shouldBeRunning,
+                  self.session.isInterrupted,
+                  !self.hasReportedStartFailure else { return }
+
+            self.hasReportedStartFailure = true
+            self.onSessionError?(
+                SessionErrorCode.startFailed,
+                "The camera is unavailable",
+                reasonDescription
+            )
+        }
     }
 
     @objc
@@ -304,22 +326,25 @@ class Camera: NSObject {
 
             if !self.session.isRunning {
                 self.reportStartFailure("The capture session did not resume \(context)")
-            } else if self.hasReportedStartFailure && !self.session.isInterrupted {
-                // Only clear an error this class reported; a foreground
-                // transition alone must not hide unrelated earlier errors.
-                self.hasReportedStartFailure = false
-                self.onSessionError?(
-                    SessionErrorCode.interruptionEnded,
-                    "The camera session resumed",
-                    nil
-                )
+            } else {
+                self.reportResumedIfFailureReported()
             }
         }
     }
 
+    /// Must be called on `sessionQueue`. Only clears an error this class
+    /// reported, so a foreground transition alone doesn't hide unrelated
+    /// earlier errors on the Dart side.
+    private func reportResumedIfFailureReported() {
+        guard hasReportedStartFailure, !session.isInterrupted else { return }
+
+        hasReportedStartFailure = false
+        onSessionError?(SessionErrorCode.interruptionEnded, "The camera session resumed", nil)
+    }
+
     /// Must be called on `sessionQueue`. An interrupted session is not
-    /// running, but that is not a failure: AVFoundation resumes it, and
-    /// `reviveSessionIfNeeded` reports if it doesn't.
+    /// running, but that is not a failure yet: AVFoundation usually resumes
+    /// it, and `sessionWasInterrupted` reports one that lasts.
     private func reportStartFailure(_ message: String, details: String? = nil) {
         guard !session.isInterrupted else { return }
 
