@@ -37,7 +37,7 @@ func configureSession(configuration: ScannerConfiguration) throws {
 
 **Q: Why are session interruptions not reported as scanner errors?**
 
-**A:** Interruptions (backgrounding, phone calls, Siri, Split View, another app using the camera) end on their own. Mapping them to `ScannerEvent.error` makes `BarcodeCamera` replace the preview with `onError` during normal use, which in the driver app is a full error screen with a Go back button. Only a start or revive that actually fails is an error. The native side skips start-failure reports while the session is interrupted, and sends `SESSION_INTERRUPTION_ENDED` only to clear a failure it reported itself, so a foreground transition does not hide unrelated errors.
+**A:** Interruptions (backgrounding, phone calls, Siri, Split View, another app using the camera) end on their own. Mapping them to `ScannerEvent.error` makes `BarcodeCamera` replace the preview with `onError` during normal use, which in the driver app is a full error screen with a Go back button. Only a start or revive that actually fails is an error, plus one exception: an interruption still active 3 seconds later while the app is in the foreground (for example, another app holding the camera in Split View) is reported as a start failure, because otherwise the preview stays frozen with no error. The background reason is excluded, since the foreground revive covers it. The native side skips start-failure reports while the session is interrupted, and sends `SESSION_INTERRUPTION_ENDED` only to clear a failure it reported itself, either when a later start succeeds or when the session resumes, so a foreground transition does not hide unrelated errors.
 
 **Example:**
 ```dart
