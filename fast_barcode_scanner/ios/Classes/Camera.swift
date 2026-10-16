@@ -109,8 +109,7 @@ class Camera: NSObject {
         }
 
         // Everything that can throw runs before the session is touched, so a
-        // failure leaves the current input in place instead of committing an
-        // input-less session.
+        // failure leaves the current input and configuration in place.
         guard let optimalFormat = device.formats.first(where: {
             let dimensions = CMVideoFormatDescriptionGetDimensions($0.formatDescription)
             let mediaSubType = CMFormatDescriptionGetMediaSubType($0.formatDescription).toString()
@@ -124,6 +123,15 @@ class Camera: NSObject {
         }
 
         let deviceInput = try AVCaptureDeviceInput(device: device)
+
+        do {
+            try device.lockForConfiguration()
+        } catch {
+            throw ScannerError.configurationError(error.localizedDescription)
+        }
+        // Locked before the session changes so a lock failure can't leave a
+        // half-applied configuration; released after commitConfiguration.
+        defer { device.unlockForConfiguration() }
 
         session.beginConfiguration()
         defer { session.commitConfiguration() }
@@ -152,17 +160,11 @@ class Camera: NSObject {
             }
         }
 
-        do {
-            try captureDevice.lockForConfiguration()
-            captureDevice.activeFormat = optimalFormat
-            captureDevice.activeVideoMaxFrameDuration =
-                optimalFormat.videoSupportedFrameRateRanges.first!.minFrameDuration
-            captureDevice.unlockForConfiguration()
-        } catch {
-            throw ScannerError.configurationError(error.localizedDescription)
-        }
+        device.activeFormat = optimalFormat
+        device.activeVideoMaxFrameDuration =
+            optimalFormat.videoSupportedFrameRateRanges.first!.minFrameDuration
 
-        let previewSize = CMVideoFormatDescriptionGetDimensions(captureDevice.activeFormat.formatDescription)
+        let previewSize = CMVideoFormatDescriptionGetDimensions(device.activeFormat.formatDescription)
 
         self.configuration = configuration
 

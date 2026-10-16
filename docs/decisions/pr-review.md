@@ -13,7 +13,7 @@ Each entry answers: **"Why do we do it this way?"**
 
 **Q: Why does all AVCaptureSession state go through `sessionQueue`?**
 
-**A:** `startRunning` and `stopRunning` block, so they run on the serial `sessionQueue`. Configuring the session from another thread can land between `beginConfiguration` and `commitConfiguration` while a start is running, which throws `NSGenericException`. State that decides how to restart the session, such as `shouldBeRunning` and the saved torch state, is read on that queue, so it is written there too. The torch is set after `startRunning` succeeds, because it does not stay on for a session that is not running. Anything that can throw (format lookup, creating the device input) runs before `beginConfiguration`, so a failure never commits a session with its inputs removed.
+**A:** `startRunning` and `stopRunning` block, so they run on the serial `sessionQueue`. Configuring the session from another thread can land between `beginConfiguration` and `commitConfiguration` while a start is running, which throws `NSGenericException`. State that decides how to restart the session, such as `shouldBeRunning` and the saved torch state, is read on that queue, so it is written there too. The torch is set after `startRunning` succeeds, because it does not stay on for a session that is not running. Anything that can throw (format lookup, creating the device input, `lockForConfiguration`) runs before `beginConfiguration`, so a failure leaves the current input and configuration in place. The device stays locked until after `commitConfiguration`. The one check that can only run after the old input is removed, `canAddInput`, restores the previous inputs before throwing.
 
 **Example:**
 ```swift
