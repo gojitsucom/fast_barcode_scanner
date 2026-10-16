@@ -4,6 +4,8 @@ import 'package:flutter_test/flutter_test.dart';
 class _FakePlatform extends FastBarcodeScannerPlatform {
   OnErrorHandler? errorHandler;
   OnDetectionHandler? detectHandler;
+  int disposeCount = 0;
+  int clearCachedImageCount = 0;
 
   @override
   Future<PreviewConfiguration> init(
@@ -31,7 +33,14 @@ class _FakePlatform extends FastBarcodeScannerPlatform {
   Future<void> stop() async {}
 
   @override
-  Future<void> dispose() async {}
+  Future<void> dispose() async {
+    disposeCount++;
+  }
+
+  @override
+  Future<void> clearCachedImage() async {
+    clearCachedImageCount++;
+  }
 
   @override
   void setOnDetectHandler(OnDetectionHandler handler) {
@@ -129,6 +138,22 @@ void main() {
 
       // Re-initialize so tearDown's dispose acts on a live controller.
       await initializeController();
+    });
+  });
+
+  group('clearCachedImage', () {
+    // The driver app calls this after a background upload finishes, when a
+    // different scanner screen may own the camera. Disposing there stopped
+    // that camera while the Dart state still reported it initialized.
+    test('clears the cache without disposing the camera', () async {
+      fakePlatform.disposeCount = 0;
+      fakePlatform.clearCachedImageCount = 0;
+
+      await controller.clearCachedImage();
+
+      expect(fakePlatform.clearCachedImageCount, 1);
+      expect(fakePlatform.disposeCount, 0);
+      expect(controller.state.isInitialized, isTrue);
     });
   });
 }
