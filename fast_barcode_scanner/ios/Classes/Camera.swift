@@ -22,6 +22,8 @@ class Camera: NSObject {
 
     private(set) var configuration: ScannerConfiguration
     private(set) var previewConfiguration: PreviewConfiguration!
+    /// Whether the torch was on when the session last stopped, so `start()`
+    /// can turn it back on. Only accessed on `sessionQueue`.
     private var torchState = false
 
     /// Whether `start()` has been requested without a matching `stop()`.
@@ -174,35 +176,46 @@ class Camera: NSObject {
         )
     }
 
-    func start() throws {
+    func start() {
         scanner.start()
         sessionQueue.async {
             self.shouldBeRunning = true
             self.session.startRunning()
-            if !self.session.isRunning {
+            guard self.session.isRunning else {
                 self.reportStartFailure("The capture session did not start running")
+                return
             }
-        }
 
-        if torchState {
-            try toggleTorch()
+            // The torch only stays on once the session is running.
+            if self.torchState {
+                try? self.setTorch(on: true)
+            }
         }
     }
 
+    /// Safe to call from any thread; `.pauseVideo` calls it from the
+    /// scanner's output queue.
     func stop() {
-        torchState = captureDevice.isTorchActive
         sessionQueue.async {
             self.shouldBeRunning = false
+            self.torchState = self.captureDevice.isTorchActive
             self.session.stopRunning()
         }
     }
 
     @discardableResult
     func toggleTorch() throws -> Bool {
+        try sessionQueue.sync {
+            try setTorch(on: !captureDevice.isTorchActive)
+        }
+    }
+
+    @discardableResult
+    private func setTorch(on: Bool) throws -> Bool {
         guard captureDevice.isTorchAvailable else { return false }
 
         try captureDevice.lockForConfiguration()
-        captureDevice.torchMode = captureDevice.isTorchActive ? .off : .on
+        captureDevice.torchMode = on ? .on : .off
         captureDevice.unlockForConfiguration()
 
         return captureDevice.torchMode == .on
