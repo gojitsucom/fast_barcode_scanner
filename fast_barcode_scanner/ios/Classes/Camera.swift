@@ -29,6 +29,10 @@ class Camera: NSObject {
     /// and foreground transitions. Only accessed on `sessionQueue`.
     private var shouldBeRunning = false
 
+    /// Whether a start failure was reported to Dart and not yet cleared by
+    /// `SessionErrorCode.interruptionEnded`. Only accessed on `sessionQueue`.
+    private var hasReportedStartFailure = false
+
     /// Reports session lifecycle failures (see `SessionErrorCode`) so the
     /// Dart side can show a recoverable error instead of a black preview.
     var onSessionError: ((_ code: String, _ message: String, _ details: String?) -> Void)?
@@ -173,11 +177,7 @@ class Camera: NSObject {
             self.shouldBeRunning = true
             self.session.startRunning()
             if !self.session.isRunning {
-                self.onSessionError?(
-                    SessionErrorCode.startFailed,
-                    "The capture session did not start running",
-                    nil
-                )
+                self.reportStartFailure("The capture session did not start running")
             }
         }
 
@@ -238,10 +238,9 @@ class Camera: NSObject {
 
             self.session.startRunning()
             if !self.session.isRunning {
-                self.onSessionError?(
-                    SessionErrorCode.startFailed,
+                self.reportStartFailure(
                     "The capture session did not recover from a runtime error",
-                    error.localizedDescription
+                    details: error.localizedDescription
                 )
             }
         }
@@ -285,19 +284,28 @@ class Camera: NSObject {
                 self.session.startRunning()
             }
 
-            if self.session.isRunning && !self.session.isInterrupted {
+            if !self.session.isRunning {
+                self.reportStartFailure("The capture session did not resume \(context)")
+            } else if self.hasReportedStartFailure && !self.session.isInterrupted {
+                // Only clear an error this class reported; a foreground
+                // transition alone must not hide unrelated earlier errors.
+                self.hasReportedStartFailure = false
                 self.onSessionError?(
                     SessionErrorCode.interruptionEnded,
                     "The camera session resumed",
                     nil
                 )
-            } else if !self.session.isRunning {
-                self.onSessionError?(
-                    SessionErrorCode.startFailed,
-                    "The capture session did not resume \(context)",
-                    nil
-                )
             }
         }
+    }
+
+    /// Must be called on `sessionQueue`. An interrupted session is not
+    /// running, but that is not a failure: AVFoundation resumes it, and
+    /// `reviveSessionIfNeeded` reports if it doesn't.
+    private func reportStartFailure(_ message: String, details: String? = nil) {
+        guard !session.isInterrupted else { return }
+
+        hasReportedStartFailure = true
+        onSessionError?(SessionErrorCode.startFailed, message, details)
     }
 }
