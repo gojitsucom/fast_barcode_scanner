@@ -125,14 +125,17 @@ class Camera: NSObject {
 
         session.beginConfiguration()
         defer { session.commitConfiguration() }
-        session.inputs.forEach(session.removeInput)
+        let previousInputs = session.inputs
+        previousInputs.forEach(session.removeInput)
 
-        if session.canAddInput(deviceInput) {
-            session.addInput(deviceInput)
-            self.deviceInput = deviceInput
-        } else {
+        // canAddInput can only be checked once the old input is gone, since
+        // the same device can't be added twice.
+        guard session.canAddInput(deviceInput) else {
+            previousInputs.forEach(session.addInput)
             throw ScannerError.configurationError("Could not add video device input to session")
         }
+        session.addInput(deviceInput)
+        self.deviceInput = deviceInput
 
         // Attach scanner to the session
         self.scanner.session = session
