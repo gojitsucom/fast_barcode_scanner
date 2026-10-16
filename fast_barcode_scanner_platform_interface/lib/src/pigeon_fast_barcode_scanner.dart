@@ -6,10 +6,12 @@ import 'fast_barcode_scanner_platform_interface.dart';
 import 'pigeon_barcode_scanner.dart';
 
 /// Implementation of [FastBarcodeScannerPlatform] using Pigeon.
-class PigeonFastBarcodeScanner extends FastBarcodeScannerPlatform implements FastBarcodeScannerFlutterApi {
+class PigeonFastBarcodeScanner extends FastBarcodeScannerPlatform
+    implements FastBarcodeScannerFlutterApi {
   static final FastBarcodeScannerHostApi _hostApi = FastBarcodeScannerHostApi();
-  
+
   OnDetectionHandler? _onDetectHandler;
+  OnErrorHandler? _onErrorHandler;
 
   /// Registers this class as the default instance of [FastBarcodeScannerPlatform].
   static void registerWith() {
@@ -97,6 +99,11 @@ class PigeonFastBarcodeScanner extends FastBarcodeScannerPlatform implements Fas
   }
 
   @override
+  void setOnErrorHandler(OnErrorHandler? handler) {
+    _onErrorHandler = handler;
+  }
+
+  @override
   Future<List<BarcodeData>?> scanImage(ImageSourceData source) async {
     final result = await _hostApi.scanImage(source);
     return result.whereType<BarcodeData>().toList();
@@ -127,5 +134,6 @@ class PigeonFastBarcodeScanner extends FastBarcodeScannerPlatform implements Fas
     if (errorDetails != null) {
       debugPrint('Error details: $errorDetails');
     }
+    _onErrorHandler?.call(errorCode, errorMessage, errorDetails);
   }
 }

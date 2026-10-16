@@ -200,6 +200,7 @@ class _CameraController implements CameraController {
       });
 
       _platform.setOnDetectHandler(_onDetectHandler);
+      _platform.setOnErrorHandler(_onSessionError);
 
       state._scannerConfig = ScannerConfiguration(
         types: types,
@@ -220,8 +221,37 @@ class _CameraController implements CameraController {
     }
   }
 
+  /// Maps session lifecycle failures reported by the native side onto the
+  /// scanner state, so the UI can react instead of showing a frozen or black
+  /// preview. Interruptions (backgrounding, calls, Siri, Split View) usually
+  /// end on their own, so they are not treated as errors. On iOS, an
+  /// interruption still active after a few seconds while in the foreground is
+  /// reported as a start failure. Non-session error codes are already
+  /// logged by the platform layer and must not tear down a healthy preview.
+  void _onSessionError(
+    String errorCode,
+    String errorMessage,
+    String? errorDetails,
+  ) {
+    switch (errorCode) {
+      case ScannerErrorCodes.sessionStartFailed:
+        state._error = errorDetails == null
+            ? errorMessage
+            : '$errorMessage ($errorDetails)';
+        events.value = ScannerEvent.error;
+        break;
+      case ScannerErrorCodes.sessionInterruptionEnded:
+        state._error = null;
+        events.value = ScannerEvent.resumed;
+        break;
+      default:
+        break;
+    }
+  }
+
   @override
   Future<void> dispose() async {
+    _platform.setOnErrorHandler(null);
     try {
       await _platform.dispose();
     } catch (error) {
@@ -351,7 +381,7 @@ class _CameraController implements CameraController {
   @override
   Future<List<BarcodeData>?> scanImage(ImageSourceData source) async {
     try {
-      return _platform.scanImage(source);
+      return await _platform.scanImage(source);
     } catch (error) {
       state._error = error;
       events.value = ScannerEvent.error;
