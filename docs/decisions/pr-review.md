@@ -13,7 +13,7 @@ Each entry answers: **"Why do we do it this way?"**
 
 **Q: Why does all AVCaptureSession state go through `sessionQueue`?**
 
-**A:** `startRunning` and `stopRunning` block, so they run on the serial `sessionQueue`. Configuring the session from another thread can land between `beginConfiguration` and `commitConfiguration` while a start is running, which throws `NSGenericException`. Flags such as `shouldBeRunning` that decide whether to restart the session are read on that queue, so they are written there too. Anything that can throw (format lookup, creating the device input) runs before `beginConfiguration`, so a failure never commits a session with its inputs removed.
+**A:** `startRunning` and `stopRunning` block, so they run on the serial `sessionQueue`. Configuring the session from another thread can land between `beginConfiguration` and `commitConfiguration` while a start is running, which throws `NSGenericException`. State that decides how to restart the session, such as `shouldBeRunning` and the saved torch state, is read on that queue, so it is written there too. The torch is set after `startRunning` succeeds, because it does not stay on for a session that is not running. Anything that can throw (format lookup, creating the device input) runs before `beginConfiguration`, so a failure never commits a session with its inputs removed.
 
 **Example:**
 ```swift
@@ -27,5 +27,30 @@ func configureSession(configuration: ScannerConfiguration) throws {
 ```
 
 *Reviewer: @gemini-code-assist*
+
+---
+
+### 2026-10-16 PR #21
+
+**Category**: error-handling
+**Context**: `fast_barcode_scanner/lib/src/camera_controller.dart` and `fast_barcode_scanner/ios/Classes/Camera.swift` — mapping native session lifecycle signals onto `ScannerEvent`.
+
+**Q: Why are session interruptions not reported as scanner errors?**
+
+**A:** Interruptions (backgrounding, phone calls, Siri, Split View, another app using the camera) end on their own. Mapping them to `ScannerEvent.error` makes `BarcodeCamera` replace the preview with `onError` during normal use, which in the driver app is a full error screen with a Go back button. Only a start or revive that actually fails is an error. The native side skips start-failure reports while the session is interrupted, and sends `SESSION_INTERRUPTION_ENDED` only to clear a failure it reported itself, so a foreground transition does not hide unrelated errors.
+
+**Example:**
+```dart
+// Before
+case ScannerErrorCodes.sessionInterrupted:
+case ScannerErrorCodes.sessionStartFailed:
+  events.value = ScannerEvent.error;
+
+// After
+case ScannerErrorCodes.sessionStartFailed:
+  events.value = ScannerEvent.error;
+```
+
+*Reviewer: @nogicoder*
 
 ---
