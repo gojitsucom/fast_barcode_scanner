@@ -223,15 +223,16 @@ class _CameraController implements CameraController {
 
   /// Maps session lifecycle failures reported by the native side onto the
   /// scanner state, so the UI can react instead of showing a frozen or black
-  /// preview. Non-session error codes are already logged by the platform
-  /// layer and must not tear down a healthy live preview.
+  /// preview. Interruptions (backgrounding, calls, Siri, Split View) end on
+  /// their own and the native side reports a start failure if they don't, so
+  /// they are not treated as errors. Non-session error codes are already
+  /// logged by the platform layer and must not tear down a healthy preview.
   void _onSessionError(
     String errorCode,
     String errorMessage,
     String? errorDetails,
   ) {
     switch (errorCode) {
-      case ScannerErrorCodes.sessionInterrupted:
       case ScannerErrorCodes.sessionStartFailed:
         state._error = errorDetails == null
             ? errorMessage

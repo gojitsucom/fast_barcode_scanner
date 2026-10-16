@@ -73,25 +73,23 @@ void main() {
       expect(fakePlatform.errorHandler, isNotNull);
     });
 
-    test('session interruption surfaces as ScannerEvent.error', () {
+    test('session interruption does not change the scanner state', () {
+      // Backgrounding, Siri, calls and Split View all interrupt the session.
+      // They end on their own, so they must not swap the preview for onError.
       fakePlatform.errorHandler!(
         ScannerErrorCodes.sessionInterrupted,
         'Camera session was interrupted',
         'videoDeviceInUseByAnotherClient',
       );
 
-      expect(controller.events.value, ScannerEvent.error);
-      expect(controller.state.hasError, isTrue);
-      expect(
-        controller.state.error.toString(),
-        contains('Camera session was interrupted'),
-      );
+      expect(controller.events.value, ScannerEvent.resumed);
+      expect(controller.state.hasError, isFalse);
     });
 
-    test('interruption end clears the error and resumes', () {
+    test('session resume clears an earlier start failure', () {
       fakePlatform.errorHandler!(
-        ScannerErrorCodes.sessionInterrupted,
-        'Camera session was interrupted',
+        ScannerErrorCodes.sessionStartFailed,
+        'Capture session did not start',
         null,
       );
       fakePlatform.errorHandler!(
