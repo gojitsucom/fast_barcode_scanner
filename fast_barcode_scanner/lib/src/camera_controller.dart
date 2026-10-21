@@ -404,7 +404,6 @@ class _CameraController implements CameraController {
   @override
   Future<void> clearCachedImage() async {
     await _platform.clearCachedImage();
-    await _platform.dispose();
   }
 
   void _onDetectHandler(List<BarcodeData> codes) {
