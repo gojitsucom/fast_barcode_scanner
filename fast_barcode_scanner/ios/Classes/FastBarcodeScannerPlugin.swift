@@ -371,15 +371,21 @@ class ImageHelper {
 
                 try fileManager.createDirectory(at: barcodeDirectory, withIntermediateDirectories: true, attributes: nil)
 
-                let fileName = key
+                // The code names the file, and a code may hold "/", "|" or a
+                // control character, so the name is a digest of it.
+                let fileName: String
                 if #available(iOS 13.0, *) {
-                    let fileName = stringToMD5(string: key)
+                    fileName = stringToMD5(string: key)
+                } else {
+                    fileName = key.replacingOccurrences(of: "/", with: "_")
                 }
 
                 let imageFile = barcodeDirectory.appendingPathComponent(fileName + ".jpeg")
                 try imageBytes.write(to: imageFile)
 
-                savedCodes[key] = imageFile.absoluteString
+                // A path, not absoluteString: the URL form percent-encodes
+                // the name, and Dart then looks for a file that is not there.
+                savedCodes[key] = imageFile.path
             } catch {
                 print("Error storing image: \(error)")
             }

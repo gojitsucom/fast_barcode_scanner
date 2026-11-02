@@ -1,3 +1,7 @@
+## 3.2.2
+- iOS: `retrieveCachedImage` returns the cached frame's path. It used to return the frame's `file:` URL with the scheme removed, whose path is percent-encoded: a value with `|` (an OSM DataMatrix) came back as `…%7C….jpeg` while the file was named with the `|`, so callers found no file and posted no photo. The file is now named by the MD5 of the value, as on Android, so a value with `/` can be cached too.
+- Dart: a `file:` URL reported by an older native build is resolved to its path instead of having its scheme stripped.
+
 ## 3.2.1
 - `CameraController.clearCachedImage()` no longer disposes the camera. It only clears the cached images. Previously it also called the platform `dispose()`, which stopped whichever camera was open at the time while the Dart state still reported it initialized, leaving a frozen preview. Callers that relied on it to shut the camera down must call `dispose()` instead.
 
