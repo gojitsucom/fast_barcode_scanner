@@ -392,12 +392,30 @@ class _CameraController implements CameraController {
   @override
   Future<String?> retrieveCachedImage(String code) async {
     try {
-      return (await _platform.retrieveCachedImage(code: code))
-          ?.replaceAll("file:///", "");
+      final reported = await _platform.retrieveCachedImage(code: code);
+      return reported == null ? null : _localPath(reported);
     } catch (error) {
       state._error = error;
       events.value = ScannerEvent.error;
       rethrow;
+    }
+  }
+
+  /// The platforms report a plain path. A `file:` URL, which older iOS
+  /// builds reported, is resolved rather than stripped of its scheme, since
+  /// its path component is percent-encoded.
+  static String _localPath(String reported) {
+    if (!reported.startsWith("file:")) {
+      return reported;
+    }
+    final uri = Uri.tryParse(reported);
+    if (uri == null || uri.scheme != "file") {
+      return reported;
+    }
+    try {
+      return uri.toFilePath();
+    } on Object {
+      return reported;
     }
   }
 

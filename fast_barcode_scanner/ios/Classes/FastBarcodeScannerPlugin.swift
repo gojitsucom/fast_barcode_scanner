@@ -1,7 +1,6 @@
 import Flutter
 import AVFoundation
 import UIKit
-import CryptoKit
 import Vision
 
 @available(iOS 11.0, *)
@@ -351,7 +350,10 @@ public class FastBarcodeScannerPlugin: NSObject, FlutterPlugin, FastBarcodeScann
 }
 
 class ImageHelper {
+    /// Written on the capture queue, read on the platform thread: every
+    /// access goes through [lock].
     private var savedCodes: [String: String] = [:]
+    private let lock = NSLock()
 
     static let shared = ImageHelper()
 
@@ -371,43 +373,40 @@ class ImageHelper {
 
                 try fileManager.createDirectory(at: barcodeDirectory, withIntermediateDirectories: true, attributes: nil)
 
-                let fileName = key
-                if #available(iOS 13.0, *) {
-                    let fileName = stringToMD5(string: key)
-                }
-
-                let imageFile = barcodeDirectory.appendingPathComponent(fileName + ".jpeg")
+                // The code is the cache key, not the file name: a code may
+                // hold "/", "|" or a control character, or be too long for a
+                // name, so the file gets a fresh name of its own.
+                let imageFile = barcodeDirectory.appendingPathComponent(UUID().uuidString + ".jpeg")
                 try imageBytes.write(to: imageFile)
 
-                savedCodes[key] = imageFile.absoluteString
+                // A path, not absoluteString: the URL form percent-encodes
+                // the name, and Dart then looks for a file that is not there.
+                lock.lock()
+                savedCodes[key] = imageFile.path
+                lock.unlock()
             } catch {
                 print("Error storing image: \(error)")
             }
         }
     }
 
-    @available(iOS 13.0, *)
-    private func stringToMD5(string: String) -> String {
-      guard let data = string.data(using: .utf8) else {
-        fatalError("Failed to convert string to data")
-      }
-
-      let digest = Insecure.MD5.hash(data: data)
-
-      return digest.map { String(format: "%02hhx", $0) }.joined()
-    }
-
     private func isImageSaved(code: String) -> Bool {
+        lock.lock()
+        defer { lock.unlock() }
         return savedCodes.keys.contains(code)
     }
 
     // Retrieve image from cache by barcode
     func retrieveImagePath(code: String) -> String? {
+        lock.lock()
+        defer { lock.unlock() }
         return savedCodes[code]
     }
 
     func clearCache() {
+        lock.lock()
         savedCodes.removeAll()
+        lock.unlock()
 
         let fileManager = FileManager.default
         if let documentDirectory = fileManager.urls(for: .documentDirectory, in: .userDomainMask).first {
