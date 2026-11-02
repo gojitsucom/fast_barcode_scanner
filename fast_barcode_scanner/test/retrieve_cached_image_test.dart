@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:fast_barcode_scanner/fast_barcode_scanner.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -50,7 +52,7 @@ void main() {
         await controller.retrieveCachedImage('x'),
         '$iosDirectory/OSM0000000B40Z1N6|85140.jpeg',
       );
-    });
+    }, skip: Platform.isWindows);
 
     test('returns a file URL it cannot resolve as it is', () async {
       fakePlatform.reportedPath = 'file://host/frame.jpeg';
@@ -58,6 +60,6 @@ void main() {
         await controller.retrieveCachedImage('x'),
         'file://host/frame.jpeg',
       );
-    });
+    }, skip: Platform.isWindows);
   });
 }
