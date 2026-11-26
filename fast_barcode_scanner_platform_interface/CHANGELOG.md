@@ -1,6 +1,3 @@
-## 3.3.0
-- Add `BarcodeData.frameId`, `ScannerConfiguration.legacyImageCache` and `FastBarcodeScannerPlatform.encodeFrame`.
-
 ## 3.2.0
 - Version bump to match fast_barcode_scanner 3.2.0. No API changes.
 

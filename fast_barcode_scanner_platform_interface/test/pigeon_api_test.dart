@@ -254,52 +254,6 @@ void main() {
     });
   });
 
-  group('frame id', () {
-    const encodeFrameChannel =
-        'dev.flutter.pigeon.fast_barcode_scanner_platform_interface.FastBarcodeScannerHostApi.encodeFrame';
-
-    test('encodeFrame sends the frame id and returns the path', () async {
-      Object? received;
-      TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
-          .setMockMessageHandler(encodeFrameChannel, (message) async {
-        received = FastBarcodeScannerHostApi.pigeonChannelCodec
-            .decodeMessage(message);
-        return FastBarcodeScannerHostApi.pigeonChannelCodec
-            .encodeMessage(<Object?>['/c/f.jpeg']);
-      });
-      addTearDown(() => TestDefaultBinaryMessengerBinding
-          .instance.defaultBinaryMessenger
-          .setMockMessageHandler(encodeFrameChannel, null));
-
-      final path = await FastBarcodeScannerHostApi().encodeFrame(7);
-
-      expect(received, <Object?>[7]);
-      expect(path, '/c/f.jpeg');
-    });
-
-    BarcodeData roundTrip(BarcodeData data) {
-      final ByteData encoded =
-          FastBarcodeScannerFlutterApi.pigeonChannelCodec.encodeMessage(data)!;
-      return FastBarcodeScannerFlutterApi.pigeonChannelCodec
-          .decodeMessage(encoded) as BarcodeData;
-    }
-
-    test('BarcodeData decodes frameId', () {
-      final decoded = roundTrip(BarcodeData(
-        type: BarcodeType.qr,
-        value: 'v',
-        frameId: 42,
-      ));
-      expect(decoded.frameId, 42);
-    });
-
-    test('BarcodeData decodes a missing frameId as null', () {
-      final decoded =
-          roundTrip(BarcodeData(type: BarcodeType.qr, value: 'v'));
-      expect(decoded.frameId, isNull);
-    });
-  });
-
   group('PigeonFastBarcodeScanner', () {
     late TestPigeonFastBarcodeScanner scanner;
     final List<List<BarcodeData>> detectedBarcodes = [];

@@ -31,7 +31,6 @@ import io.flutter.view.TextureRegistry
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import java.util.*
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
@@ -40,8 +39,7 @@ class Camera(
     val activity: Activity,
     val flutterTextureEntry: TextureRegistry.SurfaceTextureEntry,
     configuration: ScannerConfiguration,
-    private val frameRing: FrameRing<Nv21Frame>,
-    private val listener: (List<Barcode>, Long?) -> Unit
+    private val listener: (List<Barcode>) -> Unit
 ) : RequestPermissionsResultListener {
 
     /* Scanner configuration */
@@ -87,23 +85,24 @@ class Camera(
                 @OptIn(ExperimentalGetImage::class)
                 override fun onSuccess(codes: List<Barcode>, imageProxy: ImageProxy) {
                     CoroutineScope(Dispatchers.Main).launch {
-                        try {
-                            if (codes.isEmpty()) return@launch
-                            pauseForDetectionMode()
-                            val frameId = keepFrame(codes, imageProxy)
-                            val code = codes.first().displayValue ?: return@launch
-                            if (scannerConfiguration.legacyImageCache != false) {
+                        if (codes.isNotEmpty()) {
+                            if (scannerConfiguration.mode == DetectionMode.PAUSE_DETECTION) {
+                                stopDetector()
+                            } else if (scannerConfiguration.mode == DetectionMode.PAUSE_VIDEO) {
+                                stopCamera()
+                            }
+                            val code = codes.first().displayValue
+                            if (code != null) {
                                 ImageHelper.getInstance()
                                     .storeImageToCache(
                                         imageProxy.image!!,
                                         code,
                                         activity.applicationContext
                                     )
+                                listener(codes)
                             }
-                            listener(codes, frameId)
-                        } finally {
-                            imageProxy.close()
                         }
+                        imageProxy.close()
                     }
                 }
             }) {
@@ -115,21 +114,6 @@ class Camera(
 
         } catch (e: Exception) {
             throw ScannerException.InvalidArguments(configuration.toMap())
-        }
-    }
-
-    private suspend fun keepFrame(codes: List<Barcode>, imageProxy: ImageProxy): Long? {
-        // Dispose may clear the ring while the copy runs; the generation check drops that frame.
-        val generation = frameRing.generation
-        val frame = withContext(Dispatchers.Default) { Nv21Frame.copyOf(imageProxy) } ?: return null
-        return frameRing.put(codes.mapNotNull { it.rawValue }.toSet(), frame, generation)
-    }
-
-    private fun pauseForDetectionMode() {
-        if (scannerConfiguration.mode == DetectionMode.PAUSE_DETECTION) {
-            stopDetector()
-        } else if (scannerConfiguration.mode == DetectionMode.PAUSE_VIDEO) {
-            stopCamera()
         }
     }
 
