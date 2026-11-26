@@ -14,6 +14,11 @@ class FrameRing<T>(private val capacity: Int) {
     // Never reset, so an id handed out before clear() cannot match a later frame.
     private var nextId = 1L
 
+    /** Changes on every [clear]; a copy taken before a clear passes the old value to [put]. */
+    @get:Synchronized
+    var generation = 0L
+        private set
+
     @Synchronized
     fun put(codeValues: Set<String>, frame: T): Long {
         val newest = slots.lastOrNull()
@@ -27,9 +32,17 @@ class FrameRing<T>(private val capacity: Int) {
         return slot.id
     }
 
+    /** Stores [frame] only when no [clear] happened since [generation] was read. */
+    @Synchronized
+    fun put(codeValues: Set<String>, frame: T, generation: Long): Long? =
+        if (generation == this.generation) put(codeValues, frame) else null
+
     @Synchronized
     fun get(id: Long): T? = slots.firstOrNull { it.id == id }?.frame
 
     @Synchronized
-    fun clear() = slots.clear()
+    fun clear() {
+        slots.clear()
+        generation++
+    }
 }

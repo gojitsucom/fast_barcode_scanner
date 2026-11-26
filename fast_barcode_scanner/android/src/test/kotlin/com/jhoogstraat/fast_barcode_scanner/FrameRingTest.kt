@@ -50,4 +50,26 @@ class FrameRingTest {
 
         assertNull(ring.get(id))
     }
+
+    @Test
+    fun `put from before clear is dropped`() {
+        val ring = FrameRing<String>(16)
+        val generation = ring.generation
+
+        ring.clear()
+        val id = ring.put(setOf("a"), "f1", generation)
+
+        assertNull(id)
+        assertNull(ring.get(1L))
+    }
+
+    @Test
+    fun `put from current generation is kept`() {
+        val ring = FrameRing<String>(16)
+        ring.clear()
+
+        val id = ring.put(setOf("a"), "f1", ring.generation)
+
+        assertEquals("f1", ring.get(id!!))
+    }
 }
