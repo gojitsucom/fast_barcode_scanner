@@ -164,8 +164,7 @@ extension ScannerConfiguration {
         framerate: Framerate? = nil,
         position: CameraPosition? = nil,
         apiMode: IOSApiMode? = nil,
-        confidence: Double? = nil,
-        legacyImageCache: Bool? = nil
+        confidence: Double? = nil
     ) -> ScannerConfiguration {
         return ScannerConfiguration(
             types: types ?? self.types,
@@ -174,8 +173,7 @@ extension ScannerConfiguration {
             framerate: framerate ?? self.framerate,
             position: position ?? self.position,
             apiMode: apiMode ?? self.apiMode,
-            confidence: confidence ?? self.confidence,
-            legacyImageCache: legacyImageCache ?? self.legacyImageCache
+            confidence: confidence ?? self.confidence
         )
     }
 }
@@ -204,8 +202,7 @@ extension ScannerConfiguration {
             framerate: updateConfig.framerate ?? self.framerate,
             position: updateConfig.position ?? self.position,
             apiMode: self.apiMode,
-            confidence: self.confidence,
-            legacyImageCache: self.legacyImageCache
+            confidence: self.confidence
         )
     }
 
@@ -262,15 +259,11 @@ func convertToPigeonBarcodeData(_ barcodeData: Any) -> BarcodeData? {
         }
     }
 
-    // Only the Vision camera path appends a frame id as element 4.
-    let frameId = barcodeArray.count > 4 ? barcodeArray[4] as? Int64 : nil
-
     return BarcodeData(
         type: barcodeType,
         value: value,
         valueType: nil, // iOS doesn't provide value type
-        cornerPoints: cornerPoints,
-        frameId: frameId
+        cornerPoints: cornerPoints
     )
 }
 

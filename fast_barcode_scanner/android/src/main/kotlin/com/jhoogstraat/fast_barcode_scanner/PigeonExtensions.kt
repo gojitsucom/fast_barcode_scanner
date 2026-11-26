@@ -83,8 +83,7 @@ fun ScannerConfiguration.copy(
     framerate: Framerate? = null,
     position: CameraPosition? = null,
     apiMode: IOSApiMode? = null,
-    confidence: Double? = null,
-    legacyImageCache: Boolean? = null
+    confidence: Double? = null
 ): ScannerConfiguration {
     return ScannerConfiguration(
         types = types ?: this.types,
@@ -93,8 +92,7 @@ fun ScannerConfiguration.copy(
         framerate = framerate ?: this.framerate,
         position = position ?: this.position,
         apiMode = apiMode ?: this.apiMode,
-        confidence = confidence ?: this.confidence,
-        legacyImageCache = legacyImageCache ?: this.legacyImageCache
+        confidence = confidence ?: this.confidence
     )
 }
 
@@ -157,7 +155,7 @@ fun ScannerConfiguration.toMap(): HashMap<String, Any> {
 }
 
 // MARK: - MLKit Barcode to Pigeon Conversion
-fun Barcode.toPigeonBarcode(frameId: Long? = null): BarcodeData? {
+fun Barcode.toPigeonBarcode(): BarcodeData? {
     val type = this.format.toBarcodeType() ?: return null
     val valueType = this.valueType.toBarcodeValueType()
 
@@ -169,8 +167,7 @@ fun Barcode.toPigeonBarcode(frameId: Long? = null): BarcodeData? {
         type = type,
         value = this.rawValue ?: "",
         valueType = valueType,
-        cornerPoints = cornerPoints,
-        frameId = frameId
+        cornerPoints = cornerPoints
     )
 }
 fun Resolution.portrait(): android.util.Size {

@@ -30,7 +30,6 @@ class BarcodeCamera extends StatefulWidget {
     this.framerate = Framerate.fps30,
     this.position = CameraPosition.back,
     this.apiMode,
-    this.legacyImageCache = true,
     this.onScan,
     this.children = const [],
     this.dispose = true,
@@ -44,7 +43,6 @@ class BarcodeCamera extends StatefulWidget {
   final DetectionMode mode;
   final CameraPosition position;
   final IOSApiMode? apiMode;
-  final bool legacyImageCache;
   final OnDetectionHandler? onScan;
   final List<Widget> children;
   final ErrorCallback onError;
@@ -80,7 +78,6 @@ class BarcodeCameraState extends State<BarcodeCamera> {
             detectionMode: widget.mode,
             onScan: onScan,
             apiMode: widget.apiMode,
-            legacyImageCache: widget.legacyImageCache,
           );
 
     configurationFuture

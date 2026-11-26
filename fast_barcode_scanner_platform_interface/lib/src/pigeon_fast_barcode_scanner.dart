@@ -31,7 +31,6 @@ class PigeonFastBarcodeScanner extends FastBarcodeScannerPlatform
     DetectionMode detectionMode,
     CameraPosition position, {
     IOSApiMode? apiMode,
-    bool? legacyImageCache,
   }) async {
     final configuration = ScannerConfiguration(
       types: types,
@@ -40,7 +39,6 @@ class PigeonFastBarcodeScanner extends FastBarcodeScannerPlatform
       framerate: framerate,
       position: position,
       apiMode: apiMode,
-      legacyImageCache: legacyImageCache,
     );
 
     return await _hostApi.initialize(configuration);
@@ -114,11 +112,6 @@ class PigeonFastBarcodeScanner extends FastBarcodeScannerPlatform
   @override
   Future<String?> retrieveCachedImage({required String code}) async {
     return await _hostApi.retrieveCachedImage(code);
-  }
-
-  @override
-  Future<String?> encodeFrame({required int frameId}) async {
-    return await _hostApi.encodeFrame(frameId);
   }
 
   @override

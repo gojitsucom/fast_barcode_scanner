@@ -61,7 +61,6 @@ abstract class CameraController {
     required CameraPosition position,
     required DetectionMode detectionMode,
     IOSApiMode? apiMode,
-    bool legacyImageCache = true,
     OnDetectionHandler? onScan,
   });
 
@@ -113,10 +112,6 @@ abstract class CameraController {
   Future<List<BarcodeData>?> scanImage(ImageSourceData source);
 
   Future<String?> retrieveCachedImage(String code);
-
-  /// Encodes the buffered camera frame a code was read from, see
-  /// [BarcodeData.frameId]. Null when the frame is no longer buffered.
-  Future<String?> encodeFrame(int frameId);
 
   Future<void> clearCachedImage();
 }
@@ -181,7 +176,6 @@ class _CameraController implements CameraController {
     required CameraPosition position,
     required DetectionMode detectionMode,
     IOSApiMode? apiMode,
-    bool legacyImageCache = true,
     OnDetectionHandler? onScan,
   }) async {
     try {
@@ -192,7 +186,6 @@ class _CameraController implements CameraController {
         detectionMode,
         position,
         apiMode: apiMode,
-        legacyImageCache: legacyImageCache,
       );
 
       _onScan = _buildScanHandler(onScan);
@@ -216,7 +209,6 @@ class _CameraController implements CameraController {
         position: position,
         mode: detectionMode,
         apiMode: apiMode,
-        legacyImageCache: legacyImageCache,
       );
 
       state._error = null;
@@ -401,18 +393,6 @@ class _CameraController implements CameraController {
   Future<String?> retrieveCachedImage(String code) async {
     try {
       final reported = await _platform.retrieveCachedImage(code: code);
-      return reported == null ? null : _localPath(reported);
-    } catch (error) {
-      state._error = error;
-      events.value = ScannerEvent.error;
-      rethrow;
-    }
-  }
-
-  @override
-  Future<String?> encodeFrame(int frameId) async {
-    try {
-      final reported = await _platform.encodeFrame(frameId: frameId);
       return reported == null ? null : _localPath(reported);
     } catch (error) {
       state._error = error;
