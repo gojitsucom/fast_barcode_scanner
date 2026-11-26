@@ -115,6 +115,10 @@ public class FastBarcodeScannerPlugin: NSObject, FlutterPlugin, FastBarcodeScann
         }
     }
 
+    func encodeFrame(frameId: Int64, completion: @escaping (Result<String?, Error>) -> Void) {
+        completion(.success(nil))
+    }
+
     func clearCachedImage(completion: @escaping (Result<Void, Error>) -> Void) {
         do {
             try clearCachedImageInternal()

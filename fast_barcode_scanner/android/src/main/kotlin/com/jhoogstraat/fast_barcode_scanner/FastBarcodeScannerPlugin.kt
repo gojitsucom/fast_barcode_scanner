@@ -203,6 +203,10 @@ class FastBarcodeScannerPlugin : FlutterPlugin, ActivityAware,
         }
     }
 
+    override fun encodeFrame(frameId: Long, callback: (Result<String?>) -> Unit) {
+        callback(Result.success(null))
+    }
+
     override fun clearCachedImage(callback: (Result<Unit>) -> Unit) {
         try {
             val context = pluginBinding?.applicationContext ?: throw ScannerException.ActivityNotConnected()

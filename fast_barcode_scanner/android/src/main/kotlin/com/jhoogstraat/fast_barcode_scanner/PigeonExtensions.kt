@@ -83,7 +83,8 @@ fun ScannerConfiguration.copy(
     framerate: Framerate? = null,
     position: CameraPosition? = null,
     apiMode: IOSApiMode? = null,
-    confidence: Double? = null
+    confidence: Double? = null,
+    legacyImageCache: Boolean? = null
 ): ScannerConfiguration {
     return ScannerConfiguration(
         types = types ?: this.types,
@@ -92,7 +93,8 @@ fun ScannerConfiguration.copy(
         framerate = framerate ?: this.framerate,
         position = position ?: this.position,
         apiMode = apiMode ?: this.apiMode,
-        confidence = confidence ?: this.confidence
+        confidence = confidence ?: this.confidence,
+        legacyImageCache = legacyImageCache ?: this.legacyImageCache
     )
 }
 

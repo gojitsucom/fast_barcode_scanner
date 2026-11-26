@@ -263,6 +263,7 @@ extension ScannerConfigurationExtension on ScannerConfiguration {
     CameraPosition? position,
     IOSApiMode? apiMode,
     double? confidence,
+    bool? legacyImageCache,
   }) {
     return ScannerConfiguration(
       types: types ?? this.types,
@@ -272,6 +273,7 @@ extension ScannerConfigurationExtension on ScannerConfiguration {
       position: position ?? this.position,
       apiMode: apiMode ?? this.apiMode,
       confidence: confidence ?? this.confidence,
+      legacyImageCache: legacyImageCache ?? this.legacyImageCache,
     );
   }
 }

@@ -15,6 +15,7 @@ class _FakePlatform extends FastBarcodeScannerPlatform {
     DetectionMode detectionMode,
     CameraPosition position, {
     IOSApiMode? apiMode,
+    bool? legacyImageCache,
   }) async {
     return PreviewConfiguration(
       textureId: 0,

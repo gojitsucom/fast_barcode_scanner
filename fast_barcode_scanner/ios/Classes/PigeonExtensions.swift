@@ -164,7 +164,8 @@ extension ScannerConfiguration {
         framerate: Framerate? = nil,
         position: CameraPosition? = nil,
         apiMode: IOSApiMode? = nil,
-        confidence: Double? = nil
+        confidence: Double? = nil,
+        legacyImageCache: Bool? = nil
     ) -> ScannerConfiguration {
         return ScannerConfiguration(
             types: types ?? self.types,
@@ -173,7 +174,8 @@ extension ScannerConfiguration {
             framerate: framerate ?? self.framerate,
             position: position ?? self.position,
             apiMode: apiMode ?? self.apiMode,
-            confidence: confidence ?? self.confidence
+            confidence: confidence ?? self.confidence,
+            legacyImageCache: legacyImageCache ?? self.legacyImageCache
         )
     }
 }
@@ -202,7 +204,8 @@ extension ScannerConfiguration {
             framerate: updateConfig.framerate ?? self.framerate,
             position: updateConfig.position ?? self.position,
             apiMode: self.apiMode,
-            confidence: self.confidence
+            confidence: self.confidence,
+            legacyImageCache: self.legacyImageCache
         )
     }
 
