@@ -157,7 +157,7 @@ fun ScannerConfiguration.toMap(): HashMap<String, Any> {
 }
 
 // MARK: - MLKit Barcode to Pigeon Conversion
-fun Barcode.toPigeonBarcode(): BarcodeData? {
+fun Barcode.toPigeonBarcode(frameId: Long? = null): BarcodeData? {
     val type = this.format.toBarcodeType() ?: return null
     val valueType = this.valueType.toBarcodeValueType()
 
@@ -169,7 +169,8 @@ fun Barcode.toPigeonBarcode(): BarcodeData? {
         type = type,
         value = this.rawValue ?: "",
         valueType = valueType,
-        cornerPoints = cornerPoints
+        cornerPoints = cornerPoints,
+        frameId = frameId
     )
 }
 fun Resolution.portrait(): android.util.Size {
