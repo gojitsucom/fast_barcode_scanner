@@ -262,11 +262,15 @@ func convertToPigeonBarcodeData(_ barcodeData: Any) -> BarcodeData? {
         }
     }
 
+    // Only the Vision camera path appends a frame id as element 4.
+    let frameId = barcodeArray.count > 4 ? barcodeArray[4] as? Int64 : nil
+
     return BarcodeData(
         type: barcodeType,
         value: value,
         valueType: nil, // iOS doesn't provide value type
-        cornerPoints: cornerPoints
+        cornerPoints: cornerPoints,
+        frameId: frameId
     )
 }
 
