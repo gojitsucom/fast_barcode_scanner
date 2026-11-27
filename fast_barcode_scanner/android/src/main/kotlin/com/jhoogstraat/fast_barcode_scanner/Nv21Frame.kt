@@ -53,8 +53,34 @@ class Nv21Frame(
     }
 }
 
-class YuvPlane(val buffer: ByteBuffer, val rowStride: Int, val pixelStride: Int) {
-    fun at(row: Int, column: Int): Byte = buffer.get(row * rowStride + column * pixelStride)
+class YuvPlane(buffer: ByteBuffer, val rowStride: Int, val pixelStride: Int) {
+    // Own position, so bulk reads leave the image's buffer as other readers expect it.
+    private val buffer = buffer.duplicate()
+    private var rowBytes = ByteArray(0)
+
+    /**
+     * Writes [count] samples of source [row], one every [step] columns, into [dst] from
+     * [dstOffset], [dstStride] apart. Reads the row in one bulk get: a per-sample
+     * `ByteBuffer.get` is far slower and holds the camera's image longer.
+     */
+    fun readRow(row: Int, step: Int, count: Int, dst: ByteArray, dstOffset: Int, dstStride: Int) {
+        if (count <= 0) return
+        val sampleStride = step * pixelStride
+        buffer.position(row * rowStride)
+        if (sampleStride == 1 && dstStride == 1) {
+            buffer.get(dst, dstOffset, count)
+            return
+        }
+        // Ends at the last sample read: a plane's last row is often shorter than rowStride.
+        val span = (count - 1) * sampleStride + 1
+        if (rowBytes.size < span) rowBytes = ByteArray(span)
+        buffer.get(rowBytes, 0, span)
+        var out = dstOffset
+        for (i in 0 until count) {
+            dst[out] = rowBytes[i * sampleStride]
+            out += dstStride
+        }
+    }
 }
 
 /** Subsamples by a whole step so the long edge fits [maxLongEdge]; keeps even sizes for NV21. */
@@ -74,16 +100,13 @@ fun yuv420ToNv21(
     val data = ByteArray(lumaSize + lumaSize / 2)
 
     for (row in 0 until outHeight) {
-        for (column in 0 until outWidth) {
-            data[row * outWidth + column] = y.at(row * step, column * step)
-        }
+        y.readRow(row * step, step, outWidth, data, row * outWidth, 1)
     }
-    var index = lumaSize
+    val chromaWidth = outWidth / 2
     for (row in 0 until outHeight / 2) {
-        for (column in 0 until outWidth / 2) {
-            data[index++] = v.at(row * step, column * step)
-            data[index++] = u.at(row * step, column * step)
-        }
+        val rowStart = lumaSize + row * outWidth
+        v.readRow(row * step, step, chromaWidth, data, rowStart, 2)
+        u.readRow(row * step, step, chromaWidth, data, rowStart + 1, 2)
     }
     return Nv21Frame(data, outWidth, outHeight, rotationDegrees)
 }

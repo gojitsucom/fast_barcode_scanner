@@ -122,7 +122,12 @@ class Camera(
         if (scannerConfiguration.frameRing != true) return null
         // Dispose may clear the ring while the copy runs; the generation check drops that frame.
         val generation = frameRing.generation
-        val frame = withContext(Dispatchers.Default) { Nv21Frame.copyOf(imageProxy) } ?: return null
+        val frame = withContext(Dispatchers.Default) {
+            // An odd plane layout or a closed image must cost this frame only, not crash the app.
+            runCatching { Nv21Frame.copyOf(imageProxy) }
+                .onFailure { Log.w(TAG, "Frame dropped: copy failed", it) }
+                .getOrNull()
+        } ?: return null
         return frameRing.put(codes.mapNotNull { it.rawValue }.toSet(), frame, generation)
     }
 
