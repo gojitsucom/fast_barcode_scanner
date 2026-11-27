@@ -116,6 +116,8 @@ abstract class CameraController {
 
   /// Encodes the buffered camera frame a code was read from, see
   /// [BarcodeData.frameId]. Null when the frame is no longer buffered.
+  ///
+  /// Platform errors are rethrown and leave [state] and [events] unchanged.
   Future<String?> encodeFrame(int frameId);
 
   Future<void> clearCachedImage();
@@ -411,14 +413,9 @@ class _CameraController implements CameraController {
 
   @override
   Future<String?> encodeFrame(int frameId) async {
-    try {
-      final reported = await _platform.encodeFrame(frameId: frameId);
-      return reported == null ? null : _localPath(reported);
-    } catch (error) {
-      state._error = error;
-      events.value = ScannerEvent.error;
-      rethrow;
-    }
+    // A failed optional photo must not swap the live preview for the error view.
+    final reported = await _platform.encodeFrame(frameId: frameId);
+    return reported == null ? null : _localPath(reported);
   }
 
   /// The platforms report a plain path. A `file:` URL, which older iOS
