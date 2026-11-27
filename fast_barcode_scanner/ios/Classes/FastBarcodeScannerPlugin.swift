@@ -9,6 +9,8 @@ public class FastBarcodeScannerPlugin: NSObject, FlutterPlugin, FastBarcodeScann
     var camera: Camera?
     var picker: ImagePicker?
     var flutterApi: FastBarcodeScannerFlutterApi?
+    private let frameRing = FrameRing<CGImage>(capacity: 16)
+    private let frameEncodeQueue = DispatchQueue(label: "fast_barcode_scanner.frame_encode", qos: .userInitiated)
 
     init(factory: PreviewViewFactory) {
         self.factory = factory
@@ -115,6 +117,29 @@ public class FastBarcodeScannerPlugin: NSObject, FlutterPlugin, FastBarcodeScann
         }
     }
 
+    func encodeFrame(frameId: Int64, completion: @escaping (Result<String?, Error>) -> Void) {
+        guard let frame = frameRing.get(frameId) else {
+            completion(.success(nil))
+            return
+        }
+        frameEncodeQueue.async {
+            let result = Result<String?, Error> { try Self.writeJpeg(frame) }
+            DispatchQueue.main.async { completion(result) }
+        }
+    }
+
+    private static func writeJpeg(_ frame: CGImage) throws -> String {
+        guard let jpeg = UIImage(cgImage: frame, scale: 1, orientation: .right).jpegData(compressionQuality: 0.85) else {
+            throw ScannerError.unknown("Frame JPEG encoding failed")
+        }
+        let directory = URL(fileURLWithPath: NSTemporaryDirectory()).appendingPathComponent("missort_frames")
+        try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+        let file = directory.appendingPathComponent(UUID().uuidString + ".jpeg")
+        try jpeg.write(to: file)
+        // A path, not absoluteString: Dart opens it as a file path.
+        return file.path
+    }
+
     func clearCachedImage(completion: @escaping (Result<Void, Error>) -> Void) {
         do {
             try clearCachedImageInternal()
@@ -137,11 +162,14 @@ public class FastBarcodeScannerPlugin: NSObject, FlutterPlugin, FastBarcodeScann
             return camera.previewConfiguration.toPigeonPreviewConfiguration()
         }
 
+        let cachesLegacyImage = configuration.legacyImageCache != false
+        let legacyImageCacher: ((String, UIImage) -> Void)? = cachesLegacyImage ? onCacheImage : nil
+
         let scanner: BarcodeScanner
         if configuration.apiMode == .avFoundation {
             scanner = AVFoundationBarcodeScanner(barcodeObjectLayerConverter: { barcodes in
                 self.factory.preview?.videoPreviewLayer.transformedMetadataObject(for: barcodes) as? AVMetadataMachineReadableCodeObject
-            }, onCacheImage: onCacheImage) { [weak self] barcodes in
+            }, onCacheImage: legacyImageCacher ?? { _, _ in }) { [weak self] barcodes in
                 // Convert to Pigeon barcodes and send via FlutterApi
                 guard let self = self, let flutterApi = self.flutterApi else { return }
                 if let barcodesArray = barcodes as? [Any] {
@@ -171,7 +199,7 @@ public class FastBarcodeScannerPlugin: NSObject, FlutterPlugin, FastBarcodeScann
                     [Int(bottomLeft.x), Int(bottomLeft.y)],
                     [Int(bottomRight.x), Int(bottomRight.y)]
                 ]
-            }, confidence: configuration.confidence ?? 0.6, onCacheImage: onCacheImage, resultHandler: { [weak self] barcodes in
+            }, confidence: configuration.confidence ?? 0.6, onCacheImage: legacyImageCacher, frameRing: configuration.frameRing == true ? frameRing : nil, resultHandler: { [weak self] barcodes in
                 // Convert to Pigeon barcodes and send via FlutterApi
                 guard let self = self, let flutterApi = self.flutterApi else { return }
                 if let barcodesArray = barcodes as? [Any] {
@@ -236,6 +264,7 @@ public class FastBarcodeScannerPlugin: NSObject, FlutterPlugin, FastBarcodeScann
     func disposeInternal() {
         camera?.stop()
         camera = nil
+        frameRing.clear()
     }
 
     func startDetectorInternal() throws {

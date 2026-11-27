@@ -62,7 +62,7 @@ abstract class FastBarcodeScannerPlatform extends PlatformInterface {
       Framerate framerate,
       DetectionMode detectionMode,
       CameraPosition position,
-      {IOSApiMode? apiMode}) {
+      {IOSApiMode? apiMode, bool? legacyImageCache, bool? frameRing}) {
     throw UnimplementedError('init() has not been implemented');
   }
 
@@ -126,6 +126,10 @@ abstract class FastBarcodeScannerPlatform extends PlatformInterface {
 
   Future<String?> retrieveCachedImage({required String code}) {
     throw UnimplementedError('retrieveCachedImage() has not been implemented');
+  }
+
+  Future<String?> encodeFrame({required int frameId}) {
+    throw UnimplementedError('encodeFrame() has not been implemented');
   }
 
   Future<void> clearCachedImage() {

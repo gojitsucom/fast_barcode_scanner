@@ -1,3 +1,14 @@
+## 3.3.0
+- `BarcodeData.frameId` and `CameraController.encodeFrame(frameId)` to encode the camera frame a code was read from. `initialize` and `BarcodeCamera` take `legacyImageCache` (default `true`) to keep the per-code image cache.
+- The frame ring is opt-in: `initialize` and `BarcodeCamera` take `frameRing` (default `false`). Off, no frame is copied or held, codes carry `frameId: null` and `encodeFrame` returns null.
+- With `frameRing: true`, Android and iOS (Vision) keep the last 16 frames that yielded codes in memory, downscaled to a long edge of at most 1280 px. A frame with the same codes as the newest one replaces it only within 500 ms of that frame, then takes a new id. `encodeFrame` writes the frame as JPEG (quality 85) and returns its path, or null once the frame has left the ring. The iOS AVFoundation path reports no `frameId`.
+- `encodeFrame` rethrows platform errors without putting the scanner into its error state.
+- Android: a frame whose copy fails is dropped and logged instead of crashing the app.
+- Source-breaking for custom implementations and fakes:
+  - `FastBarcodeScannerPlatform.init` gained the named parameters `legacyImageCache` and `frameRing`; overrides must declare both.
+  - `CameraController.encodeFrame` is a new abstract member; classes that implement `CameraController` must add it.
+  - `BarcodeData ==` and `hashCode` include `frameId`, so the same value read from two frames no longer compares equal.
+
 ## 3.2.2
 - iOS: `retrieveCachedImage` returns the cached frame's path. It used to return the frame's `file:` URL with the scheme removed, whose path is percent-encoded: a value with `|` (an OSM DataMatrix) came back as `…%7C….jpeg` while the file was named with the `|`, so callers found no file and posted no photo. The file now gets a name of its own (a UUID) instead of the value, so a value with `/`, or one too long for a file name, can be cached too, and the cache map is guarded by a lock, since it is written on the capture queue and read on the platform thread.
 - Dart: a `file:` URL reported by an older native build is resolved to its path instead of having its scheme stripped.

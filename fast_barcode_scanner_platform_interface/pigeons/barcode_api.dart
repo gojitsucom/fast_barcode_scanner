@@ -98,12 +98,16 @@ class BarcodeData {
     required this.value,
     this.valueType,
     this.cornerPoints,
+    this.frameId,
   });
 
   final BarcodeType type;
   final String value;
   final BarcodeValueType? valueType;
   final List<PointData?>? cornerPoints;
+
+  /// Id of the camera frame the code was read from; see encodeFrame
+  final int? frameId;
 }
 
 /// Configuration for camera preview
@@ -135,6 +139,8 @@ class ScannerConfiguration {
     required this.position,
     this.apiMode,
     this.confidence,
+    this.legacyImageCache,
+    this.frameRing,
   });
 
   final List<BarcodeType?> types;
@@ -144,6 +150,12 @@ class ScannerConfiguration {
   final CameraPosition position;
   final IOSApiMode? apiMode;
   final double? confidence;
+
+  /// Keep caching one image per scanned code, next to the frame ring buffer
+  final bool? legacyImageCache;
+
+  /// Buffer recent frames so codes carry a frame id for encodeFrame; null means off
+  final bool? frameRing;
 }
 
 /// Configuration for updating scanner settings
@@ -222,6 +234,11 @@ abstract class FastBarcodeScannerHostApi {
   /// Clear all cached images
   @async
   void clearCachedImage();
+
+  /// Encode a buffered camera frame to a JPEG file and return its path, or
+  /// null when the frame is no longer buffered
+  @async
+  String? encodeFrame(int frameId);
 }
 
 /// Flutter API for communication from native platforms to Dart

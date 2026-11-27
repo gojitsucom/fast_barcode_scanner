@@ -1,6 +1,7 @@
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:fast_barcode_scanner_platform_interface/src/pigeon_barcode_scanner.dart';
+import 'package:fast_barcode_scanner_platform_interface/src/pigeon_extensions.dart';
 import 'package:fast_barcode_scanner_platform_interface/src/pigeon_fast_barcode_scanner.dart';
 
 class TestPigeonFastBarcodeScanner extends PigeonFastBarcodeScanner {
@@ -251,6 +252,70 @@ void main() {
 
       expect(mockApi.methodCalls.length, equals(1));
       expect(mockApi.methodCalls[0].method, equals('clearCachedImage'));
+    });
+  });
+
+  group('frame id', () {
+    const encodeFrameChannel =
+        'dev.flutter.pigeon.fast_barcode_scanner_platform_interface.FastBarcodeScannerHostApi.encodeFrame';
+
+    test('encodeFrame sends the frame id and returns the path', () async {
+      Object? received;
+      TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+          .setMockMessageHandler(encodeFrameChannel, (message) async {
+        received = FastBarcodeScannerHostApi.pigeonChannelCodec
+            .decodeMessage(message);
+        return FastBarcodeScannerHostApi.pigeonChannelCodec
+            .encodeMessage(<Object?>['/c/f.jpeg']);
+      });
+      addTearDown(() => TestDefaultBinaryMessengerBinding
+          .instance.defaultBinaryMessenger
+          .setMockMessageHandler(encodeFrameChannel, null));
+
+      final path = await FastBarcodeScannerHostApi().encodeFrame(7);
+
+      expect(received, <Object?>[7]);
+      expect(path, '/c/f.jpeg');
+    });
+
+    BarcodeData roundTrip(BarcodeData data) {
+      final ByteData encoded =
+          FastBarcodeScannerFlutterApi.pigeonChannelCodec.encodeMessage(data)!;
+      return FastBarcodeScannerFlutterApi.pigeonChannelCodec
+          .decodeMessage(encoded) as BarcodeData;
+    }
+
+    test('BarcodeData decodes frameId', () {
+      final decoded = roundTrip(BarcodeData(
+        type: BarcodeType.qr,
+        value: 'v',
+        frameId: 42,
+      ));
+      expect(decoded.frameId, 42);
+    });
+
+    test('BarcodeData decodes a missing frameId as null', () {
+      final decoded =
+          roundTrip(BarcodeData(type: BarcodeType.qr, value: 'v'));
+      expect(decoded.frameId, isNull);
+    });
+
+    test('ScannerConfiguration carries frameRing', () {
+      final configuration = ScannerConfiguration(
+        types: [BarcodeType.qr],
+        mode: DetectionMode.continuous,
+        resolution: Resolution.hd720,
+        framerate: Framerate.fps30,
+        position: CameraPosition.back,
+        frameRing: true,
+      );
+      const codec = FastBarcodeScannerHostApi.pigeonChannelCodec;
+
+      final decoded = codec.decodeMessage(codec.encodeMessage(configuration))
+          as ScannerConfiguration;
+
+      expect(decoded.frameRing, isTrue);
+      expect(configuration.copyWith().frameRing, isTrue);
     });
   });
 
