@@ -140,6 +140,7 @@ class ScannerConfiguration {
     this.apiMode,
     this.confidence,
     this.legacyImageCache,
+    this.frameRing,
   });
 
   final List<BarcodeType?> types;
@@ -152,6 +153,9 @@ class ScannerConfiguration {
 
   /// Keep caching one image per scanned code, next to the frame ring buffer
   final bool? legacyImageCache;
+
+  /// Buffer recent frames so codes carry a frame id for encodeFrame; null means off
+  final bool? frameRing;
 }
 
 /// Configuration for updating scanner settings

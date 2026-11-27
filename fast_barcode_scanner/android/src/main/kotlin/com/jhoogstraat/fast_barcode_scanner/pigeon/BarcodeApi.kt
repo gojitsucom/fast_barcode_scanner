@@ -477,7 +477,9 @@ data class ScannerConfiguration (
   val apiMode: IOSApiMode? = null,
   val confidence: Double? = null,
   /** Keep caching one image per scanned code, next to the frame ring buffer */
-  val legacyImageCache: Boolean? = null
+  val legacyImageCache: Boolean? = null,
+  /** Buffer recent frames so codes carry a frame id for encodeFrame; null means off */
+  val frameRing: Boolean? = null
 )
  {
   companion object {
@@ -490,7 +492,8 @@ data class ScannerConfiguration (
       val apiMode = pigeonVar_list[5] as IOSApiMode?
       val confidence = pigeonVar_list[6] as Double?
       val legacyImageCache = pigeonVar_list[7] as Boolean?
-      return ScannerConfiguration(types, mode, resolution, framerate, position, apiMode, confidence, legacyImageCache)
+      val frameRing = pigeonVar_list[8] as Boolean?
+      return ScannerConfiguration(types, mode, resolution, framerate, position, apiMode, confidence, legacyImageCache, frameRing)
     }
   }
   fun toList(): List<Any?> {
@@ -503,6 +506,7 @@ data class ScannerConfiguration (
       apiMode,
       confidence,
       legacyImageCache,
+      frameRing,
     )
   }
   override fun equals(other: Any?): Boolean {
@@ -513,7 +517,7 @@ data class ScannerConfiguration (
       return true
     }
     val other = other as ScannerConfiguration
-    return BarcodeApiPigeonUtils.deepEquals(this.types, other.types) && BarcodeApiPigeonUtils.deepEquals(this.mode, other.mode) && BarcodeApiPigeonUtils.deepEquals(this.resolution, other.resolution) && BarcodeApiPigeonUtils.deepEquals(this.framerate, other.framerate) && BarcodeApiPigeonUtils.deepEquals(this.position, other.position) && BarcodeApiPigeonUtils.deepEquals(this.apiMode, other.apiMode) && BarcodeApiPigeonUtils.deepEquals(this.confidence, other.confidence) && BarcodeApiPigeonUtils.deepEquals(this.legacyImageCache, other.legacyImageCache)
+    return BarcodeApiPigeonUtils.deepEquals(this.types, other.types) && BarcodeApiPigeonUtils.deepEquals(this.mode, other.mode) && BarcodeApiPigeonUtils.deepEquals(this.resolution, other.resolution) && BarcodeApiPigeonUtils.deepEquals(this.framerate, other.framerate) && BarcodeApiPigeonUtils.deepEquals(this.position, other.position) && BarcodeApiPigeonUtils.deepEquals(this.apiMode, other.apiMode) && BarcodeApiPigeonUtils.deepEquals(this.confidence, other.confidence) && BarcodeApiPigeonUtils.deepEquals(this.legacyImageCache, other.legacyImageCache) && BarcodeApiPigeonUtils.deepEquals(this.frameRing, other.frameRing)
   }
 
   override fun hashCode(): Int {
@@ -526,6 +530,7 @@ data class ScannerConfiguration (
     result = 31 * result + BarcodeApiPigeonUtils.deepHash(this.apiMode)
     result = 31 * result + BarcodeApiPigeonUtils.deepHash(this.confidence)
     result = 31 * result + BarcodeApiPigeonUtils.deepHash(this.legacyImageCache)
+    result = 31 * result + BarcodeApiPigeonUtils.deepHash(this.frameRing)
     return result
   }
 }

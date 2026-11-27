@@ -264,6 +264,7 @@ extension ScannerConfigurationExtension on ScannerConfiguration {
     IOSApiMode? apiMode,
     double? confidence,
     bool? legacyImageCache,
+    bool? frameRing,
   }) {
     return ScannerConfiguration(
       types: types ?? this.types,
@@ -274,6 +275,7 @@ extension ScannerConfigurationExtension on ScannerConfiguration {
       apiMode: apiMode ?? this.apiMode,
       confidence: confidence ?? this.confidence,
       legacyImageCache: legacyImageCache ?? this.legacyImageCache,
+      frameRing: frameRing ?? this.frameRing,
     );
   }
 }

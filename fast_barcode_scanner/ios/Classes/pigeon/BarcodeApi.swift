@@ -412,6 +412,8 @@ struct ScannerConfiguration: Hashable {
   var confidence: Double? = nil
   /// Keep caching one image per scanned code, next to the frame ring buffer
   var legacyImageCache: Bool? = nil
+  /// Buffer recent frames so codes carry a frame id for encodeFrame; null means off
+  var frameRing: Bool? = nil
 
 
   // swift-format-ignore: AlwaysUseLowerCamelCase
@@ -424,6 +426,7 @@ struct ScannerConfiguration: Hashable {
     let apiMode: IOSApiMode? = nilOrValue(pigeonVar_list[5])
     let confidence: Double? = nilOrValue(pigeonVar_list[6])
     let legacyImageCache: Bool? = nilOrValue(pigeonVar_list[7])
+    let frameRing: Bool? = nilOrValue(pigeonVar_list[8])
 
     return ScannerConfiguration(
       types: types,
@@ -433,7 +436,8 @@ struct ScannerConfiguration: Hashable {
       position: position,
       apiMode: apiMode,
       confidence: confidence,
-      legacyImageCache: legacyImageCache
+      legacyImageCache: legacyImageCache,
+      frameRing: frameRing
     )
   }
   func toList() -> [Any?] {
@@ -446,13 +450,14 @@ struct ScannerConfiguration: Hashable {
       apiMode,
       confidence,
       legacyImageCache,
+      frameRing,
     ]
   }
   static func == (lhs: ScannerConfiguration, rhs: ScannerConfiguration) -> Bool {
     if Swift.type(of: lhs) != Swift.type(of: rhs) {
       return false
     }
-    return deepEqualsBarcodeApi(lhs.types, rhs.types) && deepEqualsBarcodeApi(lhs.mode, rhs.mode) && deepEqualsBarcodeApi(lhs.resolution, rhs.resolution) && deepEqualsBarcodeApi(lhs.framerate, rhs.framerate) && deepEqualsBarcodeApi(lhs.position, rhs.position) && deepEqualsBarcodeApi(lhs.apiMode, rhs.apiMode) && deepEqualsBarcodeApi(lhs.confidence, rhs.confidence) && deepEqualsBarcodeApi(lhs.legacyImageCache, rhs.legacyImageCache)
+    return deepEqualsBarcodeApi(lhs.types, rhs.types) && deepEqualsBarcodeApi(lhs.mode, rhs.mode) && deepEqualsBarcodeApi(lhs.resolution, rhs.resolution) && deepEqualsBarcodeApi(lhs.framerate, rhs.framerate) && deepEqualsBarcodeApi(lhs.position, rhs.position) && deepEqualsBarcodeApi(lhs.apiMode, rhs.apiMode) && deepEqualsBarcodeApi(lhs.confidence, rhs.confidence) && deepEqualsBarcodeApi(lhs.legacyImageCache, rhs.legacyImageCache) && deepEqualsBarcodeApi(lhs.frameRing, rhs.frameRing)
   }
 
   func hash(into hasher: inout Hasher) {
@@ -465,6 +470,7 @@ struct ScannerConfiguration: Hashable {
     deepHashBarcodeApi(value: apiMode, hasher: &hasher)
     deepHashBarcodeApi(value: confidence, hasher: &hasher)
     deepHashBarcodeApi(value: legacyImageCache, hasher: &hasher)
+    deepHashBarcodeApi(value: frameRing, hasher: &hasher)
   }
 }
 

@@ -84,7 +84,8 @@ fun ScannerConfiguration.copy(
     position: CameraPosition? = null,
     apiMode: IOSApiMode? = null,
     confidence: Double? = null,
-    legacyImageCache: Boolean? = null
+    legacyImageCache: Boolean? = null,
+    frameRing: Boolean? = null
 ): ScannerConfiguration {
     return ScannerConfiguration(
         types = types ?: this.types,
@@ -94,7 +95,8 @@ fun ScannerConfiguration.copy(
         position = position ?: this.position,
         apiMode = apiMode ?: this.apiMode,
         confidence = confidence ?: this.confidence,
-        legacyImageCache = legacyImageCache ?: this.legacyImageCache
+        legacyImageCache = legacyImageCache ?: this.legacyImageCache,
+        frameRing = frameRing ?: this.frameRing
     )
 }
 

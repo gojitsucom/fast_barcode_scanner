@@ -62,7 +62,7 @@ abstract class FastBarcodeScannerPlatform extends PlatformInterface {
       Framerate framerate,
       DetectionMode detectionMode,
       CameraPosition position,
-      {IOSApiMode? apiMode, bool? legacyImageCache}) {
+      {IOSApiMode? apiMode, bool? legacyImageCache, bool? frameRing}) {
     throw UnimplementedError('init() has not been implemented');
   }
 

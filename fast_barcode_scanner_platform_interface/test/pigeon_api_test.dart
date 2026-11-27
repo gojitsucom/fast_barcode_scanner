@@ -1,6 +1,7 @@
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:fast_barcode_scanner_platform_interface/src/pigeon_barcode_scanner.dart';
+import 'package:fast_barcode_scanner_platform_interface/src/pigeon_extensions.dart';
 import 'package:fast_barcode_scanner_platform_interface/src/pigeon_fast_barcode_scanner.dart';
 
 class TestPigeonFastBarcodeScanner extends PigeonFastBarcodeScanner {
@@ -297,6 +298,24 @@ void main() {
       final decoded =
           roundTrip(BarcodeData(type: BarcodeType.qr, value: 'v'));
       expect(decoded.frameId, isNull);
+    });
+
+    test('ScannerConfiguration carries frameRing', () {
+      final configuration = ScannerConfiguration(
+        types: [BarcodeType.qr],
+        mode: DetectionMode.continuous,
+        resolution: Resolution.hd720,
+        framerate: Framerate.fps30,
+        position: CameraPosition.back,
+        frameRing: true,
+      );
+      const codec = FastBarcodeScannerHostApi.pigeonChannelCodec;
+
+      final decoded = codec.decodeMessage(codec.encodeMessage(configuration))
+          as ScannerConfiguration;
+
+      expect(decoded.frameRing, isTrue);
+      expect(configuration.copyWith().frameRing, isTrue);
     });
   });
 

@@ -119,6 +119,7 @@ class Camera(
     }
 
     private suspend fun keepFrame(codes: List<Barcode>, imageProxy: ImageProxy): Long? {
+        if (scannerConfiguration.frameRing != true) return null
         // Dispose may clear the ring while the copy runs; the generation check drops that frame.
         val generation = frameRing.generation
         val frame = withContext(Dispatchers.Default) { Nv21Frame.copyOf(imageProxy) } ?: return null

@@ -62,6 +62,7 @@ abstract class CameraController {
     required DetectionMode detectionMode,
     IOSApiMode? apiMode,
     bool legacyImageCache = true,
+    bool frameRing = false,
     OnDetectionHandler? onScan,
   });
 
@@ -184,6 +185,7 @@ class _CameraController implements CameraController {
     required DetectionMode detectionMode,
     IOSApiMode? apiMode,
     bool legacyImageCache = true,
+    bool frameRing = false,
     OnDetectionHandler? onScan,
   }) async {
     try {
@@ -195,6 +197,7 @@ class _CameraController implements CameraController {
         position,
         apiMode: apiMode,
         legacyImageCache: legacyImageCache,
+        frameRing: frameRing,
       );
 
       _onScan = _buildScanHandler(onScan);
@@ -219,6 +222,7 @@ class _CameraController implements CameraController {
         mode: detectionMode,
         apiMode: apiMode,
         legacyImageCache: legacyImageCache,
+        frameRing: frameRing,
       );
 
       state._error = null;

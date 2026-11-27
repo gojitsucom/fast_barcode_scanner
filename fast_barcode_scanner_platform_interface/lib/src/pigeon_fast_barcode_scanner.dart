@@ -32,6 +32,7 @@ class PigeonFastBarcodeScanner extends FastBarcodeScannerPlatform
     CameraPosition position, {
     IOSApiMode? apiMode,
     bool? legacyImageCache,
+    bool? frameRing,
   }) async {
     final configuration = ScannerConfiguration(
       types: types,
@@ -41,6 +42,7 @@ class PigeonFastBarcodeScanner extends FastBarcodeScannerPlatform
       position: position,
       apiMode: apiMode,
       legacyImageCache: legacyImageCache,
+      frameRing: frameRing,
     );
 
     return await _hostApi.initialize(configuration);

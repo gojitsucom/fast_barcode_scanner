@@ -363,6 +363,7 @@ class ScannerConfiguration {
     this.apiMode,
     this.confidence,
     this.legacyImageCache,
+    this.frameRing,
   });
 
   List<BarcodeType?> types;
@@ -382,6 +383,9 @@ class ScannerConfiguration {
   /// Keep caching one image per scanned code, next to the frame ring buffer
   bool? legacyImageCache;
 
+  /// Buffer recent frames so codes carry a frame id for encodeFrame; null means off
+  bool? frameRing;
+
   List<Object?> _toList() {
     return <Object?>[
       types,
@@ -392,6 +396,7 @@ class ScannerConfiguration {
       apiMode,
       confidence,
       legacyImageCache,
+      frameRing,
     ];
   }
 
@@ -409,6 +414,7 @@ class ScannerConfiguration {
       apiMode: result[5] as IOSApiMode?,
       confidence: result[6] as double?,
       legacyImageCache: result[7] as bool?,
+      frameRing: result[8] as bool?,
     );
   }
 
@@ -421,7 +427,7 @@ class ScannerConfiguration {
     if (identical(this, other)) {
       return true;
     }
-    return _deepEquals(types, other.types) && _deepEquals(mode, other.mode) && _deepEquals(resolution, other.resolution) && _deepEquals(framerate, other.framerate) && _deepEquals(position, other.position) && _deepEquals(apiMode, other.apiMode) && _deepEquals(confidence, other.confidence) && _deepEquals(legacyImageCache, other.legacyImageCache);
+    return _deepEquals(types, other.types) && _deepEquals(mode, other.mode) && _deepEquals(resolution, other.resolution) && _deepEquals(framerate, other.framerate) && _deepEquals(position, other.position) && _deepEquals(apiMode, other.apiMode) && _deepEquals(confidence, other.confidence) && _deepEquals(legacyImageCache, other.legacyImageCache) && _deepEquals(frameRing, other.frameRing);
   }
 
   @override

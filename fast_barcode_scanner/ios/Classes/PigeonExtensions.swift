@@ -165,7 +165,8 @@ extension ScannerConfiguration {
         position: CameraPosition? = nil,
         apiMode: IOSApiMode? = nil,
         confidence: Double? = nil,
-        legacyImageCache: Bool? = nil
+        legacyImageCache: Bool? = nil,
+        frameRing: Bool? = nil
     ) -> ScannerConfiguration {
         return ScannerConfiguration(
             types: types ?? self.types,
@@ -175,7 +176,8 @@ extension ScannerConfiguration {
             position: position ?? self.position,
             apiMode: apiMode ?? self.apiMode,
             confidence: confidence ?? self.confidence,
-            legacyImageCache: legacyImageCache ?? self.legacyImageCache
+            legacyImageCache: legacyImageCache ?? self.legacyImageCache,
+            frameRing: frameRing ?? self.frameRing
         )
     }
 }
@@ -205,7 +207,8 @@ extension ScannerConfiguration {
             position: updateConfig.position ?? self.position,
             apiMode: self.apiMode,
             confidence: self.confidence,
-            legacyImageCache: self.legacyImageCache
+            legacyImageCache: self.legacyImageCache,
+            frameRing: self.frameRing
         )
     }
 

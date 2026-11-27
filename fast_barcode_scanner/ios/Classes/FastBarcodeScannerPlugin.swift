@@ -199,7 +199,7 @@ public class FastBarcodeScannerPlugin: NSObject, FlutterPlugin, FastBarcodeScann
                     [Int(bottomLeft.x), Int(bottomLeft.y)],
                     [Int(bottomRight.x), Int(bottomRight.y)]
                 ]
-            }, confidence: configuration.confidence ?? 0.6, onCacheImage: legacyImageCacher, frameRing: frameRing, resultHandler: { [weak self] barcodes in
+            }, confidence: configuration.confidence ?? 0.6, onCacheImage: legacyImageCacher, frameRing: configuration.frameRing == true ? frameRing : nil, resultHandler: { [weak self] barcodes in
                 // Convert to Pigeon barcodes and send via FlutterApi
                 guard let self = self, let flutterApi = self.flutterApi else { return }
                 if let barcodesArray = barcodes as? [Any] {
