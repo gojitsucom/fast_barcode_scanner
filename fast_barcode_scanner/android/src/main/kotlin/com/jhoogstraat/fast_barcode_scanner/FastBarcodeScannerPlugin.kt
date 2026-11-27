@@ -19,6 +19,11 @@ import io.flutter.embedding.engine.plugins.FlutterPlugin
 import io.flutter.embedding.engine.plugins.activity.ActivityAware
 import io.flutter.embedding.engine.plugins.activity.ActivityPluginBinding
 import io.flutter.plugin.common.PluginRegistry
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import java.io.File
 import java.io.IOException
 
 /** FastBarcodeScannerPlugin - Pigeon-based implementation */
@@ -30,6 +35,13 @@ class FastBarcodeScannerPlugin : FlutterPlugin, ActivityAware,
     private var camera: Camera? = null
     private var flutterApi: FastBarcodeScannerFlutterApi? = null
     private var pickImageCompleter: TaskCompletionSource<Uri?>? = null
+    private val frameRing = FrameRing<Nv21Frame>(FRAME_RING_CAPACITY)
+
+    companion object {
+        private const val FRAME_RING_CAPACITY = 16
+        private const val FRAME_JPEG_QUALITY = 85
+        private const val FRAME_DIRECTORY = "missort_frames"
+    }
 
     override fun onAttachedToEngine(flutterPluginBinding: FlutterPlugin.FlutterPluginBinding) {
         pluginBinding = flutterPluginBinding
@@ -83,10 +95,11 @@ class FastBarcodeScannerPlugin : FlutterPlugin, ActivityAware,
             val camera = Camera(
                 activityBinding.activity,
                 pluginBinding.textureRegistry.createSurfaceTexture(),
-                configuration
-            ) { barcodes ->
+                configuration,
+                frameRing
+            ) { barcodes, frameId ->
                 // Convert MLKit barcodes to Pigeon barcodes and send via FlutterApi
-                val pigeonBarcodes = barcodes.mapNotNull { it.toPigeonBarcode() }
+                val pigeonBarcodes = barcodes.mapNotNull { it.toPigeonBarcode(frameId) }
                 flutterApi?.onBarcodesDetected(pigeonBarcodes) { }
             }
 
@@ -151,6 +164,7 @@ class FastBarcodeScannerPlugin : FlutterPlugin, ActivityAware,
                 activityBinding?.removeRequestPermissionsResultListener(it)
             }
             camera = null
+            frameRing.clear()
             callback(Result.success(Unit))
         } catch (e: Exception) {
             callback(Result.failure(e))
@@ -200,6 +214,20 @@ class FastBarcodeScannerPlugin : FlutterPlugin, ActivityAware,
             callback(Result.success(image))
         } catch (e: Exception) {
             callback(Result.failure(e))
+        }
+    }
+
+    override fun encodeFrame(frameId: Long, callback: (Result<String?>) -> Unit) {
+        val context = pluginBinding?.applicationContext
+            ?: return callback(Result.failure(ScannerException.ActivityNotConnected()))
+        val frame = frameRing.get(frameId) ?: return callback(Result.success(null))
+        CoroutineScope(Dispatchers.Main).launch {
+            val path = runCatching {
+                withContext(Dispatchers.IO) {
+                    frame.writeJpeg(File(context.cacheDir, FRAME_DIRECTORY), FRAME_JPEG_QUALITY).absolutePath
+                }
+            }
+            callback(path)
         }
     }
 
