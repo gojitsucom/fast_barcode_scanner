@@ -92,10 +92,11 @@ class Camera(
                             pauseForDetectionMode()
                             val frameId = keepFrame(codes, imageProxy)
                             val code = codes.first().displayValue ?: return@launch
-                            if (scannerConfiguration.legacyImageCache != false) {
+                            val image = imageProxy.image
+                            if (scannerConfiguration.legacyImageCache != false && image != null) {
                                 ImageHelper.getInstance()
                                     .storeImageToCache(
-                                        imageProxy.image!!,
+                                        image,
                                         code,
                                         activity.applicationContext
                                     )
