@@ -32,6 +32,33 @@ class FrameRingTest {
     }
 
     @Test
+    fun `equal set within 500 ms overwrites and keeps id`() {
+        var nowMs = 1_000L
+        val ring = FrameRing<String>(16) { nowMs }
+
+        val first = ring.put(setOf("a"), "f1")
+        nowMs += 500
+        val second = ring.put(setOf("a"), "f2")
+
+        assertEquals(first, second)
+        assertEquals("f2", ring.get(first))
+    }
+
+    @Test
+    fun `equal set after 500 ms takes new id and old id still resolves`() {
+        var nowMs = 1_000L
+        val ring = FrameRing<String>(16) { nowMs }
+
+        val first = ring.put(setOf("a"), "f1")
+        nowMs += 501
+        val second = ring.put(setOf("a"), "f2")
+
+        assertNotEquals(first, second)
+        assertEquals("f1", ring.get(first))
+        assertEquals("f2", ring.get(second))
+    }
+
+    @Test
     fun `seventeenth distinct set evicts the oldest`() {
         val ring = FrameRing<String>(16)
 
