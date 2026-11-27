@@ -30,7 +30,8 @@ class Nv21Frame(
     }
 
     private fun rotateJpeg(jpeg: ByteArray, quality: Int): ByteArray {
-        val source = BitmapFactory.decodeByteArray(jpeg, 0, jpeg.size)
+        // Decode returns null under memory pressure; unrotated photo beats no photo.
+        val source = BitmapFactory.decodeByteArray(jpeg, 0, jpeg.size) ?: return jpeg
         val matrix = Matrix().apply { postRotate(rotationDegrees.toFloat()) }
         val rotated = Bitmap.createBitmap(source, 0, 0, source.width, source.height, matrix, true)
         val out = ByteArrayOutputStream()
