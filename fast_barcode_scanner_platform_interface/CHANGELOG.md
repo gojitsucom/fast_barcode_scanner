@@ -1,5 +1,9 @@
 ## 3.3.0
-- Add `BarcodeData.frameId`, `ScannerConfiguration.legacyImageCache` and `FastBarcodeScannerPlatform.encodeFrame`.
+- Add `BarcodeData.frameId`, `ScannerConfiguration.legacyImageCache`, `ScannerConfiguration.frameRing` (null means off) and `FastBarcodeScannerPlatform.encodeFrame`.
+- Source-breaking for custom implementations and fakes:
+  - `FastBarcodeScannerPlatform.init` gained the named parameters `legacyImageCache` and `frameRing`; overrides must declare both.
+  - `BarcodeData ==` and `hashCode` include `frameId`, so the same value read from two frames no longer compares equal.
+- Add the `meta` dependency the generated Pigeon code imports.
 
 ## 3.2.0
 - Version bump to match fast_barcode_scanner 3.2.0. No API changes.
