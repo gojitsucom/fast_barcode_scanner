@@ -16,14 +16,14 @@ class VisionBarcodeScanner: NSObject, BarcodeScanner, AVCaptureVideoDataOutputSa
     var cornerPointConverter: VisionBarcodeCornerPointConverter
     var confidence: Double
     var onDetection: (() -> Void)?
-    var capturedImage: UIImage?
     var onCacheImage: ((String, UIImage) -> Void)
     private let cachesLegacyImage: Bool
     private let frameRing: FrameRing<CGImage>?
     private let ciContext = CIContext()
 
     /// The frame Vision is reading right now. `perform` calls the completion handler before it
-    /// returns, so the handler keeps the pixels of the buffer its codes came from.
+    /// returns, so the handler keeps the pixels of the buffer its codes came from, and renders
+    /// them only when codes were found.
     private var detectingFrame: (image: CIImage, ringGeneration: Int64)?
 
     private static let maxFrameLongEdge: CGFloat = 1280
@@ -109,12 +109,8 @@ class VisionBarcodeScanner: NSObject, BarcodeScanner, AVCaptureVideoDataOutputSa
 
     func captureOutput(_ output: AVCaptureOutput, didOutput sampleBuffer: CMSampleBuffer, from connection: AVCaptureConnection) {
         if let pixelBuffer = CMSampleBufferGetImageBuffer(sampleBuffer) {
-            let ciImage = CIImage(cvPixelBuffer: pixelBuffer)
-            if cachesLegacyImage, let cgImage = ciContext.createCGImage(ciImage, from: ciImage.extent) {
-                capturedImage = UIImage(cgImage: cgImage, scale: 1, orientation: .right)
-            }
-            if let frameRing = frameRing {
-                detectingFrame = (ciImage, frameRing.generation)
+            if cachesLegacyImage || frameRing != nil {
+                detectingFrame = (CIImage(cvPixelBuffer: pixelBuffer), frameRing?.generation ?? 0)
             }
             defer { detectingFrame = nil }
 
@@ -171,9 +167,8 @@ class VisionBarcodeScanner: NSObject, BarcodeScanner, AVCaptureVideoDataOutputSa
             uniqueCodes = uniqueCodes.map { $0 + [frameId] }
         }
 
-        if !uniqueCodes.isEmpty && capturedImage != nil {
-            onCacheImage((uniqueCodes.first!)[1] as! String, capturedImage!)
-            capturedImage = nil
+        if !uniqueCodes.isEmpty, let legacyImage = legacyCacheImage() {
+            onCacheImage((uniqueCodes.first!)[1] as! String, legacyImage)
         }
 
         onDetection?()
@@ -188,6 +183,14 @@ class VisionBarcodeScanner: NSObject, BarcodeScanner, AVCaptureVideoDataOutputSa
             return nil
         }
         return frameRing.put(codeValues: codeValues, frame: cgImage, generation: frame.ringGeneration)
+    }
+
+    private func legacyCacheImage() -> UIImage? {
+        guard cachesLegacyImage, let frame = detectingFrame,
+              let cgImage = ciContext.createCGImage(frame.image, from: frame.image.extent) else {
+            return nil
+        }
+        return UIImage(cgImage: cgImage, scale: 1, orientation: .right)
     }
 
     private func downscaledCGImage(_ image: CIImage) -> CGImage? {
